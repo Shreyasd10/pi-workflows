@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 ---
 
 # Default built-in loops to fresh iteration context

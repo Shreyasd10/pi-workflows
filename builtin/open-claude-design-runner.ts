@@ -12,6 +12,7 @@ import {
   taggedPrompt,
 } from "./open-claude-design-utils.js";
 import { exportOpenClaudeDesign, refineOpenClaudeDesign } from "./open-claude-design-phases.js";
+import { parseIterationContext } from "./iteration-context.js";
 import {
   NO_REFERENCES_BRIEF,
   buildReferenceDiscoveryPrompt,
@@ -37,7 +38,7 @@ type OpenClaudeDesignOutputs = {
 
 type OpenClaudeDesignContext = {
   readonly cwd?: string;
-  readonly inputs: { readonly prompt: string; readonly discover_references?: boolean; readonly max_refinements?: number };
+  readonly inputs: { readonly prompt: string; readonly discover_references?: boolean; readonly max_refinements?: number; readonly iteration_context?: "fresh" | "fork" };
   exit?(options?: { readonly status?: string; readonly reason?: string; readonly outputs?: Partial<OpenClaudeDesignOutputs> }): never;
   task(name: string, options: WorkflowTaskOptions): Promise<WorkflowTaskResult>;
   parallel(steps: readonly WorkflowTaskStep[], options: WorkflowParallelOptions): Promise<WorkflowTaskResult[]>;
@@ -322,6 +323,7 @@ export async function runOpenClaudeDesignWorkflow(ctx: OpenClaudeDesignContext):
     workflowCwd,
     importContext,
     ui: designContext.ui,
+    iterationContext: parseIterationContext(designContext.inputs.iteration_context),
   });
   latestDesign = refinement.latestDesign;
   approvedForExport = refinement.approvedForExport;

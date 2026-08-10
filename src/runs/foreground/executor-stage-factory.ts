@@ -135,11 +135,17 @@ export function createWorkflowStageFactory(input: {
 		const stageOptionsForContext: StageOptions | undefined =
 			executeReplaySource?.sessionFile === undefined
 				? options
-				: {
-						...(options ?? {}),
-						context: options?.context ?? "fork",
-						forkFromSessionFile: options?.forkFromSessionFile ?? executeReplaySource.sessionFile,
-					};
+				: options?.context === "fresh"
+					? {
+							...(options ?? {}),
+							context: "fresh",
+							forkFromSessionFile: undefined,
+						}
+					: {
+							...(options ?? {}),
+							context: options?.context ?? "fork",
+							forkFromSessionFile: options?.forkFromSessionFile ?? executeReplaySource.sessionFile,
+						};
 
 		const applyModelFallbackMeta = (meta: ReturnType<InternalStageContext["__modelFallbackMeta"]>): void => {
 			if (meta.model !== undefined) stageSnapshot.model = meta.model;

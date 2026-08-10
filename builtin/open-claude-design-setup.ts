@@ -262,6 +262,12 @@ export function buildLivePreviewDisplayPrompt(args: {
   readonly iteration?: number;
   readonly maxRefinements?: number;
   readonly final?: boolean;
+  /** Latest handoff manifest path for fresh-session re-grounding. */
+  readonly designIterationManifestPath?: string;
+  /** Persisted annotation history paths already written by persistPreviewFeedback. */
+  readonly annotationHistoryPaths?: readonly string[];
+  /** Latest design summary for conversational continuity without transcript fork. */
+  readonly latestDesignSummary?: string;
 }): string {
   const isInitial = args.iteration === undefined;
   const isFinal = args.final === true;
@@ -297,10 +303,30 @@ export function buildLivePreviewDisplayPrompt(args: {
         "`user_notes` (the user's verbatim notes/annotations for the next iteration; `none` when the user gave no notes)",
         "`next_action_hint`",
       ].join("\n");
-  return taggedPrompt([
+  const annotationHistory =
+    args.annotationHistoryPaths !== undefined && args.annotationHistoryPaths.length > 0
+      ? [
+          "Prior persisted annotation artifacts for this design run:",
+          ...args.annotationHistoryPaths.map((path) => `- ${path}`),
+          "Read them before soliciting new notes so conversational continuity is explicit rather than inherited from a forked transcript.",
+        ].join("\n")
+      : "No prior annotation artifacts are available for this run yet.";
+  const sections: Array<readonly [string, string]> = [
     ["preview_path", args.previewPath],
     ["preview_file_url", args.previewFileUrl],
     ["browser_use_guidelines", args.browserBootstrapRules],
+    ["annotation_history", annotationHistory],
+  ];
+  if (args.designIterationManifestPath !== undefined) {
+    sections.push([
+      "design_iteration_manifest",
+      `Read the design iteration handoff manifest at ${args.designIterationManifestPath} for the current contract, evidence paths, and prior feedback pointers.`,
+    ]);
+  }
+  if (args.latestDesignSummary !== undefined && args.latestDesignSummary.trim().length > 0) {
+    sections.push(["current_design_summary", args.latestDesignSummary]);
+  }
+  sections.push(
     [
       "role",
       "You are an opinionated staff design engineer running interactive `live` QA in a real browser.",
@@ -316,7 +342,8 @@ export function buildLivePreviewDisplayPrompt(args: {
       ].join("\n"),
     ],
     ["output_format", `${outputFormat}\nKeep the report under 250 words. ${GROUNDED_REPORTING}`],
-  ]);
+  );
+  return taggedPrompt(sections);
 }
 
 // ---------------------------------------------------------------------------

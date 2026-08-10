@@ -11,6 +11,7 @@ import { workflow } from "../src/authoring/workflow.js";
 import { withSteeringPropagationContext } from "./steering-context.js";
 import { runGoalWorkflow } from "./goal-runner.js";
 import { DEFAULT_MAX_TURNS } from "./goal-types.js";
+import { parseIterationContext } from "./iteration-context.js";
 
 export default workflow({
   name: "goal",
@@ -36,6 +37,13 @@ export default workflow({
       description:
         "Whether to run the final pull-request creation stage after reviewer/reducer approval. Defaults to false; prompt text alone does not opt in. If the task asks to submit a PR/MR/review, remove that from the objective text and set this to true — only the final stage then attempts provider-appropriate PR/MR/review creation after Goal completes."
     }),
+    iteration_context: Type.Optional(Type.Union([
+      Type.Literal("fresh"),
+      Type.Literal("fork"),
+    ], {
+      description:
+        'How orchestrator turns continue across iterations. Default "fresh" starts each turn in a new session and re-grounds from the ledger plus bounded artifact handoffs (recommended). "fork" is a transitional rollback that preserves the orchestrator transcript and accepts context growth; supported for two minor releases.',
+    })),
   },
   outputs: {
     result: Type.Optional(Type.String({ description: "Final report with objective, status, receipts, turns, and remaining work." })),
@@ -69,6 +77,10 @@ export default workflow({
     const workflowCtx = withSteeringPropagationContext(ctx);
     const workflowStartCwd = workflowCtx.cwd ?? process.cwd();
     const createPr = workflowCtx.inputs.create_pr === true;
-    return await runGoalWorkflow(workflowCtx, { createPr, workflowStartCwd });
+    return await runGoalWorkflow(workflowCtx, {
+      createPr,
+      workflowStartCwd,
+      iterationContext: parseIterationContext(workflowCtx.inputs.iteration_context),
+    });
   },
 });

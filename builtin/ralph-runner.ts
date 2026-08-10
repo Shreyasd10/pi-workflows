@@ -20,13 +20,27 @@ import {
   renderForkedResearchPromptRefinementPrompt,
 } from "./ralph-forked-prompts.js";
 import {
+  ITERATION_CONTEXT_FORK,
+  parseIterationContext,
+  resolveHandoffPolicy,
+  iterationContinuationOptions,
+  hasLegacyLoopArtifacts,
+} from "./iteration-context.js";
+import {
+  buildHandoffManifest,
+  handoffLatestManifestPath,
+  snapshotEvidenceRef,
+  validateHandoffManifest,
+  writeHandoffManifest,
+  type HandoffUnresolvedFinding,
+} from "./iteration-handoff.js";
+import {
   REVIEWER_COUNT,
   artifactSafeName,
   compactReviewReport,
   createImplementationNotesFile,
   createQaEvidenceVideoPath,
   defaultResearchPath,
-  forkContinuationOptions,
   renderResearchPromptRefinementPrompt,
   renderQaE2eVideoGuidance,
   renderResearchPrompt,
@@ -48,6 +62,19 @@ import {
   reviewerAModelConfig,
   reviewerBModelConfig,
 } from "./ralph-models.js";
+
+function ralphUnresolvedFindings(
+  consolidated: ReturnType<typeof consolidateFindingsBatch>,
+): HandoffUnresolvedFinding[] {
+  return consolidated.map((entry) => ({
+    title: entry.finding.title,
+    priority: entry.finding.priority,
+    objective_alignment: entry.finding.objective_alignment,
+    code_location: entry.finding.code_location?.absolute_file_path,
+    reviewer: entry.reviewers.join(", "),
+  }));
+}
+
 export async function runRalphWorkflow(
   ctx: WorkflowRunContext<RalphInputs>,
   options: RalphWorkflowOptions,
@@ -66,16 +93,41 @@ export async function runRalphWorkflow(
   const implementationNotesPath = await createImplementationNotesFile(workflowPrompt, runId);
   const qaVideoPath = await createQaEvidenceVideoPath(runId);
   const artifactDir = await createWorkflowArtifactDirectory(runId);
+  const handoffPolicy = await resolveHandoffPolicy({
+    artifactDir,
+    requested: parseIterationContext(options.iterationContext ?? ctx.inputs.iteration_context),
+    hasLegacyLoopArtifacts: hasLegacyLoopArtifacts(artifactDir),
+  });
+  const iterationContext = handoffPolicy.iteration_context;
   let approved = false;
   let iterationsCompleted = 0;
+  let latestHandoffManifestPath: string | undefined;
   let previousResearchPromptRefinementSessionFile: string | undefined;
   let previousResearchSessionFile: string | undefined;
   let previousOrchestratorSessionFile: string | undefined;
   for (let iteration = 1; iteration <= maxLoops; iteration += 1) {
     iterationsCompleted = iteration;
-    const researchPromptRefinementForkOptions = forkContinuationOptions(previousResearchPromptRefinementSessionFile);
+    if (iteration > 1 && iterationContext !== ITERATION_CONTEXT_FORK) {
+      const manifestPath = latestHandoffManifestPath ?? handoffLatestManifestPath(artifactDir);
+      validateHandoffManifest({ artifactRoot: artifactDir, manifestPath });
+      latestHandoffManifestPath = manifestPath;
+    }
+    const handoffReads =
+      iteration > 1 &&
+      iterationContext !== ITERATION_CONTEXT_FORK &&
+      latestHandoffManifestPath !== undefined
+        ? [latestHandoffManifestPath]
+        : [];
+    const reviewReads = latestReviewReportPath === undefined ? [] : [latestReviewReportPath];
+    const researchPromptRefinementOptions = iterationContinuationOptions(
+      iterationContext,
+      previousResearchPromptRefinementSessionFile,
+    );
+    const useFullPrompts =
+      iterationContext !== ITERATION_CONTEXT_FORK ||
+      researchPromptRefinementOptions.context === "fresh";
     const researchPromptRefinement = await ctx.task(`research-prompt-refinement-${iteration}`, {
-      prompt: researchPromptRefinementForkOptions.forkFromSessionFile === undefined
+      prompt: useFullPrompts
         ? renderResearchPromptRefinementPrompt({
             request: workflowPrompt,
             acceptanceCriteria,
@@ -83,15 +135,20 @@ export async function runRalphWorkflow(
             latestReviewReportPath,
           })
         : renderForkedResearchPromptRefinementPrompt({ latestReviewReportPath }),
-      reads: latestReviewReportPath === undefined ? [] : [latestReviewReportPath],
+      reads: [...reviewReads, ...handoffReads],
       ...promptEngineerModelConfig,
-      ...researchPromptRefinementForkOptions,
+      ...researchPromptRefinementOptions,
     });
     previousResearchPromptRefinementSessionFile = researchPromptRefinement.sessionFile;
     finalPlan = researchPromptRefinement.text;
-    const researchForkOptions = forkContinuationOptions(previousResearchSessionFile);
+    const researchOptions = iterationContinuationOptions(
+      iterationContext,
+      previousResearchSessionFile,
+    );
+    const researchUsesFullPrompt =
+      iterationContext !== ITERATION_CONTEXT_FORK || researchOptions.context === "fresh";
     const research = await ctx.task(`research-${iteration}`, {
-      prompt: researchForkOptions.forkFromSessionFile === undefined
+      prompt: researchUsesFullPrompt
         ? renderResearchPrompt({
             transformedResearchQuestion: researchPromptRefinement.text,
             prompt: workflowPrompt,
@@ -103,11 +160,11 @@ export async function runRalphWorkflow(
             transformedResearchQuestion: researchPromptRefinement.text,
             latestReviewReportPath,
           }),
-      reads: latestReviewReportPath === undefined ? [] : [latestReviewReportPath],
+      reads: [...reviewReads, ...handoffReads],
       output: workflowResearchPath,
       outputMode: "file-only",
       ...researchModelConfig,
-      ...researchForkOptions,
+      ...researchOptions,
     });
     previousResearchSessionFile = research.sessionFile;
     finalResearch = research.text || `Research artifact: ${workflowResearchPath}`;
@@ -115,8 +172,13 @@ export async function runRalphWorkflow(
     finalResearchPath = researchPath;
     finalPlanPath = researchPath;
     const orchestratorReportPath = join(artifactDir, "orchestrator-report.md");
-    const orchestratorForkOptions = forkContinuationOptions(previousOrchestratorSessionFile);
-    const orchestratorPrompt = orchestratorForkOptions.forkFromSessionFile === undefined
+    const orchestratorOptions = iterationContinuationOptions(
+      iterationContext,
+      previousOrchestratorSessionFile,
+    );
+    const orchestratorUsesFullPrompt =
+      iterationContext !== ITERATION_CONTEXT_FORK || orchestratorOptions.context === "fresh";
+    const orchestratorPrompt = orchestratorUsesFullPrompt
       ? taggedPrompt([
         ["acceptance_criteria", keepContext(acceptanceCriteria)],
         ["literal_contract", LITERAL_OBJECTIVE_CONTRACT],
@@ -135,6 +197,7 @@ export async function runRalphWorkflow(
           [
             `Keep the initialized Markdown implementation notes current at: ${implementationNotesPath}`,
             "Record implementation decisions, research deviations, tradeoffs, blockers, validation outcomes, and user-relevant facts; collect noteworthy delegated decisions. Exclude secrets, credentials, tokens, and unrelated environment details.",
+            "Under Failed Approaches / Dead Ends, record each rejected approach with why it failed so a later fresh iteration does not retry it.",
           ].join("\n"),
         ],
         ["project_setup", WORKER_PREFLIGHT_CONTRACT],
@@ -183,11 +246,11 @@ export async function runRalphWorkflow(
         });
     const orchestrator = await ctx.task(`orchestrator-${iteration}`, {
       prompt: orchestratorPrompt,
-      reads: [researchPath, implementationNotesPath],
+      reads: [researchPath, implementationNotesPath, ...handoffReads],
       output: orchestratorReportPath,
       outputMode: "file-only",
       ...orchestratorModelConfig,
-      ...orchestratorForkOptions,
+      ...orchestratorOptions,
     });
     previousOrchestratorSessionFile = orchestrator.sessionFile;
     finalResult = orchestrator.text || `Orchestrator report artifact: ${orchestratorReportPath}`;
@@ -279,6 +342,12 @@ export async function runRalphWorkflow(
       finalActionRemaining: approved && createPr,
       diagnostics: reviewEntries.flatMap((review) => review.convergence_decision.diagnostics),
     });
+    const consolidated = consolidateFindingsBatch(
+      reviewEntries.map((review) => ({
+        reviewer: review.reviewer,
+        findings: review.decision.findings,
+      })),
+    );
     latestReviewReportPath = await writeJsonArtifact(
       join(artifactDir, "review-round-latest.json"),
       {
@@ -286,15 +355,59 @@ export async function runRalphWorkflow(
         // Deduplicated cross-reviewer findings batch so the next research and
         // orchestrator passes repair the round's findings together instead of
         // one at a time.
-        consolidated_findings: consolidateFindingsBatch(
-          reviewEntries.map((review) => ({
-            reviewer: review.reviewer,
-            findings: review.decision.findings,
-          })),
-        ),
+        consolidated_findings: consolidated,
         reviews: reviewEntries,
       },
     );
+    const evidence = [
+      snapshotEvidenceRef({
+        artifactRoot: artifactDir,
+        path: researchPath,
+        role: "research",
+        iteration,
+      }),
+      snapshotEvidenceRef({
+        artifactRoot: artifactDir,
+        path: implementationNotesPath,
+        role: "implementation_notes",
+        iteration,
+      }),
+      snapshotEvidenceRef({
+        artifactRoot: artifactDir,
+        path: orchestratorReportPath,
+        role: "orchestrator_report",
+        iteration,
+      }),
+      snapshotEvidenceRef({
+        artifactRoot: artifactDir,
+        path: latestReviewReportPath,
+        role: "review_round",
+        iteration,
+      }),
+    ];
+    const failedApproachesRef = snapshotEvidenceRef({
+      artifactRoot: artifactDir,
+      path: implementationNotesPath,
+      role: "failed_approaches_notes",
+      iteration,
+    });
+    latestHandoffManifestPath = writeHandoffManifest({
+      artifactRoot: artifactDir,
+      manifest: buildHandoffManifest({
+        workflow: "ralph",
+        iteration,
+        iterationContext,
+        objective: workflowPrompt,
+        acceptanceCriteria,
+        unresolvedFindings: ralphUnresolvedFindings(consolidated),
+        approved,
+        status: approved ? "approved" : "needs_repair",
+        nextAction,
+        diagnostics: roundConvergenceDecision.diagnostics,
+        evidence,
+        failedApproachesRef,
+      }),
+    });
     if (approved) break;
   }
   const qaVideoAvailable = existsSync(qaVideoPath);
