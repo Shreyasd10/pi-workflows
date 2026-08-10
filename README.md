@@ -84,10 +84,8 @@ export default workflow({
 
 Discovery paths (project first, then global):
 
-- `.pi/workflows/*.{ts,js,mjs,cjs}` (project) — legacy `.atomic/workflows/` also
-  checked when present
-- `~/.pi/agent/workflows/*.{ts,js,mjs,cjs}` (global) — legacy
-  `~/.atomic/agent/workflows/` also checked
+- `.pi/workflows/*.{ts,js,mjs,cjs}` (project)
+- `~/.pi/agent/workflows/*.{ts,js,mjs,cjs}` (global)
 - `.pi/extensions/workflow/config.json` / `~/.pi/agent/extensions/workflow/config.json`
   register extra search paths under `workflows.<name>.path`
 - Installed packages via `pi.workflows` / `atomic.workflows` metadata or

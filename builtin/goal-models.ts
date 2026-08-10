@@ -6,6 +6,7 @@ export const orchestratorModelConfig = {
     model: "anthropic/claude-opus-5:high",
     fallbackModels: [
       "github-copilot/claude-opus-5:high",
+      "opencode-go/deepseek-v4-flash:high",
       "openai-codex/gpt-5.6-sol:xhigh",
       "github-copilot/gpt-5.6-sol:xhigh",
       "openai/gpt-5.6-sol:xhigh",
@@ -41,6 +42,7 @@ export const reviewerModelConfig = {
     model: "anthropic/claude-opus-5:high",
     fallbackModels: [
       "github-copilot/claude-opus-5:high",
+      "opencode-go/deepseek-v4-flash:high",
       "anthropic/claude-fable-5:high",
       "github-copilot/claude-fable-5:high",
       "openai-codex/gpt-5.6-sol:xhigh",

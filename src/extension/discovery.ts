@@ -9,7 +9,7 @@
  *
  * Precedence order (highest wins on duplicate normalizedName):
  *   1. settings-project — paths listed in config.projectWorkflows
- *   2. project-local    — {cwd}/.atomic/workflows/*.{ts,js,mjs,cjs}
+ *   2. project-local    — {cwd}/.pi/workflows/*.{ts,js,mjs,cjs}
  *   3. settings-global  — paths listed in config.globalWorkflows
  *   4. user-global      — {agentDir}/workflows/*.{ts,js,mjs,cjs}
  *   5. package          — workflow files supplied by Atomic/pi packages
@@ -21,7 +21,7 @@
  */
 
 import { join } from "node:path";
-import { CONFIG_DIR_NAMES, getAgentDirs, getProjectConfigPaths } from "@bastani/atomic";
+import { HOST_CONFIG_DIR_NAMES, getHostAgentDirs, getHostProjectConfigPaths } from "../shared/host-paths.js";
 import * as bundledManifest from "../../builtin/index.js";
 import type { WorkflowDefinition } from "../shared/types.js";
 import type { WorkflowRegistry } from "../workflows/registry.js";
@@ -37,7 +37,7 @@ import { validateWorkflowDefinitionShape as validateDefinitionShape } from "./wo
  * The source kind for a discovered workflow.
  *
  *   bundled          — shipped with the workflows package
- *   project-local    — found in {cwd}/.atomic/workflows/
+ *   project-local    — found in {cwd}/.pi/workflows/
  *   user-global      — found in {agentDir}/workflows/
  *   settings-project — listed in DiscoveryConfig.projectWorkflows
  *   settings-global  — listed in DiscoveryConfig.globalWorkflows
@@ -146,9 +146,9 @@ function workflowAgentDirs(options: Partial<DiscoveryOptions> | undefined): read
 	if (options?.agentDirs !== undefined) return options.agentDirs;
 	if (options?.homeDir !== undefined) {
 		const homeDir = options.homeDir;
-		return CONFIG_DIR_NAMES.map((name) => join(homeDir, name, "agent"));
+		return HOST_CONFIG_DIR_NAMES.map((name) => join(homeDir, name, "agent"));
 	}
-	return getAgentDirs();
+	return getHostAgentDirs();
 }
 
 /**
@@ -277,7 +277,7 @@ function applyBatchShapeOnly(
  *
  * Precedence (highest first; first-registered wins on duplicate normalizedName):
  *   1. settings-project — config.projectWorkflows paths
- *   2. project-local    — {cwd}/.atomic/workflows/*.{ts,js,mjs,cjs}
+ *   2. project-local    — {cwd}/.pi/workflows/*.{ts,js,mjs,cjs}
  *   3. settings-global  — config.globalWorkflows paths
  *   4. user-global      — {agentDir}/workflows/*.{ts,js,mjs,cjs}
  *   5. package          — package-supplied workflow files
@@ -322,7 +322,7 @@ export async function discoverWorkflows(options?: Partial<DiscoveryOptions>): Pr
 	}
 
 	// 2. project-local
-	for (const dir of getProjectConfigPaths(cwd, "workflows").reverse()) {
+	for (const dir of getHostProjectConfigPaths(cwd, "workflows").reverse()) {
 		const candidates = await loadFromDir(dir, "project-local", diagnostics);
 		registry = await applyBatch(candidates, registry, sources, diagnostics);
 	}

@@ -26,7 +26,7 @@ import {
 const GROUNDED_REPORTING =
   "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
 const DELEGATION_RULE =
-  "Delegate further only work genuinely independent and too large for a handful of tool calls; do not delegate self-verification, and prefer one subagent over several.";
+  "Delegate further only work genuinely independent and too large for a handful of tool calls; do not delegate self-verification, and prefer one task over several.";
 
 type OpenClaudeDesignOutputs = {
   readonly output_type?: string; readonly design_system?: string; readonly artifact?: string; readonly handoff?: string;
@@ -112,6 +112,7 @@ export async function runOpenClaudeDesignWorkflow(ctx: OpenClaudeDesignContext):
     model: "anthropic/claude-opus-5:high",
     fallbackModels: [
       "github-copilot/claude-opus-5:high",
+      "opencode-go/deepseek-v4-flash:high",
       "anthropic/claude-fable-5:high",
       "github-copilot/claude-fable-5:high",
       "kimi-coding/k3:max",

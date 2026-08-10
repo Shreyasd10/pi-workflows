@@ -45,7 +45,7 @@ var __export = (target, all) => {
 };
 var __require = /* @__PURE__ */ createRequire(import.meta.url);
 
-// ../../node_modules/jiti/dist/jiti.cjs
+// node_modules/jiti/dist/jiti.cjs
 var require_jiti = __commonJS((exports, module) => {
   (() => {
     var e = { "./node_modules/.pnpm/mlly@1.8.2/node_modules/mlly/dist lazy recursive"(e2) {
@@ -4318,7 +4318,7 @@ Default "index" lookups for the main are deprecated for ES modules.`, "Deprecati
   })();
 });
 
-// ../../node_modules/jiti/dist/babel.cjs
+// node_modules/jiti/dist/babel.cjs
 var require_babel = __commonJS((exports, module) => {
   (() => {
     var e = { "./node_modules/.pnpm/@babel+core@7.29.0/node_modules/@babel/core/lib/config/files lazy recursive"(e2) {
@@ -35555,7 +35555,7 @@ Defaulting to 2020, but this will stop working in the future.`)), t3.ecmaVersion
   })();
 });
 
-// dist/builtin/workflows/src/intercom/intercom-routing.ts
+// src/intercom/intercom-routing.ts
 function toNoticeLevel(raw) {
   if (raw === "warning" || raw === "error")
     return raw;
@@ -35610,7 +35610,7 @@ function buildIntercomCallbacks(deps) {
   };
 }
 
-// dist/builtin/workflows/src/intercom/result-intercom.ts
+// src/intercom/result-intercom.ts
 function subscribeIntercomControl(pi, callbacks) {
   if (typeof pi.events?.on !== "function")
     return null;
@@ -35643,12 +35643,12 @@ function subscribeIntercomControl(pi, callbacks) {
   };
 }
 
-// dist/builtin/workflows/src/shared/flat-string.ts
+// src/shared/flat-string.ts
 function flattenTruncatedString(value2) {
   return value2.split("").join("");
 }
 
-// dist/builtin/workflows/src/shared/graph-store-snapshot.ts
+// src/shared/graph-store-snapshot.ts
 var COMPACT_RESULT_FIELD_LIMIT = 1024;
 function compactResultField(value2) {
   if (typeof value2 !== "string")
@@ -35763,7 +35763,7 @@ function deepFreezeGraphValue(value2) {
   }
 }
 
-// dist/builtin/workflows/src/shared/store-internal.ts
+// src/shared/store-internal.ts
 var TERMINAL_STATUSES = new Set([
   "completed",
   "failed",
@@ -35957,7 +35957,7 @@ function createStoreContext(state = createStoreState()) {
   };
 }
 
-// dist/builtin/workflows/src/shared/store-prompt-methods.ts
+// src/shared/store-prompt-methods.ts
 function createPromptStoreMethods(context) {
   const { state } = context;
   return {
@@ -36145,7 +36145,7 @@ function createPromptStoreMethods(context) {
   };
 }
 
-// dist/builtin/workflows/src/shared/run-visibility.ts
+// src/shared/run-visibility.ts
 function isTopLevelWorkflowRun(run) {
   return run.parentRunId === undefined;
 }
@@ -36153,7 +36153,7 @@ function topLevelWorkflowRuns(runs) {
   return runs.filter(isTopLevelWorkflowRun);
 }
 
-// dist/builtin/workflows/src/shared/timing.ts
+// src/shared/timing.ts
 function nonNegative(ms) {
   return Math.max(0, ms);
 }
@@ -36185,7 +36185,7 @@ function elapsedRunMs(run, now = Date.now()) {
   return nonNegative(run.accumulatedDurationMs ?? 0) + elapsedFromStart(run.startedAt, effectiveNow, run.pausedDurationMs, run.pausedAt);
 }
 
-// dist/builtin/workflows/src/shared/store-run-methods.ts
+// src/shared/store-run-methods.ts
 function createRunStoreMethods(context) {
   const { state } = context;
   return {
@@ -36403,7 +36403,7 @@ function shouldStoreRunResult(status) {
   return status === "completed" || status === "skipped" || status === "cancelled" || status === "blocked" || status === "failed";
 }
 
-// dist/builtin/workflows/src/shared/store-tool-node-methods.ts
+// src/shared/store-tool-node-methods.ts
 function nextExecutionOrder(run) {
   const stageOrders = run.stages.map((stage) => stage.executionOrder ?? 0);
   const toolOrders = (run.toolNodes ?? []).map((node) => node.executionOrder ?? 0);
@@ -36453,7 +36453,7 @@ function createToolNodeStoreMethods(context) {
   };
 }
 
-// dist/builtin/workflows/src/shared/store-stage-methods.ts
+// src/shared/store-stage-methods.ts
 function createStageStoreMethods(context) {
   return {
     recordStageStart(runId, stage) {
@@ -36761,7 +36761,7 @@ function createStageStoreMethods(context) {
   };
 }
 
-// dist/builtin/workflows/src/shared/store-factory.ts
+// src/shared/store-factory.ts
 function createStore() {
   const context = createStoreContext();
   return {
@@ -36772,7 +36772,7 @@ function createStore() {
   };
 }
 var store = createStore();
-// dist/builtin/workflows/src/tui/color-utils.ts
+// src/tui/color-utils.ts
 function parseHex(hex) {
   const h = hex.replace(/^#/, "");
   const r = parseInt(h.slice(0, 2), 16);
@@ -36808,7 +36808,7 @@ function paint(text, fg, opts = {}) {
   return `${bgSeq}${hexToAnsi(fg)}${boldSeq}${text}${RESET}`;
 }
 
-// dist/builtin/workflows/src/tui/text-helpers.ts
+// src/tui/text-helpers.ts
 import {
   decodeKittyPrintable,
   Key,
@@ -36951,7 +36951,7 @@ function sliceColumns(line, startCol, length, strict = false) {
   return result;
 }
 
-// dist/builtin/workflows/src/tui/chat-surface.ts
+// src/tui/chat-surface.ts
 var ELLIPSIS = "…";
 var DEFAULT_WIDTH = 80;
 var CHAT_HOST_PADDING_X = 2;
@@ -37072,7 +37072,7 @@ function renderHintRows(rows, theme) {
 `);
 }
 
-// dist/builtin/workflows/src/tui/run-identity-rows.ts
+// src/tui/run-identity-rows.ts
 function wrapIdentifierLines(id, width, firstPrefix, continuationPrefix) {
   const rows = [];
   let remaining = id;
@@ -37117,7 +37117,7 @@ function renderRunIdentityRows(opts) {
   return rows;
 }
 
-// dist/builtin/workflows/src/tui/dispatch-confirm.ts
+// src/tui/dispatch-confirm.ts
 var INLINE_INPUT_LIMIT = 3;
 var MIN_INLINE_INPUT_BUDGET = 16;
 function renderDispatchConfirm(opts) {
@@ -37258,7 +37258,7 @@ function effectiveWidth(width) {
   return chatWidth(width);
 }
 
-// dist/builtin/workflows/src/tui/status-helpers.ts
+// src/tui/status-helpers.ts
 function statusColor(status, theme) {
   switch (status) {
     case "running":
@@ -37329,7 +37329,7 @@ function fmtDuration(ms) {
   return `${seconds}s`;
 }
 
-// dist/builtin/workflows/src/tui/run-detail.ts
+// src/tui/run-detail.ts
 var STAGE_NAME_COL = 14;
 var KEY_COL = 14;
 function renderRunDetail(detail, opts = {}) {
@@ -37653,7 +37653,7 @@ function formatTime(ms) {
   return `${hh}:${mm}:${ss}`;
 }
 
-// dist/builtin/workflows/src/shared/returned-run-status.ts
+// src/shared/returned-run-status.ts
 var RETURNED_BLOCKED_STATUSES = new Set(["blocked", "needs_human", "incomplete", "auth_blocked", "active"]);
 function normalizeReturnedWorkflowStatus(status) {
   if (typeof status !== "string")
@@ -37724,7 +37724,7 @@ function stringResultField(result, key) {
   return typeof value2 === "string" && value2.trim().length > 0 ? value2.trim() : undefined;
 }
 
-// dist/builtin/workflows/src/tui/status-list.ts
+// src/tui/status-list.ts
 var STAGE_LABEL_BUDGET = 24;
 function isQuitRun(run) {
   return run.endedAt === undefined && run.status === "paused" && run.exitReason === "quit";
@@ -38098,7 +38098,7 @@ function statusIconForRun(run) {
   }
 }
 
-// dist/builtin/workflows/src/tui/workflow-list.ts
+// src/tui/workflow-list.ts
 var INLINE_INPUT_LIMIT2 = 3;
 var TAG_NAME_BUDGET = 50;
 function renderWorkflowList(entries, opts = {}) {
@@ -38199,7 +38199,7 @@ function effectiveWidth3(width) {
   return chatWidth(width);
 }
 
-// dist/builtin/workflows/src/tui/chat-surface-message.ts
+// src/tui/chat-surface-message.ts
 var CHAT_SURFACE_CUSTOM_TYPE = "workflows:chat-surface";
 var rendererRegisteredHosts = new WeakSet;
 function registerChatSurfaceRenderer(pi, theme) {
@@ -38333,7 +38333,17 @@ function renderPayload(payload, theme, width, now) {
   }
 }
 
-// dist/builtin/workflows/src/tui/graph-theme.ts
+// src/tui/atomic-theme.ts
+import { initTheme } from "@bastani/atomic";
+var ensured = false;
+function ensureAtomicThemeInitialized(themeName) {
+  if (ensured)
+    return;
+  initTheme(themeName);
+  ensured = true;
+}
+
+// src/tui/graph-theme.ts
 var MOCHA = {
   crust: "#11111b",
   mantle: "#181825",
@@ -38451,7 +38461,7 @@ function deriveGraphThemeFromPiTheme(theme) {
   return deriveGraphTheme(cleaned);
 }
 
-// dist/builtin/workflows/src/tui/header.ts
+// src/tui/header.ts
 function pillFor(run, theme) {
   if (run.status === "failed")
     return { border: theme.error, label: "ORCHESTRATOR" };
@@ -38571,7 +38581,7 @@ function renderHeader(run, opts) {
   });
 }
 
-// dist/builtin/workflows/src/tui/inputs-picker-editing.ts
+// src/tui/inputs-picker-editing.ts
 function previousGraphemeOffset(text, caret) {
   const c = Math.max(0, Math.min(caret, text.length));
   let prev = 0;
@@ -38723,7 +38733,7 @@ function caretLineDown(raw, caret) {
   return nextLineStart + offsetAtVisualColumn(nextLine, col);
 }
 
-// dist/builtin/workflows/src/tui/inputs-picker-types.ts
+// src/tui/inputs-picker-types.ts
 function createInputsPickerState(fields, prefilled = {}) {
   const rawText = {};
   for (const f of fields) {
@@ -38810,7 +38820,7 @@ function computeInvalid(fields, raw) {
   return out;
 }
 
-// dist/builtin/workflows/src/tui/keybindings-adapter.ts
+// src/tui/keybindings-adapter.ts
 var APP_ACTION = {
   toolsExpand: "app.tools.expand"
 };
@@ -38882,7 +38892,7 @@ function deleteRange(text, start, end, caret) {
   return { text: next, caret: nextCaret };
 }
 
-// dist/builtin/workflows/src/tui/inputs-picker-input.ts
+// src/tui/inputs-picker-input.ts
 function handleInputsPickerInput(key, state, fields, keybindings) {
   if (fields.length === 0) {
     if (isCancelKey(key))
@@ -39043,8 +39053,16 @@ function handleSelectKey(key, field, state, fields, kb) {
   return { kind: "noop" };
 }
 function handleBooleanKey(key, field, state, fields, kb) {
-  if (matchesKey(key, Key.space) || matchesAction(kb, key, TUI_ACTION.selectUp) || matchesAction(kb, key, TUI_ACTION.selectDown) || matchesAction(kb, key, TUI_ACTION.editorCursorLeft) || matchesAction(kb, key, TUI_ACTION.editorCursorRight)) {
+  if (matchesKey(key, Key.space) || matchesAction(kb, key, TUI_ACTION.editorCursorLeft) || matchesAction(kb, key, TUI_ACTION.editorCursorRight)) {
     state.rawText[field.name] = state.rawText[field.name] === "true" ? "false" : "true";
+    return { kind: "noop" };
+  }
+  if (matchesAction(kb, key, TUI_ACTION.selectUp) || matchesAction(kb, key, TUI_ACTION.editorCursorUp)) {
+    moveFocus(state, fields, -1);
+    return { kind: "noop" };
+  }
+  if (matchesAction(kb, key, TUI_ACTION.selectDown) || matchesAction(kb, key, TUI_ACTION.editorCursorDown)) {
+    moveFocus(state, fields, 1);
     return { kind: "noop" };
   }
   if (matchesAction(kb, key, TUI_ACTION.selectConfirm) || matchesAction(kb, key, TUI_ACTION.inputSubmit)) {
@@ -39095,7 +39113,7 @@ function moveFocus(state, fields, delta) {
   const next = fields[state.focusedIdx];
   state.caret = (state.rawText[next.name] ?? "").length;
 }
-// dist/builtin/workflows/src/tui/submit-pane.ts
+// src/tui/submit-pane.ts
 function renderAskChoiceRows(index, label, active, theme, width) {
   const plainPrefix = `${active ? "❯ " : "  "}${index}. `;
   const firstPrefix = `${active ? paint("❯ ", theme.accent) : "  "}${index}. `;
@@ -39154,7 +39172,7 @@ function renderCompactSubmitButton(label, focused, theme, chromeBg) {
   };
 }
 
-// dist/builtin/workflows/src/tui/inputs-picker-render.ts
+// src/tui/inputs-picker-render.ts
 function renderInlineText(value2, focused, cursorOn, usable, theme, placeholder, isEmpty, caret) {
   const showCursor = focused && cursorOn;
   if (isEmpty) {
@@ -39325,7 +39343,7 @@ function renderPickerSubmitControls(fields, state, theme, width) {
     width
   });
 }
-// dist/builtin/workflows/src/tui/inline-form-card.ts
+// src/tui/inline-form-card.ts
 var graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 function graphemes2(text) {
   return Array.from(graphemeSegmenter.segment(text), (s) => s.segment);
@@ -39581,7 +39599,7 @@ function layoutTextField(raw, usable, caret) {
   return { lines: visualLines, cursorRow, cursorCol, cursorOffset };
 }
 
-// dist/builtin/workflows/src/tui/inline-form-store.ts
+// src/tui/inline-form-store.ts
 var FORMS = new Map;
 function createForm(init) {
   const state = { ...init, version: 0 };
@@ -39606,7 +39624,7 @@ function clearForms() {
   FORMS.clear();
 }
 
-// dist/builtin/workflows/src/tui/inline-form-editor-text.ts
+// src/tui/inline-form-editor-text.ts
 var graphemeSegmenter2 = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 function graphemes3(text) {
   return Array.from(graphemeSegmenter2.segment(text), (s) => s.segment);
@@ -39712,7 +39730,7 @@ function isPrintableTextChunk(data) {
   return true;
 }
 
-// dist/builtin/workflows/src/tui/inline-form-editor.ts
+// src/tui/inline-form-editor.ts
 class InlineFormEditor {
   focused = true;
   tui;
@@ -39797,7 +39815,7 @@ class InlineFormEditor {
       this.pasteBuffer = "";
       if (content.length > 0 && this.applyPaste(content, state)) {
         touch(state);
-        this.tui.requestRender?.();
+        this.notifyFormChanged();
       }
       if (remaining.length > 0)
         this.handleInput(remaining);
@@ -39806,15 +39824,19 @@ class InlineFormEditor {
     if (data.length > 1 && isPrintableTextChunk(data)) {
       if (this.applyPaste(data, state)) {
         touch(state);
-        this.tui.requestRender?.();
+        this.notifyFormChanged();
       }
       return;
     }
     const consumed = this.routeKey(data, state);
     if (consumed) {
       touch(state);
-      this.tui.requestRender?.();
+      this.notifyFormChanged();
     }
+  }
+  notifyFormChanged() {
+    this.tui.invalidate?.();
+    this.tui.requestRender?.();
   }
   applyPaste(content, state) {
     const field = state.fields[state.focusedIdx];
@@ -39907,8 +39929,16 @@ class InlineFormEditor {
     return false;
   }
   handleBoolean(data, field, state) {
-    if (matchesKey(data, Key.space) || matchesAction(this.kb, data, TUI_ACTION.selectUp) || matchesAction(this.kb, data, TUI_ACTION.selectDown) || matchesAction(this.kb, data, TUI_ACTION.editorCursorLeft) || matchesAction(this.kb, data, TUI_ACTION.editorCursorRight)) {
+    if (matchesKey(data, Key.space) || matchesAction(this.kb, data, TUI_ACTION.editorCursorLeft) || matchesAction(this.kb, data, TUI_ACTION.editorCursorRight)) {
       state.rawText[field.name] = state.rawText[field.name] === "true" ? "false" : "true";
+      return true;
+    }
+    if (matchesAction(this.kb, data, TUI_ACTION.selectUp) || matchesAction(this.kb, data, TUI_ACTION.editorCursorUp)) {
+      this.moveFocus(state, -1);
+      return true;
+    }
+    if (matchesAction(this.kb, data, TUI_ACTION.selectDown) || matchesAction(this.kb, data, TUI_ACTION.editorCursorDown)) {
+      this.moveFocus(state, 1);
       return true;
     }
     if (matchesAction(this.kb, data, TUI_ACTION.selectConfirm) || matchesAction(this.kb, data, TUI_ACTION.inputSubmit)) {
@@ -40055,7 +40085,7 @@ ${cur.slice(caret)}`;
   }
 }
 
-// dist/builtin/workflows/src/tui/inline-form-overlay.ts
+// src/tui/inline-form-overlay.ts
 var CUSTOM_TYPE = "workflows:input-form";
 var rendererRegisteredHosts2 = new WeakSet;
 function registerInlineFormRenderer(pi, theme) {
@@ -40152,6 +40182,7 @@ async function openInlineInputsForm(pi, ctx, opts) {
         return;
       resolved = true;
       finalizeForm(formId, result.kind === "run" ? "submit" : "cancel");
+      activeEditor?.notifyFormChanged?.();
       activeEditor?.dispose?.();
       activeEditor = undefined;
       restorePreviousEditor();
@@ -40204,7 +40235,7 @@ function makeFormId() {
   return `wf-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-control-registry.ts
+// src/runs/foreground/stage-control-registry.ts
 function createStageControlRegistry() {
   const _byRun = new Map;
   function ensureRun(runId) {
@@ -40421,7 +40452,7 @@ function createStageControlRegistry() {
 }
 var stageControlRegistry = createStageControlRegistry();
 
-// dist/builtin/workflows/src/shared/store-observation.ts
+// src/shared/store-observation.ts
 function readGraphStoreSnapshot(store2) {
   return store2.graphSnapshot();
 }
@@ -40429,7 +40460,7 @@ function subscribeStoreInvalidation(store2, listener) {
   return store2.subscribeInvalidation(listener);
 }
 
-// dist/builtin/workflows/src/tui/overlay-terminal-modes.ts
+// src/tui/overlay-terminal-modes.ts
 var MOUSE_SCROLL_TRACKING_ON = "\x1B[?1000h\x1B[?1002h\x1B[?1006h";
 var MOUSE_SCROLL_TRACKING_OFF = "\x1B[?1006l\x1B[?1002l\x1B[?1000l";
 var TERMINAL_AUTOWRAP_ON = "\x1B[?7h";
@@ -40455,7 +40486,7 @@ function remoteTerminalControlFrom(tui) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-queued-user-messages.ts
+// src/runs/foreground/stage-queued-user-messages.ts
 var EMPTY_STAGE_QUEUED_USER_MESSAGES = Object.freeze({
   steering: Object.freeze([]),
   followUp: Object.freeze([])
@@ -40500,7 +40531,7 @@ function stageQueuedUserMessageCount(queued) {
   return queued.steering.length + queued.followUp.length;
 }
 
-// dist/builtin/workflows/src/shared/workflow-run-ownership.ts
+// src/shared/workflow-run-ownership.ts
 function authoritativeWorkflowChildRunId(stage) {
   if (stage === undefined || stage.status === "failed" || stage.status === "skipped") {
     return;
@@ -40538,7 +40569,7 @@ function reciprocalWorkflowRootRunId(runById, runId) {
   return;
 }
 
-// dist/builtin/workflows/src/shared/expanded-workflow-graph.ts
+// src/shared/expanded-workflow-graph.ts
 function virtualNodeId(runId, nodeId, isRootRun) {
   return isRootRun ? nodeId : `${runId}:${nodeId}`;
 }
@@ -40870,7 +40901,7 @@ function expandedStageLabel(stage) {
   return `${depthPrefix}${stage.name} (${target.runId}/${target.stageId})`;
 }
 
-// dist/builtin/workflows/src/tui/graph-view-constants.ts
+// src/tui/graph-view-constants.ts
 var HINT_KEYS = [
   { key: "ctrl+x", label: "return to main chat" },
   { key: "↵", label: "open stage chat" },
@@ -40889,7 +40920,7 @@ var PULSE_PERIOD_MS = 2000;
 var GRAPH_SCROLL_STEP_COLS = 4;
 var GRAPH_SCROLL_STEP_ROWS = 4;
 
-// dist/builtin/workflows/src/tui/graph-canvas.ts
+// src/tui/graph-canvas.ts
 function dirsForGlyph(ch) {
   switch (ch) {
     case "│":
@@ -41051,7 +41082,7 @@ class GraphCanvas {
   }
 }
 
-// dist/builtin/workflows/src/tui/layout.ts
+// src/tui/layout.ts
 var NODE_W = 24;
 var NODE_H = 5;
 function computeLayout(stages, opts = {}) {
@@ -41147,7 +41178,7 @@ function computeLayout(stages, opts = {}) {
   return nodes;
 }
 
-// dist/builtin/workflows/src/tui/prompt-card-select.ts
+// src/tui/prompt-card-select.ts
 import { SelectList, truncateToWidth as truncateToWidth2 } from "@earendil-works/pi-tui";
 function createPromptSelectList(state, theme, maxVisible = 5) {
   const choices = state.prompt.choices ?? [];
@@ -41217,7 +41248,7 @@ function matchesSelectSubmit(data, keybindings) {
   return matchesAction(keybindings, data, TUI_ACTION.selectConfirm) || matchesKey(data, Key.enter);
 }
 
-// dist/builtin/workflows/src/tui/prompt-card-text.ts
+// src/tui/prompt-card-text.ts
 import { visibleWidth as visibleWidth2 } from "@earendil-works/pi-tui";
 var segmenter2 = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 function graphemeParts(value2) {
@@ -41325,7 +41356,7 @@ function caretLineDown3(raw, caret) {
   return nextLineStart + offsetAtVisualColumn3(nextLine, col);
 }
 
-// dist/builtin/workflows/src/tui/prompt-card-input.ts
+// src/tui/prompt-card-input.ts
 function handlePromptCardInput(data, state, keybindings) {
   if (matchesKey(data, Key.ctrl("c"))) {
     return { kind: "cancel" };
@@ -41487,7 +41518,7 @@ function applyTextEdit(data, state, keybindings, opts) {
   }
   return { kind: "noop" };
 }
-// dist/builtin/workflows/src/tui/prompt-card-render.ts
+// src/tui/prompt-card-render.ts
 import { keyHint, keyText, rawKeyHint } from "@bastani/atomic";
 import { truncateToWidth as truncateToWidth3, visibleWidth as visibleWidth3, wrapTextWithAnsi } from "@earendil-works/pi-tui";
 function renderPromptIdentityBanner(identity, theme, width) {
@@ -41903,7 +41934,7 @@ function renderHints(kind, theme) {
   }
   return graphKeyHint("tui.input.submit", "Submit", theme) + sep + graphRawKeyHint("ctrl+c", "Skip", theme);
 }
-// dist/builtin/workflows/src/tui/prompt-card-state.ts
+// src/tui/prompt-card-state.ts
 function createPromptCardState(prompt) {
   const initial = prompt.initial ?? "";
   return {
@@ -41928,7 +41959,7 @@ function defaultResponseFor(prompt) {
       return;
   }
 }
-// dist/builtin/workflows/src/tui/graph-view-state.ts
+// src/tui/graph-view-state.ts
 class GraphViewState {
   mode;
   runId;
@@ -42296,11 +42327,11 @@ class GraphViewState {
   }
 }
 
-// dist/builtin/workflows/src/tui/workflow-status.ts
+// src/tui/workflow-status.ts
 var WORKFLOW_STATUS_KEY = "pi-workflows";
 var OVERLAY_HIDDEN_STATUS_KEYS = new Set(["mcp"]);
 
-// dist/builtin/workflows/src/tui/graph-view-render-helpers.ts
+// src/tui/graph-view-render-helpers.ts
 class GraphViewRenderHelpers extends GraphViewState {
   _overlayLineCount() {
     const reported = this.getViewportRows?.();
@@ -42502,7 +42533,7 @@ class GraphViewRenderHelpers extends GraphViewState {
   }
 }
 
-// dist/builtin/workflows/src/tui/node-card.ts
+// src/tui/node-card.ts
 function pulseT(phase) {
   return (Math.sin(phase * Math.PI * 2 - Math.PI / 2) + 1) / 2;
 }
@@ -42690,7 +42721,7 @@ function renderNodeCard(stage, opts) {
   return [top, ...interior, bottom];
 }
 
-// dist/builtin/workflows/src/tui/graph-view-graph-render.ts
+// src/tui/graph-view-graph-render.ts
 class GraphViewGraphRenderer extends GraphViewRenderHelpers {
   _renderGraph(width) {
     const run = this._getCurrentRun();
@@ -42831,7 +42862,7 @@ class GraphViewGraphRenderer extends GraphViewRenderHelpers {
   }
 }
 
-// dist/builtin/workflows/src/tui/switcher.ts
+// src/tui/switcher.ts
 function filterStages(stages, query) {
   if (!query)
     return [...stages];
@@ -42924,7 +42955,7 @@ function renderSwitcher(stages, state, opts) {
   return lines;
 }
 
-// dist/builtin/workflows/src/tui/graph-view-render.ts
+// src/tui/graph-view-render.ts
 class GraphViewRenderer extends GraphViewGraphRenderer {
   render(width) {
     if (this.mode === "widget") {
@@ -43057,7 +43088,7 @@ class GraphViewRenderer extends GraphViewGraphRenderer {
   }
 }
 
-// dist/builtin/workflows/src/tui/mouse-input.ts
+// src/tui/mouse-input.ts
 function parseTerminalMouseInput(data) {
   const sgr = data.match(/^\x1b\[<(\d+);(\d+);(\d+)([Mm])$/);
   if (sgr) {
@@ -43104,7 +43135,7 @@ function isTerminalLeftMousePress(event) {
   return event.action === "press" && (event.buttonCode & 64) === 0 && (event.buttonCode & 32) === 0 && (event.buttonCode & 3) === 0;
 }
 
-// dist/builtin/workflows/src/tui/graph-view-input.ts
+// src/tui/graph-view-input.ts
 class GraphViewInputController extends GraphViewRenderer {
   handleInput(data) {
     if (this._isReturnToMainChatInput(data)) {
@@ -43391,11 +43422,11 @@ class GraphViewInputController extends GraphViewRenderer {
   }
 }
 
-// dist/builtin/workflows/src/tui/graph-view.ts
+// src/tui/graph-view.ts
 class GraphView extends GraphViewInputController {
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-composer-drafts.ts
+// src/tui/stage-chat-composer-drafts.ts
 function draftKey(runId, stageId) {
   return `${runId}\x00${stageId}`;
 }
@@ -43416,7 +43447,7 @@ class StageChatComposerDrafts {
   }
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-layout.ts
+// src/tui/stage-chat-layout.ts
 function resolveStageChatViewportRows(reported, fallbackRows) {
   if (typeof reported !== "number" || !Number.isFinite(reported)) {
     return fallbackRows;
@@ -43456,13 +43487,13 @@ function fitStageChatFrame(lines, viewportRows, blankLine) {
   return lines;
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-archive-history.ts
+// src/tui/stage-chat-view-archive-history.ts
 import { Box as Box2, Text as Text2 } from "@earendil-works/pi-tui";
 
-// dist/builtin/workflows/src/tui/stage-chat-view-footer-status.ts
+// src/tui/stage-chat-view-footer-status.ts
 import { Box, Text } from "@earendil-works/pi-tui";
 
-// dist/builtin/workflows/src/tui/stage-chat-view-render-helpers.ts
+// src/tui/stage-chat-view-render-helpers.ts
 var ITALIC = "\x1B[3m";
 var FG_RESET = "\x1B[39m";
 var WEIGHT_RESET = "\x1B[22m";
@@ -43568,17 +43599,6 @@ function stripAnsi(s) {
 function blendBg(baseHex, tintHex, alpha) {
   return lerpColor(baseHex, tintHex, Math.max(0, Math.min(1, alpha)));
 }
-function workingIndicatorPalette(theme) {
-  const { selection: dark, accent, text: peak } = theme;
-  return {
-    dark,
-    lift: lerpColor(dark, accent, 0.25),
-    muted: lerpColor(dark, accent, 0.6),
-    accent,
-    bright: lerpColor(accent, peak, 0.55),
-    peak
-  };
-}
 function renderHintsForPrompt(kind, theme) {
   if (kind === "input" || kind === "editor") {
     return `${paint2("enter", theme.textMuted, { bold: true })} Submit · ${paint2("ctrl+c", theme.textMuted, { bold: true })} Skip`;
@@ -43589,7 +43609,7 @@ function renderHintsForPrompt(kind, theme) {
   return `${paint2("enter", theme.textMuted, { bold: true })} Select · ${paint2("ctrl+c", theme.textMuted, { bold: true })} Skip`;
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-types.ts
+// src/tui/stage-chat-view-types.ts
 var VIEW_LINE_COUNT = 32;
 var PROMPT_SCROLL_STEP_ROWS = 4;
 var HEADER_ROWS = 2;
@@ -43599,7 +43619,7 @@ function isReadOnlyArchiveStatus(status) {
   return status === "completed" || status === "failed" || status === "skipped";
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-footer-status.ts
+// src/tui/stage-chat-view-footer-status.ts
 function renderHeader2(ctx, width, stage) {
   const t = ctx.theme;
   const stageName = stage?.name ?? "stage";
@@ -43746,7 +43766,7 @@ function editorRuleColor(ctx, disabled, agentSession, state) {
   }
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-archive-history.ts
+// src/tui/stage-chat-view-archive-history.ts
 function postMortemUnavailableMessage(reason) {
   switch (reason) {
     case "no_adapter":
@@ -44026,7 +44046,7 @@ function fitBodyLines(width, budget, lines) {
   return framed;
 }
 
-// dist/builtin/workflows/src/shared/stage-ui-broker.ts
+// src/shared/stage-ui-broker.ts
 import { randomUUID } from "node:crypto";
 function key(runId, stageId) {
   return `${runId}\x00${stageId}`;
@@ -44229,7 +44249,7 @@ async function mountStageCustomUi(request, tui, theme, keybindings, broker, onDo
 }
 var stageUiBroker = new StageUiBroker;
 
-// dist/builtin/workflows/src/tui/stage-chat-view-custom-ui.ts
+// src/tui/stage-chat-view-custom-ui.ts
 async function showCustomUi(ctx, request) {
   ctx.mountedCustomUi?.component.dispose?.();
   ctx.mountedCustomUi = null;
@@ -44301,11 +44321,11 @@ function canSubmitPrompt(ctx, promptId) {
   return ctx.canSubmitPrompt?.(ctx.runId, ctx.stageId, promptId) ?? true;
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-state.ts
+// src/tui/stage-chat-view-state.ts
 import { ChatSessionHost } from "@bastani/atomic";
 import { Editor } from "@earendil-works/pi-tui";
 
-// dist/builtin/workflows/src/tui/stage-chat-view-status.ts
+// src/tui/stage-chat-view-status.ts
 var TERMINAL_OR_NON_STREAMING_STAGE_CHAT_STATUSES = new Set([
   "success",
   "complete",
@@ -44334,7 +44354,7 @@ function isTerminalStageChatState(status) {
   return isTerminalOrNonStreamingStageChatStatus(status);
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-delivery-activity.ts
+// src/tui/stage-chat-view-delivery-activity.ts
 function subscribeStageChatDeliveryActivity(ctx) {
   const handle = ctx.handle;
   if (!handle?.subscribeDeliveryActivity)
@@ -44388,7 +44408,7 @@ function invalidateStageChatDeliveryLifecycles(ctx) {
   ctx.terminalLifecycleFenced = true;
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-live-events.ts
+// src/tui/stage-chat-view-live-events.ts
 function applyStageChatLiveHandleEvent(ctx, event) {
   const staleTerminalStart = isStaleTerminalLifecycleStart(ctx, event);
   ctx.chatHost.applyAgentEvent(event);
@@ -44438,14 +44458,14 @@ function isToolExecutionLiveEvent(event) {
   return type === "tool_execution_start" || type === "tool_execution_update";
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-pending-tools.ts
+// src/tui/stage-chat-view-pending-tools.ts
 function replayPendingToolExecutions(ctx) {
   const events = ctx.handle?.isDisposed === true ? [] : ctx.handle?.pendingToolExecutionEvents?.() ?? [];
   for (const event of events)
     ctx.chatHost.applyAgentEvent(event);
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-render-settings.ts
+// src/tui/stage-chat-view-render-settings.ts
 function stageChatRenderSettings(ctx, opts) {
   const inherited = opts.getChatRenderSettings?.();
   const stageSession = ctx.handle?.isDisposed === true ? undefined : ctx.handle?.agentSession;
@@ -44465,8 +44485,8 @@ function chatHostStyle(ctx) {
     textMuted: (text) => paint2(text, ctx.theme.textMuted),
     accent: (text) => paint2(text, ctx.theme.accent),
     accentBold: (text) => paint2(text, ctx.theme.accent, { bold: true }),
-    workingIndicatorPalette: ctx.piTheme === undefined ? () => workingIndicatorPalette(ctx.theme) : undefined,
-    workingIndicatorUseGlobalTheme: ctx.piTheme !== undefined,
+    workingIndicatorPalette: undefined,
+    workingIndicatorUseGlobalTheme: false,
     rule: (hex, text) => hexToAnsi(hex) + text + RESET,
     cursor: () => cursorBlock2(),
     blank: (width) => blankLine(width),
@@ -44474,7 +44494,7 @@ function chatHostStyle(ctx) {
   };
 }
 
-// dist/builtin/workflows/src/tui/workflow-notice-card.ts
+// src/tui/workflow-notice-card.ts
 var MIN_CARD_WIDTH = 32;
 var FIELD_LABEL_WIDTH = 9;
 function renderWorkflowNoticeCard(opts) {
@@ -44592,7 +44612,7 @@ function fit(line, width) {
   return truncateToWidth(line, width, "…", true);
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-transcript.ts
+// src/tui/stage-chat-view-transcript.ts
 function noticeSummary(n) {
   const base = `~ ${n.kind} → ${n.to}`;
   return n.from ? `${base} (was ${n.from})` : base;
@@ -44795,7 +44815,7 @@ function stageNoticeFields(entry, valueTone = "text") {
   ];
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-state.ts
+// src/tui/stage-chat-view-state.ts
 function initializeStageChatView(ctx, opts) {
   ctx.store = opts.store;
   ctx.theme = opts.graphTheme;
@@ -45265,7 +45285,7 @@ function promptPageSize(ctx) {
   return Math.max(4, viewLineCount(ctx) - HEADER_ROWS - SEP_ROWS - 2);
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-input.ts
+// src/tui/stage-chat-view-input.ts
 function handleStageChatInput(ctx, data) {
   if (matchesKey(data, Key.ctrl("x"))) {
     if (ctx.mountedCustomUi)
@@ -45445,7 +45465,7 @@ function scrollPromptBy(ctx, deltaRows) {
   ctx.requestRender?.();
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view.ts
+// src/tui/stage-chat-view.ts
 class StageChatView {
   focused = true;
   store;
@@ -45628,7 +45648,7 @@ class StageChatView {
   }
 }
 
-// dist/builtin/workflows/src/tui/workflow-attach-pane-handle.ts
+// src/tui/workflow-attach-pane-handle.ts
 function resolveAttachedStageHandle(registry, resolvePostMortemHandle, runId, stageId) {
   const liveHandle2 = registry?.claim(runId, stageId);
   if (liveHandle2 !== undefined)
@@ -45639,7 +45659,7 @@ function resolveAttachedStageHandle(registry, resolvePostMortemHandle, runId, st
   return postMortem?.ok === false ? { postMortemUnavailableReason: postMortem.reason } : {};
 }
 
-// dist/builtin/workflows/src/tui/workflow-attach-pane.ts
+// src/tui/workflow-attach-pane.ts
 var ENTER_TRANSITION_QUARANTINE_MS = 200;
 
 class WorkflowAttachPane {
@@ -46077,7 +46097,7 @@ class WorkflowAttachPane {
   }
 }
 
-// dist/builtin/workflows/src/tui/overlay-adapter.ts
+// src/tui/overlay-adapter.ts
 var FULLSCREEN_OVERLAY_OPTIONS = {
   anchor: "center",
   width: "100%",
@@ -46227,6 +46247,7 @@ function buildGraphOverlayAdapter(pi, store2, buildOpts = {}) {
     };
   }
   function open(runId, surface, stageId, stageRunId) {
+    ensureAtomicThemeInitialized();
     const ui = surface?.ui ?? pi.ui;
     observeHostCustomUi(ui);
     if (mounted && currentHandle?.isHidden()) {
@@ -46353,13 +46374,13 @@ function buildGraphOverlayAdapter(pi, store2, buildOpts = {}) {
   return { open, toggle, close };
 }
 
-// dist/builtin/workflows/src/tui/store-widget-installer.ts
+// src/tui/store-widget-installer.ts
 import {
   decideReactiveWidgetAction,
   installReactiveWidget
 } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/tui/widget.ts
+// src/tui/widget.ts
 var RECENT_ENDED_WINDOW_MS = 30000;
 var COLLAPSED_BREAKPOINT_COLS = 80;
 function formatDuration(ms) {
@@ -46649,7 +46670,7 @@ function buildThemedWidgetLines(snap, piTheme, width = 120, now = Date.now()) {
   });
 }
 
-// dist/builtin/workflows/src/tui/store-widget-installer.ts
+// src/tui/store-widget-installer.ts
 var defaultTimerApi = {
   setTimeout: (handler, delayMs) => setTimeout(handler, delayMs),
   clearTimeout: (handle) => clearTimeout(handle)
@@ -46809,7 +46830,7 @@ function toolInput(payload) {
   return payload.input ?? payload.args;
 }
 
-// dist/builtin/workflows/src/extension/completed-stage-intercom-ask.ts
+// src/extension/completed-stage-intercom-ask.ts
 var LATE_STAGE_MESSAGE_EVENT = "atomic:workflow-stage-late-message";
 var POST_MORTEM_ATTACH_TIMEOUT_MS = 1e4;
 function registerCompletedStageIntercomAskRouter(pi, resolveHandle) {
@@ -46892,13 +46913,13 @@ function unavailableReason(runId, stageId, reason) {
   }
 }
 
-// dist/builtin/workflows/src/durable/format-version.ts
+// src/durable/format-version.ts
 var DURABLE_FORMAT_VERSION = 3;
 function isCurrentDurableFormat(value2) {
   return value2 === DURABLE_FORMAT_VERSION;
 }
 
-// dist/builtin/workflows/src/shared/workflow-failures-signals.ts
+// src/shared/workflow-failures-signals.ts
 function asRecord(value2) {
   return value2 !== null && typeof value2 === "object" ? value2 : undefined;
 }
@@ -47145,7 +47166,7 @@ function redactSensitiveText(value2) {
   return value2.replace(/(sk-[A-Za-z0-9_-]{8})[A-Za-z0-9_-]+/g, redactedSecretReplacement("$1")).replace(/\b(authorization\s*:\s*bearer\s+)[^\s,;]+/gi, "$1[redacted]").replace(/\b(bearer\s+)[A-Za-z0-9._~+/-]{8,}=*/gi, "$1[redacted]").replace(/((?:api[_-]?key|token|credential|secret)\s*[:=]\s*)[^\s,;]+/gi, "$1[redacted]");
 }
 
-// dist/builtin/workflows/src/durable/tool-outcome.ts
+// src/durable/tool-outcome.ts
 var TOOL_FAILURE_TEXT_LIMIT_BYTES = 16384;
 var TRUNCATION_PREFIX = `[workflow tool output truncated; showing final bytes]
 `;
@@ -47247,12 +47268,12 @@ function replayedWorkflowToolOutcome(outcome) {
   return { ...outcome, cached: true };
 }
 
-// dist/builtin/workflows/src/durable/types.ts
+// src/durable/types.ts
 var DURABLE_TOOL_TOPOLOGY_VERSION = 1;
 var DURABLE_STAGE_TOPOLOGY_VERSION = 1;
 var DURABLE_BOUNDARY_TOPOLOGY_VERSION = 1;
 
-// dist/builtin/workflows/src/durable/dbos-envelope.ts
+// src/durable/dbos-envelope.ts
 var DBOS_ENVELOPE_VERSION = DURABLE_FORMAT_VERSION;
 var ENVELOPE_MARKER = "__dbos_checkpoint__";
 function withCurrentStageTopology(cp) {
@@ -47548,7 +47569,7 @@ function checkpointOutputValue(cp) {
   return "output" in stage ? stage.output : undefined;
 }
 
-// dist/builtin/workflows/src/durable/prompt-reservation-state.ts
+// src/durable/prompt-reservation-state.ts
 function promptReservationToken(entry) {
   return entry;
 }
@@ -47672,7 +47693,7 @@ class PromptReservationState {
   }
 }
 
-// dist/builtin/workflows/src/durable/resume-eligibility.ts
+// src/durable/resume-eligibility.ts
 function workflowRunHasPausedState(run) {
   return run.status === "paused" || run.exitReason === "quit" || run.stages.some((stage) => stage.status === "paused" || stage.status === "blocked");
 }
@@ -47705,7 +47726,7 @@ function isLiveRunningWorkflow(candidate, now = Date.now()) {
   return candidate.status === "running" && now - candidate.updatedAt < FOREIGN_LIVE_WORKFLOW_WINDOW_MS;
 }
 
-// dist/builtin/workflows/src/durable/durable-hash.ts
+// src/durable/durable-hash.ts
 import { createHash } from "node:crypto";
 function durableHash(value2) {
   const canonical = canonicalJsonString(value2);
@@ -47722,7 +47743,7 @@ function canonicalJsonString(value2) {
   return `{${keys.map((key2) => `${JSON.stringify(key2)}:${canonicalJsonString(object[key2])}`).join(",")}}`;
 }
 
-// dist/builtin/workflows/src/durable/backend.ts
+// src/durable/backend.ts
 function checkpointKey(c) {
   return `${c.kind}:${c.checkpointId}`;
 }
@@ -48034,7 +48055,7 @@ function toResumableEntry(handle) {
   };
 }
 
-// dist/builtin/workflows/src/durable/stage-topology-validation.ts
+// src/durable/stage-topology-validation.ts
 function immutableStageGroupError(stages) {
   const occurrenceError = promptOccurrenceIdentityError(stages);
   if (occurrenceError !== undefined)
@@ -48209,7 +48230,7 @@ function hasCycle(topologies) {
   return topologies.some((topology) => cyclic(topology.stageId));
 }
 
-// dist/builtin/workflows/src/durable/workflow-child-result.ts
+// src/durable/workflow-child-result.ts
 function parseWorkflowChildResult(value2) {
   if (!isOrdinaryObject(value2))
     return;
@@ -48250,7 +48271,7 @@ function isOrdinaryObject(value2) {
   return prototype === Object.prototype || prototype === null;
 }
 
-// dist/builtin/workflows/src/durable/boundary-lifecycle.ts
+// src/durable/boundary-lifecycle.ts
 function resolveBoundaryLifecycle(start, stages, requireTerminal) {
   const startTopology = start.topology;
   const startBoundary = startTopology?.boundary;
@@ -48321,7 +48342,7 @@ function sameBoundaryChild(actual, expected) {
 function failure(error) {
   return { error };
 }
-// dist/builtin/workflows/src/durable/boundary-topology.ts
+// src/durable/boundary-topology.ts
 class DurableNestedTopologyError extends Error {
   constructor(message) {
     super(`atomic-workflows: durable nested topology is non-resumable: ${message}`);
@@ -48607,7 +48628,7 @@ function validatedInvocationRecords(input) {
   return { stages, start };
 }
 
-// dist/builtin/workflows/src/shared/workflow-failures-contract.ts
+// src/shared/workflow-failures-contract.ts
 var WORKFLOW_AUTH_FAILURE_MESSAGE = "You must be logged in to run workflows. Run /login and try again.";
 var WORKFLOW_MISSING_API_KEY_FAILURE_MESSAGE = "A required model provider API key is missing. Configure the provider credentials and resume the workflow.";
 var WORKFLOW_INVALID_PROVIDER_CREDENTIALS_MESSAGE = "The configured model provider credentials are invalid. Update the provider API key, then start a new workflow run.";
@@ -48647,7 +48668,7 @@ function isWorkflowFailureDisposition(value2) {
   return value2 === "active_blocked" || value2 === "terminal_killed" || value2 === "terminal_failed";
 }
 
-// dist/builtin/workflows/src/shared/workflow-failures-decisions.ts
+// src/shared/workflow-failures-decisions.ts
 var INVALID_API_KEY_CODES = new Set([
   "401",
   "invalid_api_key",
@@ -49012,7 +49033,7 @@ function fallbackDecisionFromMessage(message, name) {
   return decision;
 }
 
-// dist/builtin/workflows/src/shared/workflow-failures-classifier.ts
+// src/shared/workflow-failures-classifier.ts
 function makeWorkflowFailure(kind, message, opts) {
   return {
     kind,
@@ -49184,7 +49205,7 @@ function classifyWorkflowFailure(error) {
   }
   return failureForDecision(unknownDecision(), message, error);
 }
-// dist/builtin/workflows/src/durable/workflow-status-transition.ts
+// src/durable/workflow-status-transition.ts
 function getLoadableDurableWorkflow(backend, workflowId) {
   return backend.getLoadableWorkflow(workflowId);
 }
@@ -49195,7 +49216,7 @@ async function transitionDurableWorkflowStatus(backend, workflowId, expectedStat
   return await backend.transitionWorkflowStatus(workflowId, expectedStatuses, status, pendingPrompts, resumable);
 }
 
-// dist/builtin/workflows/src/durable/dbos-metadata.ts
+// src/durable/dbos-metadata.ts
 var METADATA_STEP_PREFIX = "__atomic_metadata";
 function metadataStepName(ts) {
   return `${METADATA_STEP_PREFIX}:${ts}:${crypto.randomUUID()}`;
@@ -49286,7 +49307,7 @@ function isDurableWorkflowStatus(value2) {
   return value2 === "running" || value2 === "paused" || value2 === "completed" || value2 === "failed" || value2 === "cancelled" || value2 === "blocked";
 }
 
-// dist/builtin/workflows/src/durable/dbos-prompt-reservations.ts
+// src/durable/dbos-prompt-reservations.ts
 var RESERVATION_PREFIX = "__atomic_prompt_reservation";
 function emptyDbosPromptReservationState(baseline = 0, epoch = crypto.randomUUID()) {
   const normalized = Math.max(0, Math.trunc(baseline));
@@ -49537,7 +49558,7 @@ function consumeToken(state, tokenId) {
   state.consumedTokens.add(tokenId);
 }
 
-// dist/builtin/workflows/src/durable/dbos-status-transition.ts
+// src/durable/dbos-status-transition.ts
 async function transitionDbosWorkflowStatus(input) {
   await input.flush();
   const authoritative = await input.read();
@@ -49576,7 +49597,7 @@ async function transitionDbosWorkflowStatus(input) {
   return true;
 }
 
-// dist/builtin/workflows/src/durable/dbos-tombstone.ts
+// src/durable/dbos-tombstone.ts
 var DBOS_DELETION_STEP = "__atomic_deleted";
 function encodeDbosDeletionTombstone(workflowId) {
   return {
@@ -49597,7 +49618,7 @@ function classifyDbosDeletionTombstone(records, workflowId) {
   return isCurrentDurableFormat(raw.version) ? "current" : "unknown";
 }
 
-// dist/builtin/workflows/src/durable/dbos-sdk-handle.ts
+// src/durable/dbos-sdk-handle.ts
 var ATOMIC_EXECUTOR_ID = `atomic-${process.pid.toString(36)}-${crypto.randomUUID().slice(0, 8)}`;
 function getAtomicExecutorId() {
   return ATOMIC_EXECUTOR_ID;
@@ -49698,7 +49719,7 @@ function statusToInfo(status, fallbackId) {
   return info;
 }
 
-// dist/builtin/workflows/src/durable/dbos-backend.ts
+// src/durable/dbos-backend.ts
 var SILENT_DBOS_LOGGER = {
   info() {},
   debug() {},
@@ -50061,7 +50082,7 @@ class DbosDurableBackend {
   }
 }
 
-// dist/builtin/workflows/src/durable/dbos-embedded-postgres.ts
+// src/durable/dbos-embedded-postgres.ts
 import {
   chmodSync,
   chownSync,
@@ -50075,14 +50096,66 @@ import {
   writeFileSync
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname as dirname2, join as join2, relative } from "node:path";
+import { dirname as dirname2, join as join3, relative } from "node:path";
 
-// dist/builtin/workflows/src/durable/dbos-embedded-postgres-root.ts
+// src/durable/dbos-embedded-postgres-root.ts
 import { cpSync, existsSync } from "node:fs";
-import { homedir } from "node:os";
-import { dirname, join } from "node:path";
+import { homedir as homedir2 } from "node:os";
 
-// dist/builtin/workflows/src/durable/local-command.ts
+// src/shared/host-paths.ts
+import { homedir } from "node:os";
+import { join } from "node:path";
+import { getEnvValue } from "@bastani/atomic";
+var HOST_CONFIG_DIR_NAME = ".pi";
+var HOST_CONFIG_DIR_NAMES = [HOST_CONFIG_DIR_NAME];
+var ENV_WORKFLOW_ARTIFACT_DIR = "PI_WORKFLOW_ARTIFACT_DIR";
+var LEGACY_ENV_WORKFLOW_ARTIFACT_DIR = "ATOMIC_WORKFLOW_ARTIFACT_DIR";
+var ENV_AGENT_DIR = "PI_CODING_AGENT_DIR";
+var LEGACY_ENV_AGENT_DIR = "ATOMIC_CODING_AGENT_DIR";
+function expandTildePath(value2) {
+  if (value2 === "~")
+    return homedir();
+  if (value2.startsWith("~/") || value2.startsWith("~\\"))
+    return join(homedir(), value2.slice(2));
+  return value2;
+}
+function firstEnv(...names) {
+  for (const name of names) {
+    const value2 = getEnvValue(name) ?? process.env[name];
+    if (value2 !== undefined && value2.length > 0)
+      return value2;
+  }
+  return;
+}
+function getHostAgentDir() {
+  const override = firstEnv(ENV_AGENT_DIR, LEGACY_ENV_AGENT_DIR);
+  if (override !== undefined)
+    return expandTildePath(override);
+  return join(homedir(), HOST_CONFIG_DIR_NAME, "agent");
+}
+function getHostAgentDirs() {
+  return [getHostAgentDir()];
+}
+function getHostProjectConfigDirs(cwd) {
+  return HOST_CONFIG_DIR_NAMES.map((name) => join(cwd, name));
+}
+function getHostProjectConfigPaths(cwd, ...segments) {
+  return getHostProjectConfigDirs(cwd).map((dir) => join(dir, ...segments));
+}
+function getHostWorkflowArtifactRoot() {
+  const override = firstEnv(ENV_WORKFLOW_ARTIFACT_DIR, LEGACY_ENV_WORKFLOW_ARTIFACT_DIR);
+  if (override !== undefined)
+    return expandTildePath(override);
+  return join(homedir(), HOST_CONFIG_DIR_NAME, "workflows");
+}
+function getHostProjectPath(cwd, ...segments) {
+  return join(cwd, HOST_CONFIG_DIR_NAME, ...segments);
+}
+
+// src/durable/dbos-embedded-postgres-root.ts
+import { dirname, join as join2 } from "node:path";
+
+// src/durable/local-command.ts
 import { spawn } from "node:child_process";
 import { connect } from "node:net";
 var OUTPUT_LIMIT_BYTES = 16384;
@@ -50134,11 +50207,11 @@ function boundedAppend(current, chunk) {
   return next.length <= OUTPUT_LIMIT_BYTES ? next : next.slice(-OUTPUT_LIMIT_BYTES);
 }
 
-// dist/builtin/workflows/src/durable/dbos-embedded-postgres-root.ts
+// src/durable/dbos-embedded-postgres-root.ts
 var ROOT_EMBEDDED_BASE_DIR = "/var/lib/atomic-postgres";
 var OWNER_CANDIDATES = ["postgres", "nobody", "daemon"];
 function defaultEmbeddedBaseDir() {
-  return join(homedir(), ".atomic", "postgres");
+  return join2(homedir2(), HOST_CONFIG_DIR_NAME, "postgres");
 }
 async function resolveEmbeddedRunContext(runner = runLocalCommand, euid = process.getuid?.(), platform = process.platform) {
   if (platform !== "linux" || euid !== 0) {
@@ -50182,15 +50255,15 @@ async function prepareBinariesForOwner(binaries, context, runner = runLocalComma
   if (probe !== undefined && probe.exitCode === 0)
     return binaries;
   const nativeDir = dirname(dirname(binaries.initdb));
-  const copiedNativeDir = join(context.baseDir, "pg-runtime", "native");
+  const copiedNativeDir = join2(context.baseDir, "pg-runtime", "native");
   const copied = {
-    pg_ctl: join(copiedNativeDir, "bin", "pg_ctl"),
-    initdb: join(copiedNativeDir, "bin", "initdb")
+    pg_ctl: join2(copiedNativeDir, "bin", "pg_ctl"),
+    initdb: join2(copiedNativeDir, "bin", "initdb")
   };
   if (!existsSync(copied.initdb)) {
     cpSync(nativeDir, copiedNativeDir, { recursive: true });
   }
-  const chown = await runner("chown", ["-R", `${owner.uid}:${owner.gid}`, join(context.baseDir, "pg-runtime")]);
+  const chown = await runner("chown", ["-R", `${owner.uid}:${owner.gid}`, join2(context.baseDir, "pg-runtime")]);
   if (chown.exitCode !== 0) {
     throw new Error(`Could not hand the copied embedded Postgres runtime to ${owner.name}: ${chown.stderr.trim() || chown.stdout.trim() || `exit ${chown.exitCode}`}`);
   }
@@ -50218,7 +50291,7 @@ function shellCommand(command, args) {
   return [command, ...args].map((part) => `'${part.replaceAll("'", "'\\''")}'`).join(" ");
 }
 
-// dist/builtin/workflows/src/durable/dbos-embedded-postgres.ts
+// src/durable/dbos-embedded-postgres.ts
 var EMBEDDED_HOST = "127.0.0.1";
 var EMBEDDED_PORT = 5439;
 var EMBEDDED_USER = "postgres";
@@ -50228,13 +50301,13 @@ var READY_ATTEMPTS = 120;
 var READY_DELAY_MS = 250;
 var SETUP_LOCK_STALE_MS = 120000;
 var EMBEDDED_DBOS_SYSTEM_DATABASE_URL = `postgresql://${EMBEDDED_USER}:${EMBEDDED_PASSWORD}@${EMBEDDED_HOST}:${EMBEDDED_PORT}/atomic_workflows_dbos_sys?connect_timeout=10&sslmode=disable`;
-var ensured;
+var ensured2;
 function ensureEmbeddedDbosPostgres() {
-  ensured ??= ensure().catch((error) => {
-    ensured = undefined;
+  ensured2 ??= ensure().catch((error) => {
+    ensured2 = undefined;
     throw error;
   });
-  return ensured;
+  return ensured2;
 }
 async function ensure() {
   if (await tcpReachable(EMBEDDED_HOST, EMBEDDED_PORT))
@@ -50243,16 +50316,16 @@ async function ensure() {
   hydrateBinaryLibraryLinks(loaded.pg_ctl);
   const context = await resolveEmbeddedRunContext();
   const root = context.baseDir;
-  const dataDir = join2(root, `v${EMBEDDED_PG_MAJOR}`);
-  const logFile = join2(root, `v${EMBEDDED_PG_MAJOR}.log`);
+  const dataDir = join3(root, `v${EMBEDDED_PG_MAJOR}`);
+  const logFile = join3(root, `v${EMBEDDED_PG_MAJOR}.log`);
   mkdirSync(root, { recursive: true, mode: 448 });
   if (context.owner !== undefined)
     chownSync(root, context.owner.uid, context.owner.gid);
   const binaries = await prepareBinariesForOwner(loaded, context);
-  await withSetupLock(join2(root, `v${EMBEDDED_PG_MAJOR}.setup-lock`), async () => {
+  await withSetupLock(join3(root, `v${EMBEDDED_PG_MAJOR}.setup-lock`), async () => {
     if (await tcpReachable(EMBEDDED_HOST, EMBEDDED_PORT))
       return;
-    if (!existsSync2(join2(dataDir, "PG_VERSION")))
+    if (!existsSync2(join3(dataDir, "PG_VERSION")))
       await initializeCluster(binaries.initdb, dataDir, context);
     await startCluster(binaries.pg_ctl, dataDir, logFile, context);
   });
@@ -50264,7 +50337,7 @@ async function ensure() {
   throw new Error(`Embedded Postgres started but never accepted connections on ${EMBEDDED_HOST}:${EMBEDDED_PORT}; see ${logFile}.`);
 }
 async function initializeCluster(initdb, dataDir, context) {
-  const passwordFile = join2(tmpdir(), `atomic-pg-pw-${process.pid}-${crypto.randomUUID().slice(0, 8)}`);
+  const passwordFile = join3(tmpdir(), `atomic-pg-pw-${process.pid}-${crypto.randomUUID().slice(0, 8)}`);
   writeFileSync(passwordFile, `${EMBEDDED_PASSWORD}
 `, { mode: 384 });
   try {
@@ -50312,13 +50385,13 @@ function hydrateBinaryLibraryLinks(pgCtlPath) {
   const packageRoot = dirname2(dirname2(dirname2(pgCtlPath)));
   let manifest;
   try {
-    manifest = JSON.parse(readFileSync(join2(packageRoot, "native", "pg-symlinks.json"), "utf8"));
+    manifest = JSON.parse(readFileSync(join3(packageRoot, "native", "pg-symlinks.json"), "utf8"));
   } catch {
     return;
   }
   for (const { source, target } of manifest) {
-    const absoluteSource = join2(packageRoot, source);
-    const absoluteTarget = join2(packageRoot, target);
+    const absoluteSource = join3(packageRoot, source);
+    const absoluteTarget = join3(packageRoot, target);
     if (existsSync2(absoluteTarget) || !existsSync2(absoluteSource))
       continue;
     try {
@@ -50346,7 +50419,7 @@ async function loadEmbeddedPostgresBinaries() {
   for (const binary of [
     binaries.pg_ctl,
     binaries.initdb,
-    join2(dirname2(binaries.pg_ctl), process.platform === "win32" ? "postgres.exe" : "postgres")
+    join3(dirname2(binaries.pg_ctl), process.platform === "win32" ? "postgres.exe" : "postgres")
   ]) {
     ensureExecutable(binary);
   }
@@ -50400,7 +50473,7 @@ ${lines.slice(-5).join(`
   }
 }
 
-// dist/builtin/workflows/src/durable/dbos-local-postgres.ts
+// src/durable/dbos-local-postgres.ts
 var DOCKER_CONTAINER = "dbos-db";
 var DOCKER_IMAGE = "pgvector/pgvector:pg16";
 var DOCKER_READY_ATTEMPTS = 60;
@@ -50489,7 +50562,7 @@ async function requireDockerSuccess(action, args) {
   throw new Error(`Could not ${action}: ${commandFailureDetail(result)}`);
 }
 
-// dist/builtin/workflows/src/durable/dbos-lifecycle.ts
+// src/durable/dbos-lifecycle.ts
 class DbosDurabilityError extends Error {
   constructor(message, options) {
     super(message, options);
@@ -50618,7 +50691,7 @@ function dbosLifecycleState() {
   return state;
 }
 
-// dist/builtin/workflows/src/runs/background/cancellation-registry.ts
+// src/runs/background/cancellation-registry.ts
 class CancellationRegistryImpl {
   _runs = new Map;
   register(runId, controller) {
@@ -50679,7 +50752,7 @@ function createCancellationRegistry() {
 }
 var cancellationRegistry = createCancellationRegistry();
 
-// dist/builtin/workflows/src/durable/factory.ts
+// src/durable/factory.ts
 var injectedBackend;
 var initializedBackend;
 var initializing;
@@ -50718,7 +50791,7 @@ function degradeToNonDurableBackend(error) {
   return new InMemoryDurableBackend;
 }
 
-// dist/builtin/workflows/src/durable/run-timing.ts
+// src/durable/run-timing.ts
 var RUN_TIMING_CHECKPOINT_NAME = "workflow-run-timing";
 var RUN_TIMING_DURATION_BUCKET_MS = 30000;
 function timingBucket(elapsedMs) {
@@ -50766,7 +50839,7 @@ function inheritedRunElapsedMs(input) {
   return inherited !== undefined && inherited > 0 ? inherited : undefined;
 }
 
-// dist/builtin/workflows/src/engine/workflow-tool-abort.ts
+// src/engine/workflow-tool-abort.ts
 class WorkflowToolAbortError extends Error {
   runId;
   nodeId;
@@ -50817,7 +50890,7 @@ function findWorkflowGracefulQuit(value2) {
   return;
 }
 
-// dist/builtin/workflows/src/engine/run-tool-control-registry.ts
+// src/engine/run-tool-control-registry.ts
 var TOOL_QUIT_SETTLEMENT_TIMEOUT_MS = 500;
 function createToolControlRegistry() {
   const byRun = new Map;
@@ -50910,7 +50983,7 @@ function sameToolNodeIdentity(left, right) {
   return left.runId === right.runId && left.nodeId === right.nodeId;
 }
 
-// dist/builtin/workflows/src/runs/background/job-tracker.ts
+// src/runs/background/job-tracker.ts
 class JobTrackerImpl {
   _jobs = new Map;
   register(entry) {
@@ -50953,7 +51026,7 @@ function createJobTracker() {
 }
 var jobTracker = createJobTracker();
 
-// dist/builtin/workflows/src/runs/background/workflow-lifecycle-aggregate.ts
+// src/runs/background/workflow-lifecycle-aggregate.ts
 function expandedControlRunIds(store2, runId) {
   const graph = expandWorkflowGraph(readGraphStoreSnapshot(store2), runId);
   const ids = new Set([runId]);
@@ -50977,7 +51050,7 @@ function workflowHasPausedState(store2, runId) {
   });
 }
 
-// dist/builtin/workflows/src/runs/background/quit.ts
+// src/runs/background/quit.ts
 async function quitRun(runId, opts) {
   const activeStore = opts?.store ?? store;
   const registry = opts?.stageControlRegistry ?? stageControlRegistry;
@@ -51164,7 +51237,7 @@ async function quitAllRuns(opts) {
   });
 }
 
-// dist/builtin/workflows/src/engine/run-terminal-event.ts
+// src/engine/run-terminal-event.ts
 var activeArbiters = new Map;
 function createRunTerminalEventArbiter(runId) {
   let selected;
@@ -51190,7 +51263,7 @@ function selectedRunTerminalEvent(runId) {
   return activeArbiters.get(runId)?.winner();
 }
 
-// dist/builtin/workflows/src/shared/persistence-session-entries.ts
+// src/shared/persistence-session-entries.ts
 function appendRunStart(api, payload) {
   if (typeof api.appendEntry !== "function")
     return;
@@ -51312,7 +51385,7 @@ function appendRunBlocked(api, payload) {
   });
 }
 
-// dist/builtin/workflows/src/runs/background/durable-resume-transition.ts
+// src/runs/background/durable-resume-transition.ts
 var pendingRunningTransitions = new WeakMap;
 function transitionsFor(backend) {
   let transitions = pendingRunningTransitions.get(backend);
@@ -51358,7 +51431,7 @@ async function markDurableResumed(runId) {
   }
 }
 
-// dist/builtin/workflows/src/runs/background/resume-acknowledgements.ts
+// src/runs/background/resume-acknowledgements.ts
 function targetStage(store2, target) {
   return store2.runs().find((run) => run.id === target.controlRunId)?.stages.find((stage) => stage.id === target.handle.stageId);
 }
@@ -51418,7 +51491,7 @@ function resumeAcknowledgementMessage(acknowledged, resumed, runId, current) {
   return `Resume acknowledged; workflow ${runId} ${current.endedAt !== undefined ? `reached terminal status ${current.status}` : "can continue"}.`;
 }
 
-// dist/builtin/workflows/src/runs/background/run-inspect.ts
+// src/runs/background/run-inspect.ts
 function inspectRun(runId, opts) {
   const activeStore = opts?.store ?? store;
   const candidate = activeStore.runs().find((r) => r.id === runId);
@@ -51459,7 +51532,7 @@ function inspectRun(runId, opts) {
   };
   return { ok: true, runId: copy.id, detail };
 }
-// dist/builtin/workflows/src/runs/background/status.ts
+// src/runs/background/status.ts
 function killRun(runId, opts) {
   const activeStore = opts?.store ?? store;
   const runs = activeStore.runs();
@@ -51658,7 +51731,7 @@ async function interruptAllRuns(opts) {
   return Promise.all(inFlight.map((run) => interruptRun(run.id, { store: activeStore, stageControlRegistry: opts?.stageControlRegistry })));
 }
 
-// dist/builtin/workflows/src/shared/persistence-compaction-policy.ts
+// src/shared/persistence-compaction-policy.ts
 function installCompactionHook(api, store2) {
   if (typeof api.on !== "function")
     return;
@@ -51689,7 +51762,7 @@ function installCompactionHook(api, store2) {
   });
 }
 
-// dist/builtin/workflows/src/extension/hil-answer-notifications.ts
+// src/extension/hil-answer-notifications.ts
 var HIL_ANSWER_NOTICE_CUSTOM_TYPE = "workflows:hil-answer-notice";
 var HIL_ANSWER_SNIPPET_LIMIT = 1000;
 var rendererRegisteredHosts3 = new WeakSet;
@@ -51931,7 +52004,7 @@ function themeFromRenderer(piTheme) {
   return piTheme === undefined ? undefined : deriveGraphThemeFromPiTheme(piTheme);
 }
 
-// dist/builtin/workflows/src/extension/lifecycle-notification-delivery.ts
+// src/extension/lifecycle-notification-delivery.ts
 function createLifecycleNoticeDelivery(options) {
   const retryTimers = new Set;
   const attempts = new Map;
@@ -51991,7 +52064,7 @@ function createLifecycleNoticeDelivery(options) {
   };
 }
 
-// dist/builtin/workflows/src/extension/lifecycle-notifications.ts
+// src/extension/lifecycle-notifications.ts
 var LIFECYCLE_NOTICE_CUSTOM_TYPE = "workflows:lifecycle-notice";
 var LIFECYCLE_NOTICE_SNIPPET_LIMIT = 240;
 var WORKFLOW_LIFECYCLE_NOTICE_KINDS = [
@@ -52327,10 +52400,10 @@ function themeFromRenderer2(piTheme) {
   return piTheme === undefined ? undefined : deriveGraphThemeFromPiTheme(piTheme);
 }
 
-// dist/builtin/workflows/src/extension/workflow-targets.ts
-import { getEnvValue, WORKFLOW_STAGE_SUBAGENT_GUARD_ENV } from "@bastani/atomic";
+// src/extension/workflow-targets.ts
+import { getEnvValue as getEnvValue2, WORKFLOW_STAGE_SUBAGENT_GUARD_ENV } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/shared/run-id.ts
+// src/shared/run-id.ts
 var RUN_ID_LENGTH = 36;
 var RUN_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function isFullRunId(value2) {
@@ -52340,7 +52413,7 @@ function malformedRunIdMessage(target) {
   return `Run id must be a full ${RUN_ID_LENGTH}-character UUID; got "${target}" (${target.length} chars).`;
 }
 
-// dist/builtin/workflows/src/extension/workflow-targets.ts
+// src/extension/workflow-targets.ts
 function stageFailureMessage(runId, resultReason, action) {
   switch (resultReason) {
     case "not_found":
@@ -52374,7 +52447,7 @@ function reloadFailureMessage(error) {
   return `Reload failed: ${error instanceof Error ? error.message : String(error)}`;
 }
 function hasWorkflowStageSubagentGuardEnv() {
-  return getEnvValue(WORKFLOW_STAGE_SUBAGENT_GUARD_ENV) === "1";
+  return getEnvValue2(WORKFLOW_STAGE_SUBAGENT_GUARD_ENV) === "1";
 }
 function isWorkflowStageToolContext(ctx) {
   return hasWorkflowStageSubagentGuardEnv() || ctx.orchestrationContext?.kind === "workflow-stage";
@@ -52494,7 +52567,7 @@ function overlaySurfaceFromContext(ctx) {
   return typeof ctx?.ui?.custom === "function" ? { ui: ctx.ui } : undefined;
 }
 
-// dist/builtin/workflows/src/extension/workflow-command-surfaces.ts
+// src/extension/workflow-command-surfaces.ts
 function fallbackRunDetailFromResult(workflowName, inputs, result) {
   const now = Date.now();
   const stages = result.stages?.map((stage) => structuredClone(stage)) ?? [];
@@ -52575,7 +52648,7 @@ function deAdvertiseAskUserQuestionWhenHeadless(pi, hasUI) {
   pi.setActiveTools(activeTools.filter((toolName2) => toolName2 !== ASK_USER_QUESTION_TOOL_NAME));
 }
 
-// dist/builtin/workflows/src/extension/extension-lifecycle.ts
+// src/extension/extension-lifecycle.ts
 var processShutdownInstalled = false;
 function shutdownDbosQuietly() {
   return shutdownDbos().catch((error) => {
@@ -52680,11 +52753,10 @@ function registerWorkflowLifecycleHandlers(pi, deps) {
   });
 }
 
-// dist/builtin/workflows/src/extension/config-loader.ts
-import { isAbsolute, join as join3 } from "node:path";
-import { CONFIG_DIR_NAME, CONFIG_DIR_NAMES, getAgentDir, getAgentDirs, getProjectConfigPaths } from "@bastani/atomic";
+// src/extension/config-loader.ts
+import { isAbsolute, join as join4 } from "node:path";
 
-// dist/builtin/workflows/src/extension/config-file-loader.ts
+// src/extension/config-file-loader.ts
 var WORKFLOW_LIFECYCLE_NOTICE_KIND_SET = new Set(WORKFLOW_LIFECYCLE_NOTICE_KINDS);
 async function tryReadFile(filePath) {
   const { readFile } = await import("node:fs/promises");
@@ -52825,7 +52897,7 @@ async function loadConfigFile(filePath) {
   return { kind: "ok", parsed: value2 };
 }
 
-// dist/builtin/workflows/src/extension/config-loader.ts
+// src/extension/config-loader.ts
 function mergeConfigs(base, override) {
   const workflows = base.workflows || override.workflows ? { ...base.workflows ?? {}, ...override.workflows ?? {} } : undefined;
   return {
@@ -52884,7 +52956,7 @@ function resolveWorkflowPaths(workflows, baseDir) {
   }
   return Object.fromEntries(Object.entries(workflows).map(([name, entry]) => [
     name,
-    isAbsolute(entry.path) ? entry.path : join3(baseDir, entry.path)
+    isAbsolute(entry.path) ? entry.path : join4(baseDir, entry.path)
   ]));
 }
 function workflowAgentDirs(opts) {
@@ -52892,12 +52964,12 @@ function workflowAgentDirs(opts) {
     return opts.agentDirs;
   if (opts.homeDir !== undefined) {
     const homeDir = opts.homeDir;
-    return CONFIG_DIR_NAMES.map((name) => join3(homeDir, name, "agent"));
+    return HOST_CONFIG_DIR_NAMES.map((name) => join4(homeDir, name, "agent"));
   }
-  return getAgentDirs();
+  return getHostAgentDirs();
 }
 function toScopedDiscoveryConfig(globalConfig, projectConfig, opts) {
-  const globalBase = opts.agentDir ?? (opts.homeDir === undefined ? getAgentDir() : join3(opts.homeDir, CONFIG_DIR_NAME, "agent"));
+  const globalBase = opts.agentDir ?? (opts.homeDir === undefined ? getHostAgentDir() : join4(opts.homeDir, HOST_CONFIG_DIR_NAME, "agent"));
   const projectBase = opts.projectRoot;
   const result = {};
   const projectWorkflows = resolveWorkflowPaths(projectConfig?.workflows, projectBase);
@@ -52907,7 +52979,7 @@ function toScopedDiscoveryConfig(globalConfig, projectConfig, opts) {
   if (hasWorkflows(globalConfig)) {
     const projectKeys = new Set(Object.keys(projectWorkflows ?? {}));
     const globalEntries = Object.entries(globalConfig.workflows).filter(([name]) => !projectKeys.has(name)).map(([name, entry]) => {
-      return [name, isAbsolute(entry.path) ? entry.path : join3(globalBase, entry.path)];
+      return [name, isAbsolute(entry.path) ? entry.path : join4(globalBase, entry.path)];
     });
     if (globalEntries.length > 0) {
       result.globalWorkflows = Object.fromEntries(globalEntries);
@@ -52918,8 +52990,8 @@ function toScopedDiscoveryConfig(globalConfig, projectConfig, opts) {
 async function loadWorkflowConfig(opts = {}) {
   const projectRoot = opts.projectRoot ?? process.cwd();
   const diagnostics = [];
-  const globalCandidates = workflowAgentDirs(opts).map((agentDir) => join3(agentDir, "extensions", "workflow", "config.json"));
-  const projectCandidates = getProjectConfigPaths(projectRoot, "extensions", "workflow", "config.json");
+  const globalCandidates = workflowAgentDirs(opts).map((agentDir) => join4(agentDir, "extensions", "workflow", "config.json"));
+  const projectCandidates = getHostProjectConfigPaths(projectRoot, "extensions", "workflow", "config.json");
   let globalConfig = null;
   for (let i = globalCandidates.length - 1;i >= 0; i--) {
     const globalPath = globalCandidates[i];
@@ -52958,11 +53030,10 @@ async function loadWorkflowConfig(opts = {}) {
   };
 }
 
-// dist/builtin/workflows/src/extension/discovery.ts
+// src/extension/discovery.ts
 import { join as join29 } from "node:path";
-import { CONFIG_DIR_NAMES as CONFIG_DIR_NAMES2, getAgentDirs as getAgentDirs2, getProjectConfigPaths as getProjectConfigPaths2 } from "@bastani/atomic";
 
-// dist/builtin/workflows/builtin/index.ts
+// builtin/index.ts
 var exports_builtin = {};
 __export(exports_builtin, {
   tournament: () => tournament_default,
@@ -52976,14 +53047,14 @@ __export(exports_builtin, {
   adversarialVerification: () => adversarial_verification_default
 });
 
-// dist/builtin/workflows/builtin/adversarial-verification.ts
+// builtin/adversarial-verification.ts
 import { Type as Type2 } from "typebox";
 
-// dist/builtin/workflows/src/authoring/workflow.ts
+// src/authoring/workflow.ts
 import { basename } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// dist/builtin/workflows/src/workflows/identity.ts
+// src/workflows/identity.ts
 function normalizeWorkflowName(name) {
   if (!name || typeof name !== "string") {
     throw new TypeError("normalizeWorkflowName: name must be a non-empty string");
@@ -52994,7 +53065,7 @@ function workflowNamesEqual(a, b) {
   return normalizeWorkflowName(a) === normalizeWorkflowName(b);
 }
 
-// dist/builtin/workflows/src/authoring/workflow.ts
+// src/authoring/workflow.ts
 var BRANDED_WORKFLOW_DEFINITIONS = new WeakSet;
 function stampWorkflowDefinition(definition) {
   BRANDED_WORKFLOW_DEFINITIONS.add(definition);
@@ -53028,7 +53099,7 @@ function isWorkflowAuthoringImplementationFrame(filePath) {
   const normalized = filePath.replace(/\\/g, "/");
   if (!/\/authoring\/workflow\.[cm]?[jt]sx?$/.test(normalized))
     return false;
-  return normalized.includes("/packages/workflows/") || normalized.includes("/node_modules/@bastani/workflows/") || normalized.includes("/dist/builtin/workflows/") || normalized.includes("/.atomic/agent/extensions/workflows/") || normalized.includes("/.pi/agent/extensions/workflows/");
+  return normalized.includes("/packages/workflows/") || normalized.includes("/node_modules/@bastani/workflows/") || normalized.includes("/dist/builtin/workflows/") || normalized.includes("/.pi/agent/extensions/workflows/") || normalized.includes("/.pi/agent/extensions/workflows/");
 }
 function workflowNameFromCaller() {
   const stack = new Error().stack;
@@ -53098,7 +53169,7 @@ function workflow(spec) {
   return Object.freeze(branded);
 }
 
-// dist/builtin/workflows/src/authoring/keep-context.ts
+// src/authoring/keep-context.ts
 var KEEP_CONTEXT_OPEN_TAG = "<keepContext>";
 var KEEP_CONTEXT_CLOSE_TAG = "</keepContext>";
 function keepContext(text) {
@@ -53110,7 +53181,7 @@ ${trimmed}
 ${KEEP_CONTEXT_CLOSE_TAG}`;
 }
 
-// dist/builtin/workflows/builtin/shared-prompts.ts
+// builtin/shared-prompts.ts
 var STEERING_PROPAGATION_CONTRACT = [
   "Steering propagation contract:",
   "- Mid-run user messages (steering, follow-ups, resume text) are authoritative and may amend this run's objective or acceptance criteria. Adopt an amendment as required behavior from the moment you receive it.",
@@ -53255,7 +53326,7 @@ var REVIEW_CODE_DELTA_CONTRACT = [
 ].join(`
 `);
 
-// dist/builtin/workflows/builtin/steering-context.ts
+// builtin/steering-context.ts
 function withPromptContract(options) {
   return options.prompt === undefined ? options : { ...options, prompt: withSteeringPropagation(options.prompt) };
 }
@@ -53271,12 +53342,12 @@ function withSteeringPropagationContext(ctx) {
   return wrapped;
 }
 
-// dist/builtin/workflows/builtin/adversarial-verification-runner.ts
+// builtin/adversarial-verification-runner.ts
 import { writeFile } from "node:fs/promises";
 import { join as join5 } from "node:path";
 import { Type } from "typebox";
 
-// dist/builtin/workflows/builtin/adversarial-verification-prompts.ts
+// builtin/adversarial-verification-prompts.ts
 var GROUNDED_REPORTING = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
 var READABLE_REPORT = "Lead with the outcome. Keep facts, decisions, caveats, and next steps; drop background and repetition. Use complete, readable sentences rather than compressed fragments.";
 function renderWorkerPrompt(task) {
@@ -53391,18 +53462,17 @@ Repair the candidate for: ${task}
 </objective>`;
 }
 
-// dist/builtin/workflows/builtin/pattern-artifact-root.ts
+// builtin/pattern-artifact-root.ts
 import { randomUUID as randomUUID2 } from "node:crypto";
 import { mkdir } from "node:fs/promises";
-import { join as join4 } from "node:path";
 async function stableArtifactRoot(ctx, workflowName) {
   const cwd = ctx.cwd ?? process.cwd();
-  const artifactDir = await ctx.tool("artifact-root", { workflow: workflowName }, async () => join4(cwd, ".atomic", "workflows", "runs", `${workflowName}-${randomUUID2()}`));
+  const artifactDir = await ctx.tool("artifact-root", { workflow: workflowName }, async () => getHostProjectPath(cwd, "workflows", "runs", `${workflowName}-${randomUUID2()}`));
   await mkdir(artifactDir, { recursive: true });
   return artifactDir;
 }
 
-// dist/builtin/workflows/builtin/adversarial-verification-runner.ts
+// builtin/adversarial-verification-runner.ts
 var verifierSchema = Type.Object({
   verdict: Type.Union([Type.Literal("pass"), Type.Literal("fail")]),
   evidence: Type.Array(Type.String()),
@@ -53476,7 +53546,7 @@ async function runAdversarialVerification(ctx) {
   return { result: decision.rationale, approved, repairs_completed: repairsCompleted, candidate_path: candidatePath, review_report_path: reviewReportPath, verifier_artifact_paths: verifierArtifactPaths, artifact_dir: root, remaining_work: approved ? [] : decision.remaining_work };
 }
 
-// dist/builtin/workflows/builtin/adversarial-verification.ts
+// builtin/adversarial-verification.ts
 var adversarial_verification_default = workflow({
   name: "adversarial-verification",
   description: "Produce a candidate, challenge it with fresh-context rubric-based verifiers, and reduce their evidence through a bounded repair loop.",
@@ -53497,15 +53567,15 @@ var adversarial_verification_default = workflow({
   },
   run: async (ctx) => await runAdversarialVerification(withSteeringPropagationContext(ctx))
 });
-// dist/builtin/workflows/builtin/classify-and-act.ts
+// builtin/classify-and-act.ts
 import { Type as Type4 } from "typebox";
 
-// dist/builtin/workflows/builtin/classify-and-act-runner.ts
+// builtin/classify-and-act-runner.ts
 import { writeFile as writeFile2 } from "node:fs/promises";
 import { join as join6 } from "node:path";
 import { Type as Type3 } from "typebox";
 
-// dist/builtin/workflows/builtin/classify-and-act-prompts.ts
+// builtin/classify-and-act-prompts.ts
 var GROUNDED_REPORTING2 = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
 var READABLE_REPORT2 = "Lead with the outcome. Keep facts, decisions, caveats, and next steps; drop background and repetition. Use complete, readable sentences rather than compressed fragments.";
 function classifierPrompt(prompt, categories) {
@@ -53561,7 +53631,7 @@ ${input.prompt}
 </objective>`;
 }
 
-// dist/builtin/workflows/builtin/classify-and-act-runner.ts
+// builtin/classify-and-act-runner.ts
 var classificationSchema = Type3.Object({
   category: Type3.String({ description: "One category copied verbatim from the supplied list." }),
   confidence: Type3.Number({ minimum: 0, maximum: 1 }),
@@ -53628,7 +53698,7 @@ async function runClassifyAndAct(ctx) {
   return { result, category, confidence, action: action.stageName, classification_path: classificationPath, action_path: actionPath, artifact_dir: artifactDir };
 }
 
-// dist/builtin/workflows/builtin/classify-and-act.ts
+// builtin/classify-and-act.ts
 var DEFAULT_ACTION_CATEGORIES = ["analysis", "implementation", "research"];
 var classify_and_act_default = workflow({
   name: "classify-and-act",
@@ -53659,15 +53729,15 @@ var classify_and_act_default = workflow({
   },
   run: async (ctx) => await runClassifyAndAct(withSteeringPropagationContext(ctx))
 });
-// dist/builtin/workflows/builtin/fan-out-and-synthesize.ts
+// builtin/fan-out-and-synthesize.ts
 import { Type as Type6 } from "typebox";
 
-// dist/builtin/workflows/builtin/fan-out-and-synthesize-runner.ts
+// builtin/fan-out-and-synthesize-runner.ts
 import { writeFile as writeFile3 } from "node:fs/promises";
 import { join as join7 } from "node:path";
 import { Type as Type5 } from "typebox";
 
-// dist/builtin/workflows/builtin/fan-out-and-synthesize-prompts.ts
+// builtin/fan-out-and-synthesize-prompts.ts
 var GROUNDED_REPORTING3 = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
 var READABLE_REPORT3 = "Lead with the outcome. Keep facts, decisions, caveats, and next steps; drop background and repetition. Use complete, readable sentences rather than compressed fragments.";
 function partitionPrompt(prompt, maxBranches) {
@@ -53744,7 +53814,7 @@ Produce the final answer for: ${prompt}
 </objective>`;
 }
 
-// dist/builtin/workflows/builtin/fan-out-and-synthesize-runner.ts
+// builtin/fan-out-and-synthesize-runner.ts
 var partitionSchema = Type5.Object({
   partitions: Type5.Array(Type5.Object({
     label: Type5.String({ minLength: 1 }),
@@ -53816,7 +53886,7 @@ async function runFanOutAndSynthesize(ctx) {
   };
 }
 
-// dist/builtin/workflows/builtin/fan-out-and-synthesize.ts
+// builtin/fan-out-and-synthesize.ts
 var fan_out_and_synthesize_default = workflow({
   name: "fan-out-and-synthesize",
   description: "Partition a task, run bounded independent artifact branches, then synthesize all evidence at an explicit barrier.",
@@ -53845,15 +53915,15 @@ var fan_out_and_synthesize_default = workflow({
   },
   run: async (ctx) => await runFanOutAndSynthesize(withSteeringPropagationContext(ctx))
 });
-// dist/builtin/workflows/builtin/generate-and-filter.ts
+// builtin/generate-and-filter.ts
 import { Type as Type8 } from "typebox";
 
-// dist/builtin/workflows/builtin/generate-and-filter-runner.ts
+// builtin/generate-and-filter-runner.ts
 import { writeFile as writeFile4 } from "node:fs/promises";
 import { join as join8 } from "node:path";
 import { Type as Type7 } from "typebox";
 
-// dist/builtin/workflows/builtin/generate-and-filter-prompts.ts
+// builtin/generate-and-filter-prompts.ts
 var GROUNDED_REPORTING4 = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
 var READABLE_REPORT4 = "Lead with the outcome. Keep facts, decisions, caveats, and next steps; drop background and repetition. Use complete, readable sentences rather than compressed fragments.";
 function renderGeneratorPrompt(task, ordinal) {
@@ -53963,7 +54033,7 @@ Summarize the selected candidates for: ${task}
 </objective>`;
 }
 
-// dist/builtin/workflows/builtin/generate-and-filter-runner.ts
+// builtin/generate-and-filter-runner.ts
 var filterSchema = Type7.Object({
   shortlist: Type7.Array(Type7.String()),
   discarded: Type7.Array(Type7.Object({ path: Type7.String(), reason: Type7.String() }, { additionalProperties: false }))
@@ -54037,7 +54107,7 @@ async function runGenerateAndFilter(ctx) {
   return { result: finalShortlist.text, shortlist, candidate_artifact_paths: candidatePaths, filter_path: filterPath, judge_path: judgePath, final_path: finalPath, artifact_dir: root, manifest_path: manifestPath };
 }
 
-// dist/builtin/workflows/builtin/generate-and-filter.ts
+// builtin/generate-and-filter.ts
 var generate_and_filter_default = workflow({
   name: "generate-and-filter",
   description: "Generate more independent candidates than needed, deduplicate and filter them by rubric, optionally judge them, and return a parent-consumable shortlist.",
@@ -54060,13 +54130,13 @@ var generate_and_filter_default = workflow({
   },
   run: async (ctx) => await runGenerateAndFilter(withSteeringPropagationContext(ctx))
 });
-// dist/builtin/workflows/builtin/goal.ts
+// builtin/goal.ts
 import { Type as Type10 } from "typebox";
 
-// dist/builtin/workflows/builtin/goal-runner.ts
+// builtin/goal-runner.ts
 import { join as join12 } from "node:path";
 
-// dist/builtin/workflows/builtin/goal-schemas.ts
+// builtin/goal-schemas.ts
 import { Type as Type9 } from "typebox";
 var reviewFindingSchema = Type9.Object({
   title: Type9.String(),
@@ -54123,7 +54193,7 @@ var reviewDecisionSchema = Type9.Object({
   reviewer_error: Type9.Optional(Type9.Union([Type9.Null(), reviewerErrorSchema]))
 }, { additionalProperties: false });
 
-// dist/builtin/workflows/builtin/goal-models.ts
+// builtin/goal-models.ts
 var orchestratorModelConfig = {
   model: "anthropic/claude-opus-5:high",
   fallbackModels: [
@@ -54190,17 +54260,17 @@ var reviewerModelConfig = {
   schema: reviewDecisionSchema
 };
 
-// dist/builtin/workflows/builtin/goal-types.ts
+// builtin/goal-types.ts
 var DEFAULT_MAX_TURNS = 10;
 var DEFAULT_REVIEW_QUORUM = 2;
 var DEFAULT_BLOCKER_THRESHOLD = 3;
 var LEDGER_FILENAME = "goal-ledger.json";
 
-// dist/builtin/workflows/builtin/goal-artifacts.ts
+// builtin/goal-artifacts.ts
 import { writeFile as writeFile5 } from "node:fs/promises";
 import { join as join9 } from "node:path";
 
-// dist/builtin/workflows/builtin/review-convergence.ts
+// builtin/review-convergence.ts
 var FINAL_ACTION_PATTERN = /\b(?:pr|pull[- ]request|merge[- ]request|review request|github pr|create pr)\b/iu;
 function isFinalActionTraceability(entry) {
   return FINAL_ACTION_PATTERN.test(`${entry.requirement}
@@ -54286,7 +54356,7 @@ function summarizeReviewConvergence(args) {
   };
 }
 
-// dist/builtin/workflows/builtin/goal-artifacts.ts
+// builtin/goal-artifacts.ts
 function artifactSafeName(value2) {
   const safe = value2.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   return safe.length > 0 ? safe : "artifact";
@@ -54314,27 +54384,22 @@ async function writeReviewRoundArtifact(artifactDir, reviews) {
   return artifactPath;
 }
 
-// dist/builtin/workflows/builtin/goal-ledger.ts
+// builtin/goal-ledger.ts
 import { randomUUID as randomUUID4 } from "node:crypto";
 import { writeFile as writeFile6 } from "node:fs/promises";
 import { join as join11 } from "node:path";
 
-// dist/builtin/workflows/src/shared/workflow-artifacts.ts
+// src/shared/workflow-artifacts.ts
 import { randomUUID as randomUUID3 } from "node:crypto";
 import { existsSync as existsSync3 } from "node:fs";
 import { mkdir as mkdir2, readdir, rm, stat } from "node:fs/promises";
-import { dirname as dirname3, join as join10 } from "node:path";
-import { getAgentDir as getAgentDir2, getEnvValue as getEnvValue2 } from "@bastani/atomic";
+import { join as join10 } from "node:path";
 var WORKFLOW_ARTIFACT_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
-var ENV_WORKFLOW_ARTIFACT_DIR = "ATOMIC_WORKFLOW_ARTIFACT_DIR";
 var ARTIFACT_PRUNE_RECHECK_MS = 60 * 60 * 1000;
 var lastArtifactPruneAt = new Map;
 var pendingArtifactPrunes = new Map;
 function workflowArtifactRoot() {
-  const override = getEnvValue2(ENV_WORKFLOW_ARTIFACT_DIR);
-  if (override !== undefined && override.length > 0)
-    return override;
-  return join10(dirname3(getAgentDir2()), "workflows");
+  return getHostWorkflowArtifactRoot();
 }
 function workflowArtifactRunsRoot() {
   return join10(workflowArtifactRoot(), "runs");
@@ -54499,7 +54564,7 @@ async function createWorkflowArtifactDirectory(runId) {
   return artifactDirectory;
 }
 
-// dist/builtin/workflows/builtin/goal-ledger.ts
+// builtin/goal-ledger.ts
 function withoutTurn2(value2) {
   const copy = { ...value2 };
   delete copy.turn;
@@ -54560,7 +54625,7 @@ async function writeGoalLedger(ledgerPath, ledger) {
   });
 }
 
-// dist/builtin/workflows/builtin/goal-reducer.ts
+// builtin/goal-reducer.ts
 function reducerSummary(reviews, approved, nextAction) {
   return summarizeReviewConvergence({
     parsed: reviews.every((review) => review.parsed),
@@ -54678,7 +54743,7 @@ function reduceGoalDecision(ledger, turnReviews, options) {
   };
 }
 
-// dist/builtin/workflows/builtin/goal-reports.ts
+// builtin/goal-reports.ts
 function formatReviewReport(reviews) {
   if (reviews.length === 0)
     return "No reviewer decisions were recorded.";
@@ -54742,7 +54807,7 @@ function renderFinalReport(ledger, ledgerPath, remainingWork) {
 `);
 }
 
-// dist/builtin/workflows/builtin/goal-review.ts
+// builtin/goal-review.ts
 function reviewDecisionFromResult(result) {
   return result.structured;
 }
@@ -54829,7 +54894,7 @@ function reviewDecisionToRecord(args) {
   };
 }
 
-// dist/builtin/workflows/builtin/goal-prompts.ts
+// builtin/goal-prompts.ts
 var GOAL_CONTINUATION_REFERENCE = [
   "Continuation and completion:",
   "- The full goal persists across orchestrator sessions. Continue required implementation, validation, documentation, and cleanup until the requested end state is true; a session ending does not shrink success.",
@@ -54970,7 +55035,7 @@ function renderReviewerPrompt(args) {
   ]);
 }
 
-// dist/builtin/workflows/builtin/goal-orchestrator-prompts.ts
+// builtin/goal-orchestrator-prompts.ts
 var GOAL_ORCHESTRATOR_RECEIPT_CONTRACT = [
   "Complete the objective before claiming readiness. Leave work only at a true blocker or impossibility; do not redefine success around a partial state.",
   "Map every explicit requirement, artifact, command, test, gate, invariant, and deliverable to authoritative current evidence whose scope matches the claim.",
@@ -54979,8 +55044,8 @@ var GOAL_ORCHESTRATOR_RECEIPT_CONTRACT = [
 ].join(`
 `);
 var GOAL_ORCHESTRATION_GUIDANCE = [
-  "You supervise implementation, investigation, edits, and validation through the `subagent` tool rather than implementing directly.",
-  "Delegate only work that is genuinely independent and too large to finish in a handful of tool calls. Do not assign subagents as a check on work you already own. Prefer one subagent over several.",
+  "You supervise implementation, investigation, edits, and validation through the `task` tool rather than implementing directly.",
+  "Delegate only work that is genuinely independent and too large to finish in a handful of tool calls. Do not assign tasks as a check on work you already own. Prefer one task over several.",
   "Delegate implementation with its relevant objective, cwd, files, constraints, findings, and validation. Use focused locator/analyzer/pattern or shell-heavy delegation when that work meets the delegation threshold.",
   "Keep overlapping work with one owner; parallelize only independent tasks. While an agent runs, prepare dependent follow-up work rather than duplicating its assignment.",
   "Coordinate follow-ups for all required implementation, tests, docs, validation, and cleanup before reporting readiness."
@@ -54988,11 +55053,11 @@ var GOAL_ORCHESTRATION_GUIDANCE = [
 `);
 var GOAL_ORCHESTRATOR_BEST_PRACTICES = [
   "The output is an orchestrator receipt produced after reading current goal/review artifacts and incorporating delegated results.",
-  "Distinguish completed, evidenced changes from recommendations and blockers. If goal context or required subagent capability is unavailable, report the blocker rather than success.",
+  "Distinguish completed, evidenced changes from recommendations and blockers. If goal context or required task capability is unavailable, report the blocker rather than success.",
   "If the final paragraph would be a plan, a question, or a promise to act next, make the appropriate tool calls instead of ending the turn."
 ].join(`
 `);
-var GOAL_SUBAGENT_TRACKING_GUIDANCE = [
+var GOAL_TASK_TRACKING_GUIDANCE = [
   "Use `todo` as the active delegation ledger when work is meaningfully multi-step: record owner, purpose, and expected output; mark starts, append results, and close only after incorporation or explicit rejection.",
   "Before the receipt, resolve each pending/in_progress item as completed, blocked, or deferred with a reason so parallel work and follow-ups remain visible."
 ].join(`
@@ -55005,17 +55070,17 @@ function renderGoalOrchestratorPrompt(args) {
 `)],
       ["project_setup", WORKER_PREFLIGHT_CONTRACT],
       ["orchestration_guidance", GOAL_ORCHESTRATION_GUIDANCE],
-      ["subagent_tracking", GOAL_SUBAGENT_TRACKING_GUIDANCE],
+      ["task_tracking", GOAL_TASK_TRACKING_GUIDANCE],
       ["receipt_contract", [GOAL_ORCHESTRATOR_RECEIPT_CONTRACT, RECEIPT_EXPECTATIONS].join(`
 `)],
       ["constraints", [
         "Do not submit a PR; a later authorized PR/MR/review action handles that external write after approval.",
-        "For the requested change/build/fix, make in-scope local edits and non-destructive validation through subagents without asking. Confirm destructive actions, other external writes, and scope expansion first.",
+        "For the requested change/build/fix, make in-scope local edits and non-destructive validation through the `task` tool without asking. Confirm destructive actions, other external writes, and scope expansion first.",
         "Preserve repository architecture and conventions unless the literal contract and repository evidence justify changing them; add no features or abstractions beyond the task."
       ].join(`
 `)],
       ["output", "Return readable Markdown headed: Delegations performed, Progress made, Files changed, Commands run, Evidence, Blockers, Ready for review, Remaining work."],
-      ["role", "You are the sub-agent orchestrator; supervise the complete objective through the `subagent` tool rather than implementing directly."],
+      ["role", "You are the sub-agent orchestrator; supervise the complete objective through the `task` tool rather than implementing directly."],
       ["objective", [
         `Read the goal ledger at ${args.ledgerPath} and latest review artifacts from the workflow read hint.`,
         "Perform the initialization preflight, then delegate the smallest coherent work that satisfies the literal objective, acceptance criteria, current state, and consolidated findings.",
@@ -55034,19 +55099,19 @@ function renderForkedGoalOrchestratorPrompt(ledger, ledgerPath, latestReviewArti
 
 `)],
     ["orchestration_guidance", GOAL_ORCHESTRATION_GUIDANCE],
-    ["subagent_tracking", GOAL_SUBAGENT_TRACKING_GUIDANCE],
+    ["task_tracking", GOAL_TASK_TRACKING_GUIDANCE],
     ["receipt_contract", [GOAL_ORCHESTRATOR_RECEIPT_CONTRACT, RECEIPT_EXPECTATIONS].join(`
 `)],
     ["constraints", "The established literal contract, acceptance matrix, contract-fidelity audit, findings batch, regression evidence, closure, worktree, PR handoff, setup, E2E, and blocked-threshold rules remain in force. Do not shrink the ledger objective."],
     ["objective", [
-      "Continue the same goal-runner orchestrator thread as supervisor, using the `subagent` tool for implementation and validation through completion.",
+      "Continue the same goal-runner orchestrator thread as supervisor, using the `task` tool for implementation and validation through completion.",
       "Read the current ledger and latest artifacts, coordinate the smallest coherent remaining delegation, incorporate results, and return the established readable receipt. If the ending would only promise or plan more work, make the tool calls instead."
     ].join(`
 `)]
   ]);
 }
 
-// dist/builtin/workflows/builtin/goal-runner.ts
+// builtin/goal-runner.ts
 function positiveInteger(value2, fallback) {
   if (typeof value2 !== "number" || !Number.isFinite(value2) || value2 <= 0) {
     return fallback;
@@ -55327,7 +55392,7 @@ async function runGoalWorkflow(ctx, options) {
   };
 }
 
-// dist/builtin/workflows/builtin/goal.ts
+// builtin/goal.ts
 var goal_default = workflow({
   name: "goal",
   description: "Goal Runner workflow with bounded sub-agent orchestration turns, immutable acceptance criteria, ledger artifacts, parallel reviewers, and reducer-gated completion. When launching follow-up goal runs from review findings, pass the ORIGINAL task text as acceptance_criteria so deltas cannot drift from the literal contract. If the task includes submitting a pull request (or MR/review), remove that final action from the objective text and set create_pr=true instead when preparing the workflow inputs.",
@@ -55383,10 +55448,10 @@ var goal_default = workflow({
     return await runGoalWorkflow(workflowCtx, { createPr, workflowStartCwd });
   }
 });
-// dist/builtin/workflows/builtin/open-claude-design.ts
+// builtin/open-claude-design.ts
 import { Type as Type12 } from "typebox";
 
-// dist/builtin/workflows/builtin/open-claude-design-utils.ts
+// builtin/open-claude-design-utils.ts
 import { spawnSync } from "node:child_process";
 import { mkdirSync as mkdirSync2 } from "node:fs";
 import { tmpdir as tmpdir2, userInfo } from "node:os";
@@ -55561,9 +55626,9 @@ function buildPlaywrightCliBootstrapRules(status) {
 `);
 }
 
-// dist/builtin/workflows/builtin/open-claude-design-feedback.ts
+// builtin/open-claude-design-feedback.ts
 import { copyFileSync as copyFileSync2, existsSync as existsSync4, mkdirSync as mkdirSync3, statSync as statSync2, writeFileSync as writeFileSync2 } from "node:fs";
-import { isAbsolute as isAbsolute2, dirname as dirname4, join as join14, resolve as resolve2, sep } from "node:path";
+import { isAbsolute as isAbsolute2, dirname as dirname3, join as join14, resolve as resolve2, sep } from "node:path";
 var FIELD_LABELS = new Set([
   "displaymethod",
   "previewpath",
@@ -55745,7 +55810,7 @@ function copyAnnotationArtifacts(feedbackDir, slug, feedback, workflowCwd) {
   if (raw.length === 0)
     return;
   const source = isAbsolute2(raw) ? raw : resolve2(workflowCwd, raw);
-  const artifactDir = dirname4(feedbackDir);
+  const artifactDir = dirname3(feedbackDir);
   if (!isWithin(source, workflowCwd) && !isWithin(source, artifactDir))
     return;
   try {
@@ -55790,7 +55855,7 @@ function persistPreviewFeedback(input) {
   } catch {}
 }
 
-// dist/builtin/workflows/builtin/open-claude-design-setup.ts
+// builtin/open-claude-design-setup.ts
 import { mkdirSync as mkdirSync4, writeFileSync as writeFileSync3 } from "node:fs";
 import { join as join15 } from "node:path";
 var GROUNDED_REPORTING5 = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
@@ -56011,7 +56076,7 @@ function isUiUnavailableRejection(error) {
   return error instanceof Error && /ctx\.ui\.\w+ (?:prompt node )?is unavailable/.test(error.message);
 }
 
-// dist/builtin/workflows/builtin/open-claude-design-phases.ts
+// builtin/open-claude-design-phases.ts
 var GROUNDED_REPORTING6 = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
 function forkContinuationOptions2(sessionFile) {
   return sessionFile === undefined || sessionFile.length === 0 ? {} : { context: "fork", forkFromSessionFile: sessionFile };
@@ -56279,9 +56344,9 @@ async function exportOpenClaudeDesign(options) {
   return { latestDesign, handoff };
 }
 
-// dist/builtin/workflows/builtin/open-claude-design-runner.ts
+// builtin/open-claude-design-runner.ts
 var GROUNDED_REPORTING7 = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
-var DELEGATION_RULE = "Delegate further only work genuinely independent and too large for a handful of tool calls; do not delegate self-verification, and prefer one subagent over several.";
+var DELEGATION_RULE = "Delegate further only work genuinely independent and too large for a handful of tool calls; do not delegate self-verification, and prefer one task over several.";
 async function runOpenClaudeDesignWorkflow(ctx) {
   const designContext = ctx;
   const playwrightCli = ensurePlaywrightCli();
@@ -56554,7 +56619,7 @@ async function runOpenClaudeDesignWorkflow(ctx) {
   };
 }
 
-// dist/builtin/workflows/builtin/open-claude-design.ts
+// builtin/open-claude-design.ts
 var open_claude_design_default = workflow({
   name: "open-claude-design",
   description: "AI-powered design workflow: combined discovery/init → design-system/reference research → curated reference discovery → HTML generation → live-driven refinement → rich HTML handoff. The discovery stage asks what to build, the output type, and which references to emulate, then runs impeccable init for PRODUCT.md/DESIGN.md (references take precedence over project context). The user iteratively reviews the generated HTML.",
@@ -56589,15 +56654,15 @@ var open_claude_design_default = workflow({
   },
   run: async (ctx) => await runOpenClaudeDesignWorkflow(withSteeringPropagationContext(ctx))
 });
-// dist/builtin/workflows/builtin/loop-until-done.ts
+// builtin/loop-until-done.ts
 import { Type as Type14 } from "typebox";
 
-// dist/builtin/workflows/builtin/loop-until-done-runner.ts
+// builtin/loop-until-done-runner.ts
 import { mkdir as mkdir3, writeFile as writeFile7 } from "node:fs/promises";
 import { join as join16 } from "node:path";
 import { Type as Type13 } from "typebox";
 
-// dist/builtin/workflows/builtin/loop-until-done-prompts.ts
+// builtin/loop-until-done-prompts.ts
 var GROUNDED_REPORTING8 = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
 var READABLE_REPORT5 = "Lead with the outcome. Keep facts, decisions, caveats, and next steps; drop background and repetition. Use complete, readable sentences rather than compressed fragments.";
 function taggedPrompt3(sections) {
@@ -56673,7 +56738,7 @@ function renderCompletionPrompt(options) {
   ]);
 }
 
-// dist/builtin/workflows/builtin/loop-until-done-runner.ts
+// builtin/loop-until-done-runner.ts
 var evaluationSchema = Type13.Object({
   done: Type13.Boolean(),
   summary: Type13.String(),
@@ -56807,7 +56872,7 @@ async function runLoopUntilDone(ctx) {
   };
 }
 
-// dist/builtin/workflows/builtin/loop-until-done.ts
+// builtin/loop-until-done.ts
 var loop_until_done_default = workflow({
   name: "loop-until-done",
   description: "Repeat evidence-producing work and independent completion evaluation against a durable ledger until done or an inspectable iteration-limit failure.",
@@ -56835,19 +56900,19 @@ var loop_until_done_default = workflow({
   },
   run: async (ctx) => await runLoopUntilDone(withSteeringPropagationContext(ctx))
 });
-// dist/builtin/workflows/builtin/ralph.ts
+// builtin/ralph.ts
 import { Type as Type16 } from "typebox";
 
-// dist/builtin/workflows/builtin/ralph-core.ts
+// builtin/ralph-core.ts
 import { mkdir as mkdir4, writeFile as writeFile8 } from "node:fs/promises";
-import { dirname as dirname5, join as join17 } from "node:path";
+import { dirname as dirname4, join as join17 } from "node:path";
 import { Type as Type15 } from "typebox";
-// dist/builtin/workflows/builtin/ralph-review-gate.ts
+// builtin/ralph-review-gate.ts
 function reviewDecisionApproved(decision) {
   return decision.stop_review_loop === true && decision.reviewer_error == null;
 }
 
-// dist/builtin/workflows/builtin/ralph-core.ts
+// builtin/ralph-core.ts
 var DEFAULT_MAX_LOOPS = 10;
 var DEFAULT_RESEARCH_DIR = "research";
 var IMPLEMENTATION_NOTES_FILENAME = "implementation-notes.md";
@@ -56922,7 +56987,7 @@ function workflowCwdContextSection(workflowCwd) {
       `Current working directory: ${workflowCwd}`,
       "Use this as the starting directory for repository work in this stage.",
       "Shell commands and relative file paths should be relative to this directory unless you intentionally pass an explicit cwd override.",
-      "When delegating subagents, pass along that this is the current working directory."
+      "When delegating via the `task` tool, pass along that this is the current working directory."
     ].join(`
 `)
   ];
@@ -57034,7 +57099,7 @@ function artifactSafeName2(value2) {
   return safe.length > 0 ? safe : "artifact";
 }
 async function writeJsonArtifact(path, content) {
-  await mkdir4(dirname5(path), { recursive: true });
+  await mkdir4(dirname4(path), { recursive: true });
   await writeFile8(path, `${JSON.stringify(content, null, 2)}
 `, {
     encoding: "utf8"
@@ -57102,11 +57167,11 @@ function renderResearchPrompt(args) {
   ]);
 }
 
-// dist/builtin/workflows/builtin/ralph-runner.ts
+// builtin/ralph-runner.ts
 import { existsSync as existsSync5 } from "node:fs";
 import { join as join18, resolve as resolve3 } from "node:path";
 
-// dist/builtin/workflows/builtin/ralph-reviewer-prompt.ts
+// builtin/ralph-reviewer-prompt.ts
 function renderRalphReviewerPrompt(args) {
   return taggedPrompt4([
     ["acceptance_criteria", keepContext(args.acceptanceCriteria)],
@@ -57182,7 +57247,7 @@ function renderRalphReviewerPrompt(args) {
   ]);
 }
 
-// dist/builtin/workflows/builtin/ralph-forked-prompts.ts
+// builtin/ralph-forked-prompts.ts
 function renderForkedResearchPromptRefinementPrompt(args) {
   return taggedPrompt4([
     [
@@ -57272,7 +57337,7 @@ function renderForkedOrchestratorPrompt(args) {
   ]);
 }
 
-// dist/builtin/workflows/builtin/ralph-models.ts
+// builtin/ralph-models.ts
 var promptEngineerModelConfig = {
   model: "anthropic/claude-opus-5:high",
   fallbackModels: [
@@ -57431,7 +57496,7 @@ var reviewerBModelConfig = {
   schema: reviewDecisionSchema2
 };
 
-// dist/builtin/workflows/builtin/ralph-runner.ts
+// builtin/ralph-runner.ts
 async function runRalphWorkflow(ctx, options) {
   const { prompt, acceptanceCriteria, maxLoops, comparisonBaseBranch, workflowStartCwd, createPr, runId } = options;
   let latestReviewReportPath;
@@ -57521,7 +57586,7 @@ Read it before implementation or delegation because it is the primary current im
       [
         "delegation",
         [
-          "Delegate only work that is genuinely independent and too large to finish in a handful of tool calls. Do not use subagents to audit your own work. Prefer one subagent over several.",
+          "Delegate only work that is genuinely independent and too large to finish in a handful of tool calls. Do not use task agents to audit your own work. Prefer one task over several.",
           "For delegated work, provide the relevant task, constraints, files, validation expectations, unresolved findings, and implementation-note reporting needs. Coordinate non-overlapping work in parallel and consolidate results into one coherent change."
         ].join(`
 `)
@@ -57757,7 +57822,7 @@ Read it before implementation or delegation because it is the primary current im
   };
 }
 
-// dist/builtin/workflows/builtin/ralph.ts
+// builtin/ralph.ts
 var ralph_default = workflow({
   name: "ralph",
   description: "Raw prompt → research-prompt-refinement → research → orchestrate → multi-model parallel review loop with bounded iteration and immutable acceptance criteria. When launching follow-up ralph runs from review findings, pass the ORIGINAL task text as acceptance_criteria so deltas cannot drift from the literal contract. If the task includes submitting a pull request (or MR/review), remove that final action from the prompt text and set create_pr=true instead when preparing the workflow inputs.",
@@ -57819,15 +57884,15 @@ var ralph_default = workflow({
     });
   }
 });
-// dist/builtin/workflows/builtin/tournament.ts
+// builtin/tournament.ts
 import { Type as Type18 } from "typebox";
 
-// dist/builtin/workflows/builtin/tournament-runner.ts
+// builtin/tournament-runner.ts
 import { mkdir as mkdir5, writeFile as writeFile9 } from "node:fs/promises";
 import { join as join19 } from "node:path";
 import { Type as Type17 } from "typebox";
 
-// dist/builtin/workflows/builtin/tournament-prompts.ts
+// builtin/tournament-prompts.ts
 var GROUNDED_REPORTING9 = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
 var READABLE_REPORT6 = "Lead with the outcome. Keep facts, decisions, caveats, and next steps; drop background and repetition. Use complete, readable sentences rather than compressed fragments.";
 function taggedPrompt5(sections) {
@@ -57908,7 +57973,7 @@ function renderBracketReducerPrompt(options) {
   ]);
 }
 
-// dist/builtin/workflows/builtin/tournament-runner.ts
+// builtin/tournament-runner.ts
 var judgeDecisionSchema = Type17.Object({
   winner: Type17.Union([Type17.Literal("first"), Type17.Literal("second")]),
   rationale: Type17.String(),
@@ -58049,7 +58114,7 @@ async function runTournament(ctx) {
   };
 }
 
-// dist/builtin/workflows/builtin/tournament.ts
+// builtin/tournament.ts
 var tournament_default = workflow({
   name: "tournament",
   description: "Run several independent whole-task attempts through a balanced pairwise judging bracket and return an auditable winner.",
@@ -58080,7 +58145,7 @@ var tournament_default = workflow({
   },
   run: async (ctx) => await runTournament(withSteeringPropagationContext(ctx))
 });
-// dist/builtin/workflows/src/workflows/registry.ts
+// src/workflows/registry.ts
 function makeRegistry(store2) {
   return {
     register(definition) {
@@ -58122,11 +58187,11 @@ function createRegistry(initial = []) {
   return makeRegistry(store2);
 }
 
-// dist/builtin/workflows/src/extension/discovery-loaders.ts
+// src/extension/discovery-loaders.ts
 import { readdir as readdir2, stat as stat2 } from "node:fs/promises";
 import { extname, isAbsolute as isAbsolute11, join as join28, resolve as resolve13 } from "node:path";
 
-// ../../node_modules/jiti/lib/jiti-static.mjs
+// node_modules/jiti/lib/jiti-static.mjs
 var import_jiti = __toESM(require_jiti(), 1);
 var import_babel = __toESM(require_babel(), 1);
 import { createRequire as createRequire2 } from "node:module";
@@ -58145,10 +58210,10 @@ function createJiti(id, opts = {}) {
   });
 }
 
-// dist/builtin/workflows/src/extension/workflow-module-loader.ts
+// src/extension/workflow-module-loader.ts
 import * as typeboxModule from "typebox";
 
-// dist/builtin/workflows/src/sdk-surface.ts
+// src/sdk-surface.ts
 var exports_sdk_surface = {};
 __export(exports_sdk_surface, {
   workflowNamesEqual: () => workflowNamesEqual,
@@ -58171,7 +58236,7 @@ __export(exports_sdk_surface, {
   GraphFrontierTracker: () => GraphFrontierTracker
 });
 
-// dist/builtin/workflows/src/engine/graph-inference.ts
+// src/engine/graph-inference.ts
 class GraphFrontierTracker {
   frontier = new Set;
   stageParents = new Map;
@@ -58219,7 +58284,7 @@ class GraphFrontierTracker {
     this.nodes.clear();
   }
 }
-// dist/builtin/workflows/src/shared/serializable.ts
+// src/shared/serializable.ts
 import { Refine, Type as Type19 } from "typebox";
 import { Value } from "typebox/value";
 function isPlainObjectValue(value2) {
@@ -58298,7 +58363,7 @@ function assertWorkflowSerializableObject(value2, label) {
     throw new Error(`atomic-workflows: ${error}`);
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-abort.ts
+// src/runs/foreground/executor-abort.ts
 var WORKFLOW_EXIT_SIGNAL = Symbol("atomic-workflows.workflow-exit-signal");
 var WORKFLOW_EXIT_STATUSES = new Set([
   "completed",
@@ -58631,11 +58696,11 @@ function raceAbort(promise, signal) {
     });
   });
 }
-// dist/builtin/workflows/src/runs/foreground/executor-hil.ts
+// src/runs/foreground/executor-hil.ts
 import { createHash as createHash2 } from "node:crypto";
 import { createAskUserQuestionToolDefinition } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/shared/prompt-callsite-context.ts
+// src/shared/prompt-callsite-context.ts
 import { AsyncLocalStorage } from "node:async_hooks";
 var promptCallerStacks = new AsyncLocalStorage;
 function withPromptCallerStack(stack, delegate) {
@@ -58647,7 +58712,7 @@ function currentPromptCallerStack() {
   return promptCallerStacks.getStore();
 }
 
-// dist/builtin/workflows/src/shared/stage-prompt.ts
+// src/shared/stage-prompt.ts
 function normalizeLabel(value2) {
   return value2.trim().toLowerCase();
 }
@@ -58828,7 +58893,7 @@ function buildStagePromptAdapter(id, kind, args, createdAt) {
   };
 }
 
-// dist/builtin/workflows/src/runs/shared/prompt-callsite.ts
+// src/runs/shared/prompt-callsite.ts
 import { fileURLToPath as fileURLToPath2 } from "node:url";
 var PACKAGED_WORKFLOW_RUNTIME_ROOTS = [
   "/dist/builtin/workflows/src/",
@@ -58900,10 +58965,10 @@ function selectPromptCallsiteFrame(stack) {
 `).slice(1).map(normalizedPromptCallsiteFrame).find((candidate) => candidate !== undefined);
 }
 
-// dist/builtin/workflows/src/shared/resume-continuation.ts
+// src/shared/resume-continuation.ts
 var RESUME_CONTINUATION_PROMPT = "Continue where you left off. If you believe you are finished with your original task (or a redefined task if the user told you), stop.";
 
-// dist/builtin/workflows/src/runs/foreground/executor-hil.ts
+// src/runs/foreground/executor-hil.ts
 function isCustomPromptDescriptor(descriptor) {
   return descriptor.kind === "custom";
 }
@@ -59166,11 +59231,11 @@ async function askReadinessViaStageBroker(runId, stageId, signal) {
     stageUiBroker.clearStagePrompt(runId, stageId);
   }
 }
-// dist/builtin/workflows/src/runs/foreground/executor-inputs.ts
+// src/runs/foreground/executor-inputs.ts
 import { Type as Type20 } from "typebox";
 import { Value as Value3 } from "typebox/value";
 
-// dist/builtin/workflows/src/shared/schema-introspection.ts
+// src/shared/schema-introspection.ts
 import {
   IsAny,
   IsArray,
@@ -59249,7 +59314,7 @@ function deriveInputFields(schema) {
   return Object.entries(schema).map(([name, s]) => deriveInputField(name, s));
 }
 
-// dist/builtin/workflows/src/runs/shared/validate-inputs.ts
+// src/runs/shared/validate-inputs.ts
 import { Value as Value2 } from "typebox/value";
 function validateInputs(schema, inputs) {
   const errors = [];
@@ -59320,7 +59385,7 @@ function validateInputs(schema, inputs) {
   return errors;
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-inputs.ts
+// src/runs/foreground/executor-inputs.ts
 function resolveInputs(schema, provided) {
   const resolved = {};
   for (const [key2, value2] of Object.entries(provided)) {
@@ -59376,7 +59441,7 @@ ${formatValidationErrors(errors)}`);
   }
   return resolved;
 }
-// dist/builtin/workflows/src/runs/foreground/executor-child-helpers.ts
+// src/runs/foreground/executor-child-helpers.ts
 function cloneWorkflowChildValue(value2) {
   return structuredClone(value2);
 }
@@ -59429,7 +59494,7 @@ function workflowChildReplaySnapshot(alias, childResult) {
   };
 }
 
-// dist/builtin/workflows/src/durable/child-invocation.ts
+// src/durable/child-invocation.ts
 function durableChildInvocationFingerprint(child, inputs) {
   return durableHash({
     definition: { name: child.name, normalizedName: child.normalizedName },
@@ -59437,7 +59502,7 @@ function durableChildInvocationFingerprint(child, inputs) {
   });
 }
 
-// dist/builtin/workflows/src/durable/stage-topology.ts
+// src/durable/stage-topology.ts
 function activeStageTopology(backend, workflowId, replayKey) {
   const checkpoints = backend.listCheckpoints(workflowId);
   for (let index = checkpoints.length - 1;index >= 0; index -= 1) {
@@ -59475,10 +59540,10 @@ function durableStageCheckpointMetadata(stage, run, sourceOrder) {
   };
 }
 
-// dist/builtin/workflows/src/durable/tool-primitive.ts
+// src/durable/tool-primitive.ts
 import { runCallback } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/durable/tool-failure-checkpoint.ts
+// src/durable/tool-failure-checkpoint.ts
 async function recordThrowingToolFailure(input, node, identity, error, attempts) {
   const message = workflowToolFailure(error, attempts, false).error.message;
   const failedAt = Date.now();
@@ -59505,7 +59570,7 @@ async function recordThrowingToolFailure(input, node, identity, error, attempts)
   return { message, failedAt };
 }
 
-// dist/builtin/workflows/src/durable/tool-primitive.ts
+// src/durable/tool-primitive.ts
 function createToolPrimitive(input) {
   const ordinals = new Map;
   return (name, args, fn, options) => {
@@ -59936,7 +60001,7 @@ function createCheckpointIdGenerator() {
   return () => `cp-${++counter}`;
 }
 
-// dist/builtin/workflows/src/durable/stage-primitive.ts
+// src/durable/stage-primitive.ts
 async function recordStageCheckpoint(deps, stage, options) {
   if (stage.status !== "completed" && stage.status !== "failed" && stage.status !== "skipped")
     return false;
@@ -60310,7 +60375,7 @@ function workflowChildSnapshotFromResult(result) {
   };
 }
 
-// dist/builtin/workflows/src/durable/child-primitive.ts
+// src/durable/child-primitive.ts
 function createDurableChildWorkflowPrimitive(input) {
   const legacyReplayCounts = new Map;
   const nextLegacyReplayKey = (name) => {
@@ -60366,7 +60431,7 @@ function hasInvocationData(checkpoints, replayKey) {
   return checkpoints.some((checkpoint) => checkpoint.kind === "stage" ? checkpoint.replayKey === replayKey || checkpoint.replayKey.startsWith(prefix) : checkpoint.checkpointId.startsWith(prefix));
 }
 
-// dist/builtin/workflows/src/durable/prompt-reservations.ts
+// src/durable/prompt-reservations.ts
 function durablePromptScope(backend, workflowId) {
   return backend.promptReservationScope(workflowId);
 }
@@ -60380,7 +60445,7 @@ function releaseDurablePrompt(backend, workflowId, reservationId, token) {
   backend.releasePendingPrompt(workflowId, reservationId, token);
 }
 
-// dist/builtin/workflows/src/durable/scoped-backend.ts
+// src/durable/scoped-backend.ts
 class ScopedDurableBackend {
   persistent;
   inner;
@@ -60555,11 +60620,11 @@ function stripOnePrefix(value2, prefix) {
   return value2.slice(prefix.length);
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-direct-helpers.ts
+// src/runs/foreground/executor-direct-helpers.ts
 import { isAbsolute as isAbsolute9, join as join26, resolve as resolve11 } from "node:path";
-import { CONFIG_DIR_NAME as CONFIG_DIR_NAME2, isCodexFastModeCandidateModelId } from "@bastani/atomic";
+import { isCodexFastModeCandidateModelId } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/runs/shared/model-fallback-candidates.ts
+// src/runs/shared/model-fallback-candidates.ts
 function makeCandidate(id, value2, level) {
   return {
     id,
@@ -60752,7 +60817,7 @@ async function buildModelCandidatesFromCatalog(input) {
     return buildModelCandidates({ currentModel: input.catalog.currentModel });
   }
 }
-// dist/builtin/workflows/src/runs/shared/model-fallback-failures.ts
+// src/runs/shared/model-fallback-failures.ts
 var RETRYABLE_MODEL_FAILURE_PATTERNS = [
   /rate\s*limit/i,
   /too\s*many\s*requests/i,
@@ -61202,11 +61267,11 @@ function isRetryableModelFailure(error) {
   const signal = normalizeModelFailureSignal(error);
   return FALLBACKABLE_FAILURE_KINDS.has(signal.kind);
 }
-// dist/builtin/workflows/src/runs/shared/worktree-git.ts
+// src/runs/shared/worktree-git.ts
 import * as fs3 from "node:fs";
 import * as path3 from "node:path";
 
-// dist/builtin/workflows/src/runs/shared/worktree-generation.ts
+// src/runs/shared/worktree-generation.ts
 import * as fs from "node:fs";
 import * as path from "node:path";
 function sameFileIdentity(left, right) {
@@ -61259,7 +61324,7 @@ function openGitWorktreeGenerationAnchor(worktreeRoot) {
   }
 }
 
-// dist/builtin/workflows/src/runs/shared/worktree-git-runner.ts
+// src/runs/shared/worktree-git-runner.ts
 import { spawnSync as spawnSync2 } from "node:child_process";
 import { createGitEnvironment } from "@bastani/atomic";
 var DISABLED_GIT_HOOKS_PATH = process.platform === "win32" ? "NUL" : "/dev/null";
@@ -61359,7 +61424,7 @@ function runGitReadOnlyProbe(cwd, args) {
   return attempts > 1 ? { ...result, attempts } : result;
 }
 
-// dist/builtin/workflows/src/runs/shared/worktree-root.ts
+// src/runs/shared/worktree-root.ts
 import * as fs2 from "node:fs";
 import * as path2 from "node:path";
 function pathFromPointer(contents, prefix, base) {
@@ -61444,7 +61509,7 @@ function findCanonicalGitRoot(cwd) {
   return repoRoot === undefined ? undefined : resolveMainRepoRoot(repoRoot);
 }
 
-// dist/builtin/workflows/src/runs/shared/worktree-git.ts
+// src/runs/shared/worktree-git.ts
 function gitWorktreeSetupCacheKey(options) {
   const repoRoot = repositoryRootForGitWorktree(options.cwd);
   const { logicalRepoRoot } = cwdWithinGitRepository(options.cwd, repoRoot);
@@ -61759,7 +61824,7 @@ function setupGitWorktree(options) {
   };
 }
 
-// dist/builtin/workflows/src/runs/shared/worktree-cache-lifecycle.ts
+// src/runs/shared/worktree-cache-lifecycle.ts
 function createGitWorktreeSetupCacheOwner(suppliedCache) {
   const cache = suppliedCache ?? createGitWorktreeSetupCache();
   const ownsCache = suppliedCache === undefined;
@@ -61777,7 +61842,7 @@ function createGitWorktreeSetupCacheOwner(suppliedCache) {
     }
   };
 }
-// dist/builtin/workflows/src/runs/shared/worktree-diff.ts
+// src/runs/shared/worktree-diff.ts
 import * as fs4 from "node:fs";
 import * as path4 from "node:path";
 function safePatchAgentName(agent) {
@@ -61916,13 +61981,13 @@ function formatWorktreeDiffSummary(diffs) {
   return lines.join(`
 `).trimEnd();
 }
-// dist/builtin/workflows/src/runs/shared/worktree-setup.ts
+// src/runs/shared/worktree-setup.ts
 import { spawnSync as spawnSync3 } from "node:child_process";
 import * as fs6 from "node:fs";
 import * as os from "node:os";
 import * as path6 from "node:path";
 
-// dist/builtin/workflows/src/runs/shared/worktree-post-create.ts
+// src/runs/shared/worktree-post-create.ts
 import * as fs5 from "node:fs";
 import * as path5 from "node:path";
 function tracked(repo, relativePath) {
@@ -61954,10 +62019,11 @@ function copyUntrackedFile(mainRoot, worktreeRoot, relativePath) {
 }
 function propagateLocalSettings(mainRoot, worktreeRoot) {
   const copied = [];
-  if (copyUntrackedFile(mainRoot, worktreeRoot, ".atomic/settings.local.json"))
-    copied.push(".atomic/settings.local.json");
-  if (!tracked(mainRoot, ".atomic/settings.json") && copyUntrackedFile(mainRoot, worktreeRoot, ".atomic/settings.json")) {
-    copied.push(".atomic/settings.json");
+  for (const rel of [".pi/settings.local.json", ".pi/settings.json", ".atomic/settings.local.json", ".atomic/settings.json"]) {
+    if (tracked(mainRoot, rel))
+      continue;
+    if (copyUntrackedFile(mainRoot, worktreeRoot, rel))
+      copied.push(rel);
   }
   return copied;
 }
@@ -62043,7 +62109,7 @@ function performPostCreationSetup(mainRoot, worktreeRoot, symlinkDirectories) {
   return syntheticPaths;
 }
 
-// dist/builtin/workflows/src/runs/shared/worktree-setup.ts
+// src/runs/shared/worktree-setup.ts
 var DEFAULT_WORKTREE_SETUP_HOOK_TIMEOUT_MS = 30000;
 function originDefaultBranch(mainRoot) {
   const symbolic = runGit(mainRoot, ["symbolic-ref", "--short", "refs/remotes/origin/HEAD"]);
@@ -62106,10 +62172,10 @@ function buildWorktreeBranch(runId, index) {
   return `worktree-${flattenedWorktreeName(runId, index)}`;
 }
 function buildWorktreePath(mainRoot, runId, index) {
-  return path6.join(mainRoot, ".atomic", "worktrees", flattenedWorktreeName(runId, index));
+  return path6.join(mainRoot, HOST_CONFIG_DIR_NAME, "worktrees", flattenedWorktreeName(runId, index));
 }
 function ensureWorktreeIgnore(mainRoot) {
-  const worktreesRoot = path6.join(mainRoot, ".atomic", "worktrees");
+  const worktreesRoot = path6.join(mainRoot, HOST_CONFIG_DIR_NAME, "worktrees");
   fs6.mkdirSync(worktreesRoot, { recursive: true });
   fs6.writeFileSync(path6.join(worktreesRoot, ".gitignore"), `*
 `, "utf8");
@@ -62310,9 +62376,9 @@ function cleanupWorktrees(setup) {
     cleanupSingleWorktree(setup.cwd, setup.worktrees[index]);
   }
 }
-// dist/builtin/workflows/src/runs/shared/worktree-cwd.ts
+// src/runs/shared/worktree-cwd.ts
 import { lstatSync as lstatSync4, realpathSync as realpathSync4 } from "node:fs";
-import { dirname as dirname10, isAbsolute as isAbsolute7, relative as relative5, resolve as resolve9, sep as sep6 } from "node:path";
+import { dirname as dirname9, isAbsolute as isAbsolute7, relative as relative5, resolve as resolve9, sep as sep6 } from "node:path";
 function relativePathWithin(root, candidate) {
   const path7 = relative5(root, candidate);
   return path7 === ".." || path7.startsWith(`..${sep6}`) || isAbsolute7(path7) ? undefined : path7;
@@ -62357,7 +62423,7 @@ function resolveWorktreeStageCwd(cwd, setup) {
   return mappedCwd;
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-task-prompts.ts
+// src/runs/foreground/executor-task-prompts.ts
 import { existsSync as existsSync8 } from "node:fs";
 import { isAbsolute as isAbsolute8, resolve as resolve10 } from "node:path";
 function normalizeTaskContexts(previous) {
@@ -62559,7 +62625,7 @@ function taskWithSharedDefaults(taskOptions, options) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-direct-helpers.ts
+// src/runs/foreground/executor-direct-helpers.ts
 function positiveConcurrency(value2) {
   if (typeof value2 !== "number" || !Number.isFinite(value2) || value2 < 1)
     return;
@@ -62718,7 +62784,7 @@ function prepareTaskWorktrees(tasks, options, runId, scope, workflowInvocationCw
     tasks: tasks.map((task, index) => ({ ...task, cwd: setup.worktrees[index].agentCwd })),
     setup,
     agents,
-    diffsDir: join26(setup.cwd, CONFIG_DIR_NAME2, "workflows", "worktree-diffs", runId, scope),
+    diffsDir: join26(setup.cwd, HOST_CONFIG_DIR_NAME, "workflows", "worktree-diffs", runId, scope),
     outputIsolations: tasks.map((_, index) => ({
       baseDir: join26(trustedRoot, runId, scope, String(index)),
       trustedRoot
@@ -62765,7 +62831,7 @@ function isCodexFastModeCandidate(model) {
   return isCodexFastModeCandidateModelId(workflowModelId(model));
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-lifecycle.ts
+// src/runs/foreground/executor-lifecycle.ts
 var EMPTY_WORKFLOW_GRAPH_ERROR_MESSAGE = "Workflow run completed without creating any workflow stages or durable tool nodes. Create tracked execution with ctx.stage(), ctx.task(), ctx.chain(), ctx.parallel(), ctx.workflow(), or ctx.tool().";
 function assertWorkflowCreatedExecution(runSnapshot) {
   if (runSnapshot.stages.length > 0 || (runSnapshot.toolNodes?.length ?? 0) > 0)
@@ -63053,7 +63119,7 @@ function recordActiveBlockedFailure(runId, runSnapshot, activeStore, persistence
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-outputs.ts
+// src/runs/foreground/executor-outputs.ts
 import { Value as Value4 } from "typebox/value";
 function hasOwnWorkflowOutput(record, key2) {
   return Object.hasOwn(record, key2);
@@ -63150,7 +63216,7 @@ function selectWorkflowOutputs(child, rawOutput) {
   return selected;
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-continuation.ts
+// src/runs/foreground/executor-continuation.ts
 function getPromptAnswerState(hasReplayAnswer, replaySourceId, answerReplay) {
   if (replaySourceId === undefined)
     return;
@@ -63282,7 +63348,7 @@ function createContinuationReplayIndex(continuation) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-prompt-nodes.ts
+// src/runs/foreground/executor-prompt-nodes.ts
 function buildPromptNodeUiAdapter(input) {
   const ask = async (descriptor, durableReplay) => {
     input.throwIfWorkflowExitSelected();
@@ -63577,7 +63643,7 @@ function buildPromptNodeUiAdapter(input) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-run-finalizers.ts
+// src/runs/foreground/executor-run-finalizers.ts
 function createRunFinalizers(input) {
   const finalizeWorkflowExitValidationFailure = (err, exitReason) => {
     const failure3 = input.classifyExecutorFailure(err);
@@ -63666,7 +63732,7 @@ function createRunFinalizers(input) {
   return { finalizeWorkflowExit, finalizeParentWorkflowExitCancellation };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-scheduler.ts
+// src/runs/foreground/executor-scheduler.ts
 function isTerminalStage(stage) {
   return stage.status === "completed" || stage.status === "failed" || stage.status === "skipped";
 }
@@ -63834,7 +63900,7 @@ function createStageScheduler(input) {
   };
 }
 
-// dist/builtin/workflows/src/runs/shared/concurrency.ts
+// src/runs/shared/concurrency.ts
 class ConcurrencyLimiter {
   limit;
   _running = 0;
@@ -63881,7 +63947,7 @@ function createRunLimiter(defaultConcurrency) {
   return new ConcurrencyLimiter(defaultConcurrency ?? 4);
 }
 
-// dist/builtin/workflows/src/engine/primitives/chain.ts
+// src/engine/primitives/chain.ts
 function createChainPrimitive(input) {
   return async (steps, options = {}) => {
     input.runtime.exit.throwIfWorkflowExitSelected();
@@ -63898,7 +63964,7 @@ function createChainPrimitive(input) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-exit-manager.ts
+// src/runs/foreground/executor-exit-manager.ts
 function createWorkflowExitManager(input) {
   let selectedExit;
   const exitCleanups = new Map;
@@ -64042,10 +64108,10 @@ function createWorkflowExitManager(input) {
     exit
   };
 }
-// dist/builtin/workflows/src/engine/primitives/parallel.ts
+// src/engine/primitives/parallel.ts
 import { randomUUID as randomUUID6 } from "node:crypto";
 
-// dist/builtin/workflows/src/shared/intercom-group.ts
+// src/shared/intercom-group.ts
 import { randomUUID as randomUUID5 } from "node:crypto";
 function workflowInvocationIntercomGroup(rootRunId) {
   return `workflow:${rootRunId}`;
@@ -64081,7 +64147,7 @@ function stageHasIntercomAccess(stageOptions) {
   return true;
 }
 
-// dist/builtin/workflows/src/engine/primitives/parallel.ts
+// src/engine/primitives/parallel.ts
 function createParallelPrimitive(input) {
   return async (steps, options = {}) => {
     input.runtime.exit.throwIfWorkflowExitSelected();
@@ -64118,7 +64184,7 @@ function createParallelPrimitive(input) {
   };
 }
 
-// dist/builtin/workflows/src/engine/primitives/task.ts
+// src/engine/primitives/task.ts
 function createTaskPrimitive(runtime) {
   return async (name, options, stageFailFastScope) => {
     runtime.exit.throwIfWorkflowExitSelected();
@@ -64180,7 +64246,7 @@ function createWorkflowTaskRunners(input) {
   };
 }
 
-// dist/builtin/workflows/src/durable/ui-primitive.ts
+// src/durable/ui-primitive.ts
 function wrapUiWithDurable(base, deps) {
   const ordinals = new Map;
   const scope = durablePromptScope(deps.backend, deps.workflowId);
@@ -64350,7 +64416,7 @@ function wrapUiWithDurable(base, deps) {
   };
 }
 
-// dist/builtin/workflows/src/engine/primitives/ui.ts
+// src/engine/primitives/ui.ts
 function buildExitGatedUiContext(input) {
   const base = input.opts.usePromptNodesForUi === true ? input.baseFromPromptNodes() : input.opts.executionMode === "non_interactive" && input.opts.ui === undefined ? makeHeadlessUnavailableUIContext() : normalizeUIContext(input.opts.ui);
   const promptNodeReplay = input.opts.usePromptNodesForUi === true && input.opts.continuation !== undefined;
@@ -64379,7 +64445,7 @@ function buildExitGatedUiContext(input) {
   };
 }
 
-// dist/builtin/workflows/src/engine/primitives/workflow.ts
+// src/engine/primitives/workflow.ts
 function createChildWorkflowRunner(input) {
   return async (child, ...args) => {
     const options = args[0] ?? {};
@@ -64500,7 +64566,7 @@ function createChildWorkflowRunner(input) {
     }
   };
 }
-// dist/builtin/workflows/src/engine/run-durable-admission.ts
+// src/engine/run-durable-admission.ts
 function durableRootRegistrationForRun(args) {
   const shouldRegister = !args.isChildRun && (args.continuationSourceId === undefined || args.continuationSourceId !== args.runId);
   if (!shouldRegister)
@@ -64526,7 +64592,7 @@ async function admitDurableRootRun(args) {
     await args.backend.flush();
 }
 
-// dist/builtin/workflows/src/engine/run-durable-finalize.ts
+// src/engine/run-durable-finalize.ts
 async function finalizeDurableTerminalStatus(input) {
   if (!input.isRoot)
     return;
@@ -64569,7 +64635,7 @@ function toDurableStatus(status) {
   }
 }
 
-// dist/builtin/workflows/src/engine/run-durable-stage-session.ts
+// src/engine/run-durable-stage-session.ts
 function createDurableStageSessionRecorder(input) {
   return async (stageRunId, snapshot, options) => {
     if (stageRunId === input.runId) {
@@ -64584,7 +64650,7 @@ function createDurableStageSessionRecorder(input) {
   };
 }
 
-// dist/builtin/workflows/src/shared/session-transcript.ts
+// src/shared/session-transcript.ts
 import { readFileSync as readFileSync3, statSync as statSync7 } from "node:fs";
 function isReopenableSessionTranscript(path7) {
   try {
@@ -64623,7 +64689,7 @@ function hasUsableContentBlock(block) {
   return [contentBlock.text, contentBlock.thinking, contentBlock.data, contentBlock.name].some((value2) => typeof value2 === "string" && value2.trim().length > 0);
 }
 
-// dist/builtin/workflows/src/durable/completed-catalog-stage-groups.ts
+// src/durable/completed-catalog-stage-groups.ts
 function validBoundaryRecordSet(checkpoints, strict) {
   const stages = checkpoints.filter((item) => item.kind === "stage");
   const boundaries = stages.filter((item) => item.topology?.boundary !== undefined);
@@ -64838,7 +64904,7 @@ function hasCurrentStageIdentity(draft) {
   return draft.topology?.sourceOrder !== undefined || draft.topology?.status !== undefined || draft.topology?.occurrenceKey !== undefined || draft.topology?.boundary !== undefined;
 }
 
-// dist/builtin/workflows/src/runs/background/runner.ts
+// src/runs/background/runner.ts
 function workflowConnectGuidance(runId) {
   return `Run /workflow connect ${runId} to see agents working and chat with and steer each stage.`;
 }
@@ -64909,7 +64975,7 @@ function runDetached(def, inputs, opts = {}) {
   return buildDetachedAccepted(def.name, runId);
 }
 
-// dist/builtin/workflows/src/runs/background/startup-admission.ts
+// src/runs/background/startup-admission.ts
 function createWorkflowStartupObserver(beforeReady) {
   const startup = Promise.withResolvers();
   return {
@@ -64944,7 +65010,7 @@ function workflowStartupFailureMessage(admission, snapshotError, fallback) {
   return admission.resultError ?? snapshotError ?? (admission.error instanceof Error ? admission.error.message : admission.error === undefined ? undefined : String(admission.error)) ?? fallback;
 }
 
-// dist/builtin/workflows/src/durable/resume-runtime.ts
+// src/durable/resume-runtime.ts
 function resolveDurableEntry(workflowId, catalog) {
   if (!isFullRunId(workflowId))
     return { kind: "malformed", message: malformedRunIdMessage(workflowId) };
@@ -65155,7 +65221,7 @@ async function prepareRuntimeDurableResumable(getBackend, workflowId) {
   return backend.listResumableWorkflows();
 }
 
-// dist/builtin/workflows/src/durable/completed-catalog.ts
+// src/durable/completed-catalog.ts
 function listCompletedFromBackend(backend) {
   return backend.listCompletedWorkflows();
 }
@@ -65471,7 +65537,7 @@ function syntheticCheckpointStage(checkpointCount, completedAt) {
   };
 }
 
-// dist/builtin/workflows/src/durable/completed-subtree.ts
+// src/durable/completed-subtree.ts
 function durableCompletedNestedRunSubtree(backend, rootWorkflowId, childRunId) {
   const nested = durableNestedRunSnapshots(backend, rootWorkflowId);
   if (!nested.some((run2) => run2.id === childRunId))
@@ -65493,7 +65559,7 @@ function isTerminalStage2(status) {
   return status === "completed" || status === "failed" || status === "skipped";
 }
 
-// dist/builtin/workflows/src/engine/run-durable-topology.ts
+// src/engine/run-durable-topology.ts
 function durableRunTopology(run2) {
   return {
     runId: run2.id,
@@ -65653,7 +65719,7 @@ function workflowChildRunId(checkpoint) {
   return (parseWorkflowChildResult(checkpoint.output) ?? (hasCurrentIdentity ? undefined : parseLegacyWorkflowChildResult(checkpoint.output)))?.runId;
 }
 
-// dist/builtin/workflows/src/engine/run-returned-status.ts
+// src/engine/run-returned-status.ts
 function classifyReturnedRunStatus(result, runSnapshot) {
   const structuredFailure = runSnapshot !== undefined ? structuredRecoverableWorkflowFailure(runSnapshot) : undefined;
   if (structuredFailure !== undefined) {
@@ -65706,7 +65772,7 @@ function returnedRecoverableBlockedMetadata(error) {
   };
 }
 
-// dist/builtin/workflows/src/engine/run-terminal-failure.ts
+// src/engine/run-terminal-failure.ts
 function finalizeTerminalFailure(input) {
   const { runId, runSnapshot, store: store2, persistence, metadata, onRunEnd } = input;
   const failedToolNode = metadata.failedToolNodeId === undefined ? undefined : runSnapshot.toolNodes?.find((node) => node.id === metadata.failedToolNodeId);
@@ -65732,7 +65798,7 @@ function finalizeTerminalFailure(input) {
   return reconcileTerminalRunResult(runId, runSnapshot, store2, { status: "failed", error: metadata.errorMessage }, onRunEnd);
 }
 
-// dist/builtin/workflows/src/engine/run-tool-admission-boundary.ts
+// src/engine/run-tool-admission-boundary.ts
 function createToolAdmissionBoundary() {
   let closedReason;
   let openSections = 0;
@@ -65779,7 +65845,7 @@ function createToolAdmissionBoundary() {
   };
 }
 
-// dist/builtin/workflows/src/engine/run-tool-execution-tracker.ts
+// src/engine/run-tool-execution-tracker.ts
 function createAdmittedToolExecutionTracker(options = {}) {
   const inFlight = new Set;
   const admissions = [];
@@ -65899,7 +65965,7 @@ function createAdmittedToolExecutionTracker(options = {}) {
   };
 }
 
-// dist/builtin/workflows/src/engine/run-tool-node-lifecycle.ts
+// src/engine/run-tool-node-lifecycle.ts
 function createToolNodeLifecycle(input) {
   const { store: store2, tracker, run: run2, sourceToReplayedNodeIds } = input;
   const ownsCurrentRun = () => store2.runs().some((candidate) => candidate === run2);
@@ -65992,7 +66058,7 @@ function createTrackedToolPrimitive(input) {
   return { tool, admittedTools, abandonInFlightAsCancelled, observedQuitCancellation: () => observedQuit };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-child-boundary.ts
+// src/runs/foreground/executor-child-boundary.ts
 function workflowChildResultFromReplay(snapshot) {
   const candidate = {
     workflow: snapshot.workflow,
@@ -66182,10 +66248,10 @@ function createWorkflowBoundaryFactory(input) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-stage-factory.ts
+// src/runs/foreground/executor-stage-factory.ts
 import { runCallback as runCallback3, runSynchronousCallback } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/runs/foreground/executor-queued-user-message.ts
+// src/runs/foreground/executor-queued-user-message.ts
 function removedMessages(before, after) {
   const remaining = [...after];
   const removed = [];
@@ -66238,7 +66304,7 @@ function createQueuedUserMessageConsumptionWatcher(armContinuation) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-stage-call.ts
+// src/runs/foreground/executor-stage-call.ts
 function normalizeTrackedStageCallOptions(input) {
   if (typeof input === "boolean")
     return { eagerSession: input, allowFinalized: false };
@@ -66502,7 +66568,7 @@ function createTrackedStageCaller(input) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-stage-context.ts
+// src/runs/foreground/executor-stage-context.ts
 function noticeValue(value2) {
   if (typeof value2 === "string")
     return value2;
@@ -66650,7 +66716,7 @@ function createStageContext(input) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-tool-execution-buffer.ts
+// src/runs/foreground/stage-tool-execution-buffer.ts
 function eventType(event) {
   return String(event.type ?? "");
 }
@@ -66691,7 +66757,7 @@ class StageToolExecutionBuffer {
   }
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-stage-control.ts
+// src/runs/foreground/executor-stage-control.ts
 function createStageControlHandle(runtime) {
   const messagePreparation = () => {
     const meta2 = runtime.innerCtx.__sessionMeta();
@@ -66890,7 +66956,7 @@ function createStageControlHandle(runtime) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-stage-replay.ts
+// src/runs/foreground/executor-stage-replay.ts
 function createReplayStageContext(input) {
   const { runId, name, stageId, stageSnapshot, replaySource } = input;
   let replayFinalized = false;
@@ -67023,15 +67089,15 @@ function createReplayStageContext(input) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-context.ts
+// src/runs/foreground/stage-runner-context.ts
 import { createStructuredOutputCapture, runCallback as runCallback2 } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-controller.ts
+// src/runs/foreground/stage-runner-controller.ts
 import {
   shouldApplyCodexFastModeForScope
 } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/runs/foreground/stage-delivery-activity.ts
+// src/runs/foreground/stage-delivery-activity.ts
 class StageDeliveryActivity {
   listeners = new Set;
   active = new Set;
@@ -67077,7 +67143,7 @@ class StageDeliveryActivity {
   }
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-candidate.ts
+// src/runs/foreground/stage-runner-candidate.ts
 function effectiveCandidateReasoning(candidate, fallback) {
   return candidate.reasoningLevel ?? fallback;
 }
@@ -67089,7 +67155,7 @@ function candidateLabel(candidate) {
   return candidate.reasoningLevel !== undefined ? `${candidate.id}:${candidate.reasoningLevel}` : candidate.id;
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-message-admission.ts
+// src/runs/foreground/stage-runner-message-admission.ts
 class StageMessageAdmission {
   tail;
   session;
@@ -67272,7 +67338,7 @@ class StageMessageAdmission {
   }
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-messages.ts
+// src/runs/foreground/stage-runner-messages.ts
 function extractMessageText2(message) {
   const { content } = message;
   if (typeof content === "string")
@@ -67375,7 +67441,7 @@ function assistantMessage(text) {
   ];
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-options.ts
+// src/runs/foreground/stage-runner-options.ts
 import { SessionManager } from "@bastani/atomic";
 function workflowSessionOptions(meta2) {
   return {
@@ -67444,7 +67510,7 @@ function unavailableSync(property) {
   throw new Error(`atomic-workflows: stage AgentSession property "${property}" is unavailable until the SDK session has been created`);
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-pause.ts
+// src/runs/foreground/stage-runner-pause.ts
 function nativeQueuePauseControl(session) {
   if (typeof session?.pauseQueuedMessages !== "function" || typeof session.resumeQueuedMessages !== "function")
     return;
@@ -67600,7 +67666,7 @@ class StageSessionPause {
   }
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-session.ts
+// src/runs/foreground/stage-runner-session.ts
 function stageSessionExtensionRunner(current) {
   const runner = current.extensionRunner;
   if (runner && typeof runner.hasHandlers === "function" && typeof runner.emit === "function") {
@@ -67646,7 +67712,7 @@ async function rejectDisposedCreatedSession(result, stageName) {
   throw new Error(`atomic-workflows: stage "${stageName}" session has been disposed`);
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-replacement.ts
+// src/runs/foreground/stage-runner-replacement.ts
 class StageSessionReplacement {
   previous;
   cleanups = new Set;
@@ -67679,7 +67745,7 @@ class StageSessionReplacement {
   }
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-send-user-message.ts
+// src/runs/foreground/stage-runner-send-user-message.ts
 function createLocalPromptOwnershipObserver(session, promptStarted) {
   let armed = false;
   let observed = false;
@@ -67783,7 +67849,7 @@ async function sendStageUserMessage(activeSession, content, options, beforeDeliv
   }
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-session-options.ts
+// src/runs/foreground/stage-runner-session-options.ts
 import { SessionManager as SessionManager2 } from "@bastani/atomic";
 function buildStageSessionOptions(input) {
   const options = input.candidate === undefined ? { ...input.effectiveStageOptions ?? {} } : {
@@ -67807,7 +67873,7 @@ function buildStageSessionOptions(input) {
   return Object.keys(options).length === 0 ? undefined : options;
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-structured-output.ts
+// src/runs/foreground/stage-runner-structured-output.ts
 import { createStructuredOutputTool } from "@bastani/atomic";
 var STRUCTURED_OUTPUT_MAX_CORRECTIVE_PROMPTS = 3;
 var STRUCTURED_OUTPUT_MISSING_ERROR = "atomic-workflows: stage configured with schema must finish by calling structured_output.";
@@ -67874,7 +67940,7 @@ function stageOptionsWithStructuredOutput(options, capture) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-unresolved-overflow.ts
+// src/runs/foreground/stage-runner-unresolved-overflow.ts
 function unresolvedContextOverflowMessage(event) {
   if (event === null || typeof event !== "object")
     return;
@@ -67914,7 +67980,7 @@ function terminatingToolCallId(event) {
   return typeof callId === "string" && callId.length > 0 ? callId : undefined;
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-controller.ts
+// src/runs/foreground/stage-runner-controller.ts
 class StageSessionController {
   opts;
   meta;
@@ -68401,10 +68467,10 @@ class StageSessionController {
   }
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-output.ts
+// src/runs/foreground/stage-runner-output.ts
 import { createHash as createHash3 } from "node:crypto";
 import { mkdir as mkdir6, writeFile as writeFile10 } from "node:fs/promises";
-import { basename as basename4, dirname as dirname11, isAbsolute as isAbsolute10, join as join27, resolve as resolve12 } from "node:path";
+import { basename as basename4, dirname as dirname10, isAbsolute as isAbsolute10, join as join27, resolve as resolve12 } from "node:path";
 var DEFAULT_MAX_OUTPUT_BYTES = 200 * 1024;
 var DEFAULT_MAX_OUTPUT_LINES = 5000;
 function normalizeMaxOutput2(maxOutput) {
@@ -68584,7 +68650,7 @@ async function finalizePromptOutput(fullOutput, outputOptions, runtimeCwd, runId
   const transcriptFile = transcriptPath(runId, outputPath);
   const transcript = renderTranscript(messages, fullOutput);
   try {
-    await mkdir6(dirname11(outputPath), { recursive: true });
+    await mkdir6(dirname10(outputPath), { recursive: true });
     await writeFile10(outputPath, fullOutput, "utf8");
   } catch (err) {
     return `${displayOutput}
@@ -68596,7 +68662,7 @@ ${err instanceof Error ? err.message : String(err)}`;
   let transcriptError;
   try {
     await ensureWorkflowArtifactRunDirectory(runId);
-    await mkdir6(dirname11(transcriptFile), { recursive: true });
+    await mkdir6(dirname10(transcriptFile), { recursive: true });
     await writeFile10(transcriptFile, transcript, "utf8");
     transcriptAvailable = true;
   } catch (err) {
@@ -68613,7 +68679,7 @@ ${err instanceof Error ? err.message : String(err)}`;
 ${reference}`;
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-context.ts
+// src/runs/foreground/stage-runner-context.ts
 function createStageContext2(opts) {
   const { stageId, stageName, adapters, runId, workflowIntercomGroup, signal, stageOptions, executionMode } = opts;
   const structuredOutputCapture = stageOptions?.schema ? createStructuredOutputCapture() : undefined;
@@ -68814,7 +68880,7 @@ function createStageContext2(opts) {
     }
   };
 }
-// dist/builtin/workflows/src/runs/foreground/executor-stage-factory.ts
+// src/runs/foreground/executor-stage-factory.ts
 function createWorkflowStageFactory(input) {
   return (name, options, stageFailFastScope) => {
     input.exit.throwIfWorkflowExitSelected();
@@ -69156,7 +69222,7 @@ function createWorkflowStageFactory(input) {
   };
 }
 
-// dist/builtin/workflows/src/engine/runtime.ts
+// src/engine/runtime.ts
 class EngineRuntime {
   runId;
   workflowIntercomGroup;
@@ -69263,7 +69329,7 @@ class EngineRuntime {
   }
 }
 
-// dist/builtin/workflows/src/engine/workflow-activity.ts
+// src/engine/workflow-activity.ts
 import { runCallback as runCallback4 } from "@bastani/atomic";
 function nextEventLoopTurn() {
   return new Promise((resolve13) => setTimeout(resolve13, 0));
@@ -69272,7 +69338,7 @@ function runWorkflowDefinitionCallback(name, runId, callback) {
   return runCallback4({ kind: "workflow.run", name, runId }, callback);
 }
 
-// dist/builtin/workflows/src/engine/run.ts
+// src/engine/run.ts
 async function run(def, inputs, opts = {}) {
   if (!isWorkflowDefinition(def))
     throw new Error(workflowDefinitionRequirementMessage("run(definition, inputs)", def));
@@ -69784,7 +69850,7 @@ async function run(def, inputs, opts = {}) {
     }
   }
 }
-// dist/builtin/workflows/src/shared/types.ts
+// src/shared/types.ts
 var INTERACTIVE_WORKFLOW_POLICY = Object.freeze({
   mode: "interactive",
   allowHumanInput: true,
@@ -69798,13 +69864,13 @@ var NON_INTERACTIVE_WORKFLOW_POLICY = Object.freeze({
   allowInputPicker: false
 });
 
-// dist/builtin/workflows/src/sdk-surface.ts
+// src/sdk-surface.ts
 var REMOVED_RUN_WORKFLOW_MESSAGE = "@bastani/workflows no longer exports runWorkflow; author workflows with workflow({...})";
 var runWorkflow = () => {
   throw new Error(REMOVED_RUN_WORKFLOW_MESSAGE);
 };
 
-// dist/builtin/workflows/src/extension/workflow-module-loader.ts
+// src/extension/workflow-module-loader.ts
 var WORKFLOWS_MODULE_SPECIFIER = "@bastani/workflows";
 var WORKFLOWS_BUILTIN_MODULE_SPECIFIER = `${WORKFLOWS_MODULE_SPECIFIER}/builtin`;
 var TYPEBOX_MODULE_SPECIFIER = "typebox";
@@ -69906,7 +69972,7 @@ function collectWorkflowModuleCandidates(mod) {
   return candidates;
 }
 
-// dist/builtin/workflows/src/extension/discovery-loaders.ts
+// src/extension/discovery-loaders.ts
 async function scanWorkflowDir(dir) {
   try {
     const entries = await readdir2(dir, { withFileTypes: true });
@@ -69974,15 +70040,15 @@ async function loadFromPaths(pathsOrMap, kind, baseCwd, diagnostics) {
   return all;
 }
 
-// dist/builtin/workflows/src/extension/discovery.ts
+// src/extension/discovery.ts
 function workflowAgentDirs2(options) {
   if (options?.agentDirs !== undefined)
     return options.agentDirs;
   if (options?.homeDir !== undefined) {
     const homeDir = options.homeDir;
-    return CONFIG_DIR_NAMES2.map((name) => join29(homeDir, name, "agent"));
+    return HOST_CONFIG_DIR_NAMES.map((name) => join29(homeDir, name, "agent"));
   }
-  return getAgentDirs2();
+  return getHostAgentDirs();
 }
 function validateConfig2(config) {
   if (config === null || typeof config !== "object") {
@@ -70108,7 +70174,7 @@ async function discoverWorkflows(options) {
       registry = await applyBatch(candidates, registry, sources, diagnostics);
     }
   }
-  for (const dir of getProjectConfigPaths2(cwd, "workflows").reverse()) {
+  for (const dir of getHostProjectConfigPaths(cwd, "workflows").reverse()) {
     const candidates = await loadFromDir(dir, "project-local", diagnostics);
     registry = await applyBatch(candidates, registry, sources, diagnostics);
   }
@@ -70154,8 +70220,8 @@ async function discoverWorkflows(options) {
   return { registry, sources, errors: diagnostics };
 }
 async function defaultHomeDir() {
-  const { homedir: homedir3 } = await import("node:os");
-  return homedir3();
+  const { homedir: homedir4 } = await import("node:os");
+  return homedir4();
 }
 function discoverStartupWorkflowsSync() {
   return discoverBundledManifest();
@@ -70174,7 +70240,7 @@ function discoverBundledManifest() {
   return { registry, sources, errors: diagnostics };
 }
 
-// dist/builtin/workflows/src/extension/dispatcher.ts
+// src/extension/dispatcher.ts
 function failedRunResult(name, runId, error) {
   return {
     action: "run",
@@ -70317,7 +70383,7 @@ async function dispatch(args, opts) {
   }
 }
 
-// dist/builtin/workflows/src/extension/runtime-active-block-claim.ts
+// src/extension/runtime-active-block-claim.ts
 var inFlightActiveBlockResumes = new Set;
 function claimActiveBlockedResume(_backend, sourceId) {
   if (inFlightActiveBlockResumes.has(sourceId))
@@ -70358,7 +70424,7 @@ function finalizeResumedActiveBlockedSourceRun(source, continuationRunId, store2
   }
 }
 
-// dist/builtin/workflows/src/runs/foreground/postmortem-stage-chat.ts
+// src/runs/foreground/postmortem-stage-chat.ts
 var TERMINAL_POSTMORTEM_STATUSES = new Set(["completed"]);
 function ensurePostMortemStageHandle(runId, stage, deps) {
   if (!TERMINAL_POSTMORTEM_STATUSES.has(stage.status))
@@ -70502,7 +70568,7 @@ function createPostMortemStageHandle(runId, stage, sessionFile, adapters, cwd, d
   };
 }
 
-// dist/builtin/workflows/src/durable/completed-inspection.ts
+// src/durable/completed-inspection.ts
 var completedChatRegistrations = new WeakMap;
 function openCompletedDurableWorkflow(workflowId, deps, catalog = listOpenableCompletedWorkflows(deps.durableBackend)) {
   const resolved = resolveCompletedWorkflow(workflowId, deps.durableBackend, catalog);
@@ -70586,7 +70652,7 @@ function disposeCompletedChatHandle(handle) {
   });
 }
 
-// dist/builtin/workflows/src/extension/runtime-durable-resume.ts
+// src/extension/runtime-durable-resume.ts
 function createDurableResumeRuntime(deps) {
   const hydrateStoredWorkflowCandidates = async (backend, target) => {
     const ids = deps.store.runs().map((run2) => run2.id).filter((id) => target === undefined || id === target);
@@ -70680,7 +70746,7 @@ function resolveCatalogEntry(workflowId, catalog) {
   return catalog.find((entry) => entry.workflowId === workflowId);
 }
 
-// dist/builtin/workflows/src/extension/runtime.ts
+// src/extension/runtime.ts
 function createExtensionRuntime(opts = {}) {
   const registry = opts.registry ?? createRegistry(opts.definitions ?? []);
   const adapters = opts.adapters;
@@ -70926,11 +70992,10 @@ function createExtensionRuntime(opts = {}) {
   };
 }
 
-// dist/builtin/workflows/src/extension/status-writer.ts
+// src/extension/status-writer.ts
 import { mkdir as mkdir7, rename, writeFile as writeFile11 } from "node:fs/promises";
-import { dirname as dirname12, join as join30 } from "node:path";
-import { CONFIG_DIR_NAME as CONFIG_DIR_NAME3 } from "@bastani/atomic";
-var DEFAULT_STATUS_SUBPATH = join30(CONFIG_DIR_NAME3, "workflows", "status.json");
+import { dirname as dirname11, join as join30 } from "node:path";
+var DEFAULT_STATUS_SUBPATH = join30(HOST_CONFIG_DIR_NAME, "workflows", "status.json");
 function resolveStatusFilePath(config, opts = {}) {
   if (config.statusFilePath)
     return config.statusFilePath;
@@ -70938,7 +71003,7 @@ function resolveStatusFilePath(config, opts = {}) {
   return join30(root, DEFAULT_STATUS_SUBPATH);
 }
 async function atomicWriteJson(path7, content) {
-  const dir = dirname12(path7);
+  const dir = dirname11(path7);
   await mkdir7(dir, { recursive: true });
   const tmpPath = `${path7}.tmp`;
   await writeFile11(tmpPath, content, "utf8");
@@ -71011,7 +71076,7 @@ function createStatusWriter(store2, config, opts = {}) {
   };
 }
 
-// dist/builtin/workflows/src/extension/workflow-model-catalog.ts
+// src/extension/workflow-model-catalog.ts
 function workflowModelCatalogFromContext(ctx) {
   if (ctx?.modelRegistry === undefined && ctx?.model === undefined)
     return;
@@ -71032,7 +71097,7 @@ function workflowModelCatalogFromContext(ctx) {
   };
 }
 
-// dist/builtin/workflows/src/extension/mcp.ts
+// src/extension/mcp.ts
 function setMcpScope(pi, opts) {
   if (!pi.events)
     return;
@@ -71054,7 +71119,7 @@ function clearMcpScope(pi, stageId) {
   pi.events.emit("mcp.scope.set", payload);
 }
 
-// dist/builtin/workflows/src/extension/workflow-ports.ts
+// src/extension/workflow-ports.ts
 function makePersistencePort(pi, persistRuns) {
   if (!persistRuns)
     return;
@@ -71091,7 +71156,7 @@ function makeMcpPort(pi) {
   };
 }
 
-// dist/builtin/workflows/src/extension/workflow-reload-coordinator.ts
+// src/extension/workflow-reload-coordinator.ts
 function createBatch(discoveryGeneration) {
   let resolve14 = () => {
     return;
@@ -71142,7 +71207,7 @@ function createWorkflowReloadCoordinator(reload) {
   };
 }
 
-// dist/builtin/workflows/src/extension/workflow-reload-report.ts
+// src/extension/workflow-reload-report.ts
 function normalizeWorkflowReloadReport(report) {
   return report ?? {
     outcome: "applied",
@@ -71159,7 +71224,7 @@ function workflowReloadDiagnostics(configDiagnostics, discoveryDiagnostics) {
   ];
 }
 
-// dist/builtin/workflows/src/extension/extension-runtime-state.ts
+// src/extension/extension-runtime-state.ts
 function createWorkflowExtensionRuntimeState(pi, adapters, resolveCwd = () => pi.sessionManager?.getCwd?.() ?? process.cwd()) {
   const persistenceRef = { current: makePersistencePort(pi, WORKFLOW_CONFIG_DEFAULTS.persistRuns) };
   const mcpPort = makeMcpPort(pi);
@@ -71510,7 +71575,7 @@ function createWorkflowExtensionRuntimeState(pi, adapters, resolveCwd = () => pi
   };
 }
 
-// dist/builtin/workflows/src/extension/postmortem-deps.ts
+// src/extension/postmortem-deps.ts
 function resolveStageCwd(runId) {
   try {
     const backend = getDurableBackend();
@@ -71541,7 +71606,7 @@ function createPostMortemHandleResolver(deps) {
   };
 }
 
-// dist/builtin/workflows/src/extension/render-component.ts
+// src/extension/render-component.ts
 function dynamicTextRenderComponent(renderText) {
   return {
     render(width) {
@@ -71554,7 +71619,7 @@ function dynamicTextRenderComponent(renderText) {
   };
 }
 
-// dist/builtin/workflows/src/extension/renderers.ts
+// src/extension/renderers.ts
 function renderRunBanner(payload) {
   const inputCount = payload.inputs ? Object.keys(payload.inputs).length : 0;
   const inputNote = inputCount > 0 ? ` (${inputCount} input${inputCount !== 1 ? "s" : ""})` : "";
@@ -71565,7 +71630,7 @@ function renderRunSummary(payload) {
   return `${icon} workflow [${payload.runId}] ${payload.status}`;
 }
 
-// dist/builtin/workflows/src/extension/atomic-stage-session.ts
+// src/extension/atomic-stage-session.ts
 import { basename as basename5 } from "node:path";
 function resolveSessionCwd(options) {
   return options?.cwd ?? options?.sessionManager?.getCwd() ?? process.cwd();
@@ -71576,8 +71641,7 @@ async function prepareAtomicStageSessionOptions(options, sdk, prepareOptions = {
     return atomicOptions;
   const inheritanceSnapshot = prepareOptions.resourceLoaderInheritanceSnapshot;
   const cwd = resolveSessionCwd(atomicOptions);
-  const hasAgentDirOverride = atomicOptions?.agentDir !== undefined;
-  const agentDir = atomicOptions?.agentDir ?? sdk.getAgentDir();
+  const agentDir = atomicOptions?.agentDir ?? getHostAgentDir();
   const settingsManager = atomicOptions?.settingsManager ?? sdk.SettingsManager.create(cwd, agentDir, inheritanceSnapshot?.projectTrusted === undefined ? undefined : { projectTrusted: inheritanceSnapshot.projectTrusted });
   const inheritedBuiltinPackagePaths = inheritanceSnapshot?.builtinPackagePaths;
   const builtinPackagePaths = inheritedBuiltinPackagePaths === undefined ? sdk.getBuiltinPackagePaths?.() ?? [] : [...inheritedBuiltinPackagePaths];
@@ -71592,7 +71656,7 @@ async function prepareAtomicStageSessionOptions(options, sdk, prepareOptions = {
   return {
     ...atomicOptions,
     cwd,
-    ...hasAgentDirOverride ? { agentDir } : {},
+    agentDir,
     settingsManager,
     resourceLoader
   };
@@ -71656,7 +71720,7 @@ async function reloadWorkflowStageResourcesWithEnvIsolation(resourceLoader) {
   }
 }
 
-// dist/builtin/workflows/src/extension/wiring.ts
+// src/extension/wiring.ts
 var LATE_STAGE_MESSAGE_EVENT2 = "atomic:workflow-stage-late-message";
 function isTestContext() {
   return process.env.NODE_TEST_CONTEXT !== undefined || false;
@@ -71919,7 +71983,7 @@ function buildRuntimeAdapters(pi, options = {}) {
   return adapters;
 }
 
-// dist/builtin/workflows/src/shared/render-inputs-schema.ts
+// src/shared/render-inputs-schema.ts
 function renderInputsSchema(name, inputs, opts = {}) {
   return opts.theme === undefined ? renderPlain2(name, inputs, opts.width) : renderPretty(name, inputs, opts.theme, opts.width);
 }
@@ -71993,7 +72057,7 @@ function inputsSummary(name, inputs) {
   return `${totalLabel}  ·  ${reqLabel}  ·  pass via key=value or run \`/workflow ${name}\` with no args for picker`;
 }
 
-// dist/builtin/workflows/src/tui/host-input-form.ts
+// src/tui/host-input-form.ts
 function supportedType(type) {
   switch (type) {
     case "text":
@@ -72044,7 +72108,7 @@ async function openHostInputsForm(ui, options) {
   }
 }
 
-// dist/builtin/workflows/src/tui/inputs-overlay.ts
+// src/tui/inputs-overlay.ts
 function openInputsPicker(ui, opts) {
   return new Promise((resolve14) => {
     const { workflowName, fields, prefilled, theme } = opts;
@@ -72137,7 +72201,7 @@ function openInputsPicker(ui, opts) {
   });
 }
 
-// dist/builtin/workflows/src/tui/session-picker.ts
+// src/tui/session-picker.ts
 import { keyText as keyText2 } from "@bastani/atomic";
 var ESCAPE_CODE = 27;
 var DOUBLE_ESCAPE_SEQUENCE = String.fromCharCode(ESCAPE_CODE, ESCAPE_CODE);
@@ -72407,7 +72471,7 @@ function handleSessionPickerInput(data, state2, rows) {
   return { kind: "noop" };
 }
 
-// dist/builtin/workflows/src/extension/workflow-command-completions.ts
+// src/extension/workflow-command-completions.ts
 function completeToken(argumentText, candidates) {
   const tokenStart = /\s$/.test(argumentText) ? argumentText.length : Math.max(argumentText.lastIndexOf(" "), argumentText.lastIndexOf("\t")) + 1;
   const head = argumentText.slice(0, tokenStart);
@@ -72522,7 +72586,7 @@ function workflowArgumentCompletions(partial, runtime) {
   ]);
 }
 
-// dist/builtin/workflows/src/extension/workflow-policy.ts
+// src/extension/workflow-policy.ts
 var WORKFLOW_NON_INTERACTIVE_MESSAGE = "Workflows are policy-gated in non-interactive (-p) mode; deterministic workflows can run headlessly while runtime human input remains unavailable.";
 function workflowPolicyFromContext(ctx) {
   if (ctx?.hasUI === false)
@@ -72530,7 +72594,7 @@ function workflowPolicyFromContext(ctx) {
   return INTERACTIVE_WORKFLOW_POLICY;
 }
 
-// dist/builtin/workflows/src/extension/workflow-command-utils.ts
+// src/extension/workflow-command-utils.ts
 var WORKFLOW_COMMAND_OUTPUT_CUSTOM_TYPE = "workflows:command-output";
 function emitWorkflowCommandOutput(pi, content, details) {
   if (typeof pi.sendMessage !== "function")
@@ -72673,7 +72737,7 @@ function parseWorkflowArgs(tokens) {
   return result;
 }
 
-// dist/builtin/workflows/src/tui/session-list.ts
+// src/tui/session-list.ts
 function renderSessionList(runs, opts) {
   const now = opts.now ?? Date.now();
   const rows = selectRunsForPicker(runs, "", opts.includeAll, now);
@@ -72689,7 +72753,7 @@ function renderSessionList(runs, opts) {
   return renderStatusList(filtered, { theme: opts.theme, now });
 }
 
-// dist/builtin/workflows/src/tui/session-overlays.ts
+// src/tui/session-overlays.ts
 function openSessionPicker(ui, store2, theme, intent = "connect") {
   function toResult(action) {
     if (intent === "pause")
@@ -72758,7 +72822,7 @@ function openSessionPicker(ui, store2, theme, intent = "connect") {
   });
 }
 
-// dist/builtin/workflows/src/tui/workflow-resume-selector.ts
+// src/tui/workflow-resume-selector.ts
 function latestStageTimestamp(stage) {
   return stage.endedAt ?? stage.startedAt ?? 0;
 }
@@ -72964,7 +73028,7 @@ function openWorkflowResumeSelector(ui, liveRuns, hydrate, options = {}) {
   });
 }
 
-// dist/builtin/workflows/src/durable/resume-catalog.ts
+// src/durable/resume-catalog.ts
 function formatResumableWorkflowList(entries) {
   if (entries.length === 0)
     return "No resumable or completed workflows found.";
@@ -72981,7 +73045,7 @@ ${lines.join(`
 `)}`;
 }
 
-// dist/builtin/workflows/src/durable/retention-policy.ts
+// src/durable/retention-policy.ts
 async function deleteDurableWorkflowIfSafe(backend, workflowId, isInFlight) {
   if (isInFlight(workflowId)) {
     return { ok: false, message: "Cannot delete an in-flight workflow run." };
@@ -73008,7 +73072,7 @@ async function deleteDurableWorkflowIfSafe(backend, workflowId, isInFlight) {
   }
 }
 
-// dist/builtin/workflows/src/extension/workflow-durable-resume-command.ts
+// src/extension/workflow-durable-resume-command.ts
 async function prepareWorkflowResumeCatalog(runtime, suppressedLiveIds, target) {
   const shared = await runtime.prepareDurableCatalog?.();
   const prepared = shared?.resumable ?? await runtime.prepareDurableResumable(target);
@@ -73156,7 +73220,7 @@ function openCompleted(runtime, workflowId, catalog, beforeRestoreCompleted) {
   }, catalog);
 }
 
-// dist/builtin/workflows/src/extension/workflow-resume-shadow.ts
+// src/extension/workflow-resume-shadow.ts
 function classifyDurableResumeShadow(run2, store2, deps = {}) {
   const backend = deps.backend ?? getDurableBackend();
   const handle = getLoadableDurableWorkflow(backend, run2.id);
@@ -73183,7 +73247,7 @@ function reconcileDurableResumeShadow(run2, store2, deps = {}) {
   return classifyDurableResumeShadow(run2, store2, deps) === "eligible";
 }
 
-// dist/builtin/workflows/src/extension/workflow-resume-picker-rows.ts
+// src/extension/workflow-resume-picker-rows.ts
 function isResumableLiveRun(run2) {
   if (!getDurableBackend().isWorkflowLoadable(run2.id))
     return false;
@@ -73215,7 +73279,7 @@ function resumePickerLiveUpdateOptions(runStore, runtime) {
   };
 }
 
-// dist/builtin/workflows/src/extension/workflow-run-control-command.ts
+// src/extension/workflow-run-control-command.ts
 async function handleRunControlCommand(action, rest, ctx, reporter, deps) {
   const policy = workflowPolicyFromContext(ctx);
   const print = (msg) => reporter.info(msg);
@@ -73616,7 +73680,7 @@ Picker requires an interactive UI surface. Pass a runId: /workflow attach <id> [
   return false;
 }
 
-// dist/builtin/workflows/src/extension/workflow-command-registration.ts
+// src/extension/workflow-command-registration.ts
 function registerWorkflowSlashCommand(pi, workflowCommands, deps) {
   registerWorkflowCommand(pi, "workflow", {
     description: "Run or inspect Atomic workflows. Usage: /workflow <name> [key=value…] | /workflow [list|status|connect|attach|interrupt|quit|pause|resume|inputs|reload] [args]",
@@ -73802,10 +73866,10 @@ Available: ${formatAvailableWorkflowNames(deps.runtimeProxy.registry.names())}`)
   }
 }
 
-// dist/builtin/workflows/src/extension/workflow-tool.ts
+// src/extension/workflow-tool.ts
 import { getSupportedThinkingLevels } from "@earendil-works/pi-ai/compat";
 
-// dist/builtin/workflows/src/extension/workflow-status-summary.ts
+// src/extension/workflow-status-summary.ts
 function stageIsActive(stage) {
   return stage.status === "running" || stage.status === "awaiting_input";
 }
@@ -73903,7 +73967,7 @@ function buildWorkflowStatusListing(snapshots, filter = "all", now = Date.now())
   };
 }
 
-// dist/builtin/workflows/src/extension/workflow-tool-content.ts
+// src/extension/workflow-tool-content.ts
 function stringifyWorkflowToolResult(result) {
   return JSON.stringify(result, null, 2);
 }
@@ -74141,7 +74205,7 @@ function workflowGetResult(runtime, args) {
   };
 }
 
-// dist/builtin/workflows/src/runs/background/quit-tool-node.ts
+// src/runs/background/quit-tool-node.ts
 async function abortToolNode(runId, nodeId, opts) {
   const activeStore = opts?.store ?? store;
   const toolControls = opts?.toolControlRegistry ?? toolControlRegistry;
@@ -74168,7 +74232,7 @@ async function abortToolNode(runId, nodeId, opts) {
   };
 }
 
-// dist/builtin/workflows/src/extension/workflow-tool-control.ts
+// src/extension/workflow-tool-control.ts
 function controlFailure(action, runId, error) {
   return {
     action,
@@ -74564,7 +74628,7 @@ ${continuation.message}`;
   }
 }
 
-// dist/builtin/workflows/src/extension/workflow-stage-results.ts
+// src/extension/workflow-stage-results.ts
 function cloneStage(stage) {
   const cloned = structuredClone(stage);
   if (cloned.sessionFile !== undefined)
@@ -74738,7 +74802,7 @@ function snapshotTranscriptEntryCount(snapshot) {
   return (snapshot?.toolEvents?.length ?? 0) + (snapshot?.result !== undefined ? 1 : 0) + (snapshot?.error !== undefined ? 1 : 0);
 }
 
-// dist/builtin/workflows/src/extension/workflow-tool-inspection.ts
+// src/extension/workflow-tool-inspection.ts
 function workflowStagesResult(args) {
   const target = resolveToolRunTarget(args, "No active run to inspect.");
   const filter = args.statusFilter ?? "all";
@@ -74856,7 +74920,7 @@ function workflowTranscriptResult(args) {
   });
 }
 
-// dist/builtin/workflows/src/extension/workflow-tool-send.ts
+// src/extension/workflow-tool-send.ts
 function hasPayloadProperty(args) {
   return args.text !== undefined || args.response !== undefined || args.message !== undefined;
 }
@@ -75085,7 +75149,7 @@ async function workflowSendAction(args, deps = {}) {
   }
 }
 
-// dist/builtin/workflows/src/extension/workflow-tool.ts
+// src/extension/workflow-tool.ts
 function makeExecuteWorkflowTool(runtime, reloadWorkflowResources, ensureWorkflowResourcesLoaded = () => {}, sendDeps = {}) {
   return async function executeWorkflowTool(args, ctx) {
     const action = args.action ?? "run";
@@ -75180,7 +75244,7 @@ function makeExecuteWorkflowTool(runtime, reloadWorkflowResources, ensureWorkflo
   };
 }
 
-// dist/builtin/workflows/src/extension/render-call.ts
+// src/extension/render-call.ts
 function runTarget(args) {
   if (args.workflow !== undefined && args.workflow.trim().length > 0)
     return args.workflow;
@@ -75253,7 +75317,7 @@ function renderCall(args, opts = {}) {
   return fitLine3(line, opts.width);
 }
 
-// dist/builtin/workflows/src/extension/render-result.ts
+// src/extension/render-result.ts
 import { wrapTextWithAnsi as wrapTextWithAnsi2 } from "@earendil-works/pi-tui";
 function fitLine4(line, width) {
   if (width === undefined || width <= 0)
@@ -75455,7 +75519,7 @@ function renderResult(result, opts) {
   }
 }
 
-// dist/builtin/workflows/src/extension/workflow-prompts.ts
+// src/extension/workflow-prompts.ts
 var WORKFLOW_TOOL_DESCRIPTION = "Run named builtin, project, user, or package workflows; custom definitions may import reusable project/package workflows or builtin definitions from @bastani/workflows/builtin and nest them with ctx.workflow(...), including deeper composition within the configured maxDepth; " + "when workflow execution fits but another shape would better achieve the task, author a custom TypeScript workflow({...}) inline with normal coding tools, reload it, and run it; after successfully creating and reloading a newly authored custom workflow, report the folder containing its generated code as 'Custom workflow created. You can inspect its code at: <workflow-folder-path>'; do this only for newly created custom workflows, never builtin or pre-existing workflows; " + "discover with list/get/inputs/models, list session runs with status (no runId; statusFilter narrows the list), inspect status/stages/stage details, " + "send prompt answers or steering only while the root workflow is nonterminal, pause/resume/interrupt/quit runs, and reload workflow resources. " + "For large stage handoffs, write context to files/artifacts, pass paths via reads, and prompt downstream agents to 'Read the file at <path>...' instead of injecting large previous text. " + "Wrap critical parts of run inputs and steering messages in <keepContext>...</keepContext> so compaction preserves them verbatim in the stages that inherit them; tag role constraints, prohibitions, must-hold criteria, and identifiers, not background or bulk reference material. " + "For transcripts, prefer status/stages/stage to get sessionFile/transcriptPath, " + "quote the exact path without rewriting separators (Windows backslashes are valid), " + "then search it with rg/grep and read small ranges; transcript is path-only by default when sessionFile/transcriptPath exists, explicit tail/limit returns bounded previews, and missing transcript paths fall back to a small preview. " + "Use action 'models' to inspect models in the configured catalog; the result is a configured-auth snapshot showing what's present in the registry with configured authentication, not proof of credentials, entitlements, OAuth freshness, or live provider access. " + "When authoring a workflow that should dynamically select a model, first call workflow({ action: 'models' }) to inspect the configured catalog, then select from the returned provider/id entries considering the isCurrent marker and available thinking levels.";
 var DEFAULT_PROMPT_GUIDANCE = [
   `**Workflows**: Treat workflows as the default execution path for any non-trivial task and for any request that has inherent structure plus an objective you can make verifiable. Use the \`workflow\` tool for existing named workflows; when the task needs a graph that is not installed, author a custom TypeScript \`workflow({...})\` inline with normal coding tools, reload workflow resources, and run it.
@@ -75493,7 +75557,7 @@ var DEFAULT_PROMPT_GUIDANCE = [
   - For transcripts, avoid whole-file reads. Get \`sessionFile\`/\`transcriptPath\` from \`stages\` or \`stage\`, preserve the exact path and platform separators, search with \`rg\`/\`grep\`, and read small relevant ranges; use explicit \`tail\` or \`limit\` only for a bounded preview.`,
   `**Workflow authoring and handoffs**:
   - When a user asks to create or edit a workflow, clarify only unresolved requirements that materially affect its purpose, inputs, stages, handoffs, validation, success criteria, or starter pattern. Read the workflow docs/examples, implement the TypeScript definition with normal coding tools, reload it, and run representative test inputs before presenting it. Use the create-spec skill when it adds value; it is not mandatory when context is already sufficient.
-  - After creating and reloading a newly authored custom workflow, close the loop by stating the folder containing the workflow file just written, for example \`.atomic/workflows/\`, in this shape: \`Custom workflow created. You can inspect its code at: <workflow-folder-path>\`. Do this only for newly created custom workflows, never builtin or pre-existing workflows.
+  - After creating and reloading a newly authored custom workflow, close the loop by stating the folder containing the workflow file just written, for example \`.pi/workflows/\`, in this shape: \`Custom workflow created. You can inspect its code at: <workflow-folder-path>\`. Do this only for newly created custom workflows, never builtin or pre-existing workflows.
   - When creating or editing a workflow that pins an explicit stage \`model\` or \`fallbackModels\`, consult \`packages/coding-agent/docs/models/model-selection.md\` for role-based recommendations, then call \`workflow({ action: "models" })\` to see the models actually present in the user's configured catalog. Use only the catalog's returned \`fullId\` values as model strings, and append a thinking suffix only when that exact level appears in the entry's \`availableThinkingLevels\`; treat an absent or empty \`availableThinkingLevels\` as no suffix support rather than inferring one. If a guide-recommended model for the role is unavailable, try another guide-recommended model that is present in the catalog. If no recommendation intersects with the catalog, leave the stage unpinned rather than inventing a substitute, and mention the limitation, asking the user only if the workflow requires an explicit model choice. If the catalog is empty, continue with unpinned stages, state that no configured models were returned, and do not fabricate model IDs. Do not inspect or infer credentials, environment variables, auth files, token validity, entitlements, or the reason a model is absent; \`isCurrent\` marks the active selection, not a quality recommendation.
   - Consult docs/workflows.md and its starter patterns (Classify-and-act, Fan-out-and-synthesize, Adversarial verification, Generate-and-filter, Tournament, and Loop until done) when designing a stage graph.
   - Treat workflow composition as a first-class authoring option. Before duplicating stages, inspect reusable workflow modules and builtin exports; import their definitions and invoke them with \`ctx.workflow(...)\`, mapping typed inputs and consuming only declared outputs. Nested workflows can themselves import children, so combine small reusable graphs into a richer parent while respecting \`maxDepth\`.
@@ -75509,7 +75573,7 @@ var DEFAULT_PROMPT_GUIDANCE = [
   - A model stage sees its local prompt, artifacts, tools, and reads, not the graph name or surrounding implementation. State the concrete action, evidence, and success criteria directly.`
 ];
 
-// dist/builtin/workflows/src/extension/workflow-schema.ts
+// src/extension/workflow-schema.ts
 import { Type as Type21 } from "typebox";
 var WorkflowParametersSchema = Type21.Object({
   workflow: Type21.Optional(Type21.String({
@@ -75603,7 +75667,7 @@ var WorkflowParametersSchema = Type21.Object({
   }))
 }, { additionalProperties: false });
 
-// dist/builtin/workflows/src/extension/workflow-tool-registration.ts
+// src/extension/workflow-tool-registration.ts
 function registerWorkflowTool(pi, executeWorkflowTool, runWithLifecycleSuppressedForPolicy) {
   if (typeof pi.registerTool !== "function")
     return;
@@ -75635,8 +75699,9 @@ function registerWorkflowTool(pi, executeWorkflowTool, runWithLifecycleSuppresse
   });
 }
 
-// dist/builtin/workflows/src/extension/extension-factory.ts
+// src/extension/extension-factory.ts
 function registerWorkflowMessageRenderers(pi) {
+  ensureAtomicThemeInitialized();
   if (typeof pi.registerMessageRenderer !== "function")
     return;
   pi.registerMessageRenderer("workflow.run.start", (payload) => dynamicTextRenderComponent(() => renderRunBanner(payload)));

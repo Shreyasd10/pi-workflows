@@ -5,6 +5,7 @@ import type {
 	PackageSource,
 } from "@bastani/atomic";
 import type { StageSessionRuntime } from "../runs/foreground/stage-runner.js";
+import { getHostAgentDir } from "../shared/host-paths.js";
 
 export interface PiSdkSettingsManager {
 	getCodexFastModeSettings(): { readonly chat: boolean; readonly workflow: boolean };
@@ -52,19 +53,16 @@ function resolveSessionCwd(options: AtomicCreateAgentSessionOptions | undefined)
 }
 
 /**
- * Prepare Atomic SDK stage-session options with Atomic-first resource loading.
+ * Prepare stage-session options with pi-first resource loading.
  *
- * The Atomic SDK's documented defaults are intentionally significant:
- * omitted `agentDir` means credentials/models/settings can be read from the
- * primary `~/.atomic/agent` paths first while still considering legacy
- * `~/.pi/agent` compatibility paths when the SDK supports multiple config
- * directories. Passing the computed default back as an explicit `agentDir`
- * would accidentally turn that multi-dir behavior into a single-dir override.
+ * Under stock pi this extension must not inherit `@bastani/atomic`'s
+ * `.atomic` agent dir. We always pass an explicit `agentDir` pointing at
+ * `~/.pi/agent` (or a caller override) so stage sessions load credentials,
+ * models, settings, and skills from the pi host tree only.
  *
- * A user-supplied `agentDir` is still preserved exactly and remains an
- * explicit override. A user-supplied `resourceLoader` is also preserved; in
- * that case cwd/agentDir no longer control resource discovery and only affect
- * session naming/tool path resolution, matching the pi SDK docs.
+ * A user-supplied `resourceLoader` is preserved; in that case cwd/agentDir no
+ * longer control resource discovery and only affect session naming/tool path
+ * resolution, matching the pi SDK docs.
  */
 export async function prepareAtomicStageSessionOptions(
 	options: CreateAgentSessionOptions | undefined,
@@ -76,8 +74,9 @@ export async function prepareAtomicStageSessionOptions(
 
 	const inheritanceSnapshot = prepareOptions.resourceLoaderInheritanceSnapshot;
 	const cwd = resolveSessionCwd(atomicOptions);
-	const hasAgentDirOverride = atomicOptions?.agentDir !== undefined;
-	const agentDir = atomicOptions?.agentDir ?? sdk.getAgentDir();
+	// Prefer the caller's override, else this extension's `.pi` host root — never
+	// Atomic's packaged `.atomic` default via sdk.getAgentDir().
+	const agentDir = atomicOptions?.agentDir ?? getHostAgentDir();
 	const settingsManager =
 		atomicOptions?.settingsManager ??
 		sdk.SettingsManager.create(
@@ -104,7 +103,7 @@ export async function prepareAtomicStageSessionOptions(
 	return {
 		...atomicOptions,
 		cwd,
-		...(hasAgentDirOverride ? { agentDir } : {}),
+		agentDir,
 		settingsManager,
 		resourceLoader,
 	};

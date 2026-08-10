@@ -143,7 +143,7 @@ export async function runRalphWorkflow(
         [
           "delegation",
           [
-            "Delegate only work that is genuinely independent and too large to finish in a handful of tool calls. Do not use subagents to audit your own work. Prefer one subagent over several.",
+            "Delegate only work that is genuinely independent and too large to finish in a handful of tool calls. Do not use task agents to audit your own work. Prefer one task over several.",
             "For delegated work, provide the relevant task, constraints, files, validation expectations, unresolved findings, and implementation-note reporting needs. Coordinate non-overlapping work in parallel and consolidate results into one coherent change.",
           ].join("\n"),
         ],

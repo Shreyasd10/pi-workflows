@@ -32,13 +32,9 @@ function copyUntrackedFile(mainRoot: string, worktreeRoot: string, relativePath:
 
 function propagateLocalSettings(mainRoot: string, worktreeRoot: string): string[] {
 	const copied: string[] = [];
-	if (copyUntrackedFile(mainRoot, worktreeRoot, ".atomic/settings.local.json"))
-		copied.push(".atomic/settings.local.json");
-	if (
-		!tracked(mainRoot, ".atomic/settings.json") &&
-		copyUntrackedFile(mainRoot, worktreeRoot, ".atomic/settings.json")
-	) {
-		copied.push(".atomic/settings.json");
+	for (const rel of [".pi/settings.local.json", ".pi/settings.json", ".atomic/settings.local.json", ".atomic/settings.json"]) {
+		if (tracked(mainRoot, rel)) continue;
+		if (copyUntrackedFile(mainRoot, worktreeRoot, rel)) copied.push(rel);
 	}
 	return copied;
 }

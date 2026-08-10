@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Added `opencode-go/deepseek-v4-flash:high` as an early fallback on every pinned builtin workflow model chain (Goal orchestrator/reviewer, Ralph prompt-engineer/research/orchestrator/reviewers, and Open Claude Design) so Anthropic Token Plan / rate-limit exhaustion can advance to OpenCode Go DeepSeek Flash before the rest of the curated chain.
+
+### Fixed
+
+- Fixed stock-pi independence from `.atomic`: goal/ralph durable artifacts, worktrees, status, embedded postgres, discovery, and stage `agentDir` now use `.pi` (`~/.pi/workflows`, `<cwd>/.pi/...`, `~/.pi/agent`) instead of `@bastani/atomic`'s packaged `.atomic` roots. Override with `PI_WORKFLOW_ARTIFACT_DIR` / `PI_CODING_AGENT_DIR` (Atomic env names still accepted).
+- Fixed workflow input forms trapping ↑/↓ on boolean fields such as `goal.create_pr`. Up/down now move focus between fields (and Submit); space and ←/→ still flip on/off.
+- Fixed attached stage-chat crashing when the usage footer rendered under stock `pi` (`Theme not initialized` from `UsageMeterComponent`). The extension now calls Atomic `initTheme()` once before overlay/message UI mounts so every embedded Atomic chrome path has a live theme.
+- Fixed attached stage-chat working status crashing under stock `pi` with `Theme not initialized. Call initTheme() first.` Stage chat now uses GraphTheme caller styling for the ∀ spinner instead of Atomic's uninitialized theme proxy.
+- Fixed the workflow input form freezing when a host extension caches custom message renders: the inline form card now invalidates the host's render tree on every keystroke (and on submit/cancel) instead of relying on `requestRender` alone, so field text, focus navigation, and the submitted state repaint even when another extension (e.g. a message-render cache wrapper) serves a stale first frame.
+
 ## [0.9.12] - 2026-08-04
 
 Cumulative release of the `0.9.12-alpha.1` prerelease. The summary below covers the user-visible outcome of that work; the per-change detail remains in the prerelease section below.

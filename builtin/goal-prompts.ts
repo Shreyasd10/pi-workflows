@@ -67,7 +67,7 @@ export const goalRunnerTools = [
   "edit",
   "write",
   "todo",
-  "subagent",
+  "task",
   "web_search",
   "code_search",
   "fetch_content",
