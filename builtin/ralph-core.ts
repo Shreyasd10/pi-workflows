@@ -131,7 +131,7 @@ export function workflowCwdContextSection(workflowCwd: string): PromptSection {
       `Current working directory: ${workflowCwd}`,
       "Use this as the starting directory for repository work in this stage.",
       "Shell commands and relative file paths should be relative to this directory unless you intentionally pass an explicit cwd override.",
-      "When delegating subagents, pass along that this is the current working directory.",
+      "When delegating via the `task` tool, pass along that this is the current working directory.",
     ].join("\n"),
   ];
 }

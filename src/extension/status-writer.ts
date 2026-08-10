@@ -4,7 +4,7 @@
  *
  * Behaviour:
  * - Only active when config.statusFile === true.
- * - Default path: <projectRoot>/.atomic/workflows/status.json
+ * - Default path: <projectRoot>/.pi/workflows/status.json
  * - Atomic write via temp-file + rename (no torn reads by CI consumers).
  * - Flushes on every store update; guaranteed to flush on run terminal states
  *   (completed | failed | killed).
@@ -18,7 +18,7 @@
 
 import { mkdir, rename, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { CONFIG_DIR_NAME } from "@bastani/atomic";
+import { HOST_CONFIG_DIR_NAME } from "../shared/host-paths.js";
 import type { Store } from "../shared/store.js";
 import type { StoreSnapshot } from "../shared/store-types.js";
 import type { WorkflowRuntimeConfig } from "../shared/types.js";
@@ -27,7 +27,7 @@ import type { WorkflowRuntimeConfig } from "../shared/types.js";
 // Constants
 // ---------------------------------------------------------------------------
 
-const DEFAULT_STATUS_SUBPATH = join(CONFIG_DIR_NAME, "workflows", "status.json");
+const DEFAULT_STATUS_SUBPATH = join(HOST_CONFIG_DIR_NAME, "workflows", "status.json");
 
 // ---------------------------------------------------------------------------
 // Types
@@ -57,7 +57,7 @@ export interface StatusWriter {
  *
  * Priority:
  * 1. config.statusFilePath (explicit override)
- * 2. <projectRoot>/.atomic/workflows/status.json  (default)
+ * 2. <projectRoot>/.pi/workflows/status.json  (default)
  */
 export function resolveStatusFilePath(
 	config: Pick<WorkflowRuntimeConfig, "statusFilePath">,

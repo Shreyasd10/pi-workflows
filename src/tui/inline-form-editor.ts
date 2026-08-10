@@ -98,7 +98,7 @@ export class InlineFormEditor implements PiEditorComponent {
 	/** Required by Focusable; we always have focus during the form. */
 	focused = true;
 
-	private readonly tui: { requestRender?: () => void };
+	private readonly tui: { requestRender?: () => void; invalidate?: () => void };
 	private readonly opts: InlineFormEditorOpts;
 	private readonly kb: KeybindingsLike | undefined;
 
@@ -221,7 +221,7 @@ export class InlineFormEditor implements PiEditorComponent {
 			this.pasteBuffer = "";
 			if (content.length > 0 && this.applyPaste(content, state)) {
 				touch(state);
-				this.tui.requestRender?.();
+				this.notifyFormChanged();
 			}
 			if (remaining.length > 0) this.handleInput(remaining);
 			return true;
@@ -230,16 +230,29 @@ export class InlineFormEditor implements PiEditorComponent {
 			const consumed = this.applyPaste(data, state);
 			if (consumed) {
 				touch(state);
-				this.tui.requestRender?.();
+				this.notifyFormChanged();
 			}
 			return consumed;
 		}
 		const consumed = this.routeKey(data, state);
 		if (consumed) {
 			touch(state);
-			this.tui.requestRender?.();
+			this.notifyFormChanged();
 		}
 		return consumed;
+	}
+
+	/**
+	 * Signal the host to repaint the form card. `requestRender` re-invokes the
+	 * card's `render()` every frame, but hosts or extensions that cache custom
+	 * message render output (e.g. render-cache wrappers around pi's
+	 * `CustomMessageComponent`) serve the stale first frame unless the
+	 * component is explicitly invalidated. Invalidate first so the card
+	 * rebuilds and re-reads the mutated form state.
+	 */
+	notifyFormChanged(): void {
+		this.tui.invalidate?.();
+		this.tui.requestRender?.();
 	}
 	private applyPaste(content: string, state: InlineFormState): boolean {
 		const field = state.fields[state.focusedIdx];
@@ -341,14 +354,28 @@ export class InlineFormEditor implements PiEditorComponent {
 		return false;
 	}
 	private handleBoolean(data: string, field: WorkflowInputEntry, state: InlineFormState): boolean {
+		// ↑/↓ move across fields; space / ←/→ flip. Binding selectUp/selectDown to
+		// flip trapped focus on fields like goal.create_pr.
 		if (
 			matchesKey(data, Key.space) ||
-			matchesAction(this.kb, data, TUI_ACTION.selectUp) ||
-			matchesAction(this.kb, data, TUI_ACTION.selectDown) ||
 			matchesAction(this.kb, data, TUI_ACTION.editorCursorLeft) ||
 			matchesAction(this.kb, data, TUI_ACTION.editorCursorRight)
 		) {
 			state.rawText[field.name] = state.rawText[field.name] === "true" ? "false" : "true";
+			return true;
+		}
+		if (
+			matchesAction(this.kb, data, TUI_ACTION.selectUp) ||
+			matchesAction(this.kb, data, TUI_ACTION.editorCursorUp)
+		) {
+			this.moveFocus(state, -1);
+			return true;
+		}
+		if (
+			matchesAction(this.kb, data, TUI_ACTION.selectDown) ||
+			matchesAction(this.kb, data, TUI_ACTION.editorCursorDown)
+		) {
+			this.moveFocus(state, +1);
 			return true;
 		}
 		if (

@@ -201,7 +201,7 @@ function shortenForEvidence(p: string): string {
 	const marker = "/node_modules/";
 	const idx = p.lastIndexOf(marker);
 	if (idx >= 0) return p.slice(idx + marker.length);
-	// Some installs (git, local) land under `~/.atomic/extensions/<name>` —
+	// Some installs (git, local) land under `~/.pi/agent/extensions/<name>` —
 	// surface the trailing `extensions/<name>/…` segment instead.
 	const extMarker = "/extensions/";
 	const extIdx = p.lastIndexOf(extMarker);

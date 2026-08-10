@@ -35,6 +35,7 @@ import type { StageUiBroker } from "../shared/stage-ui-broker.js";
 import type { Store } from "../shared/store.js";
 import { readGraphStoreSnapshot, subscribeStoreInvalidation } from "../shared/store-observation.js";
 import type { StoreSnapshot } from "../shared/store-types.js";
+import { ensureAtomicThemeInitialized } from "./atomic-theme.js";
 import { deriveGraphThemeFromPiTheme } from "./graph-theme.js";
 import type { OverlayTerminalOutput } from "./overlay-terminal-modes.js";
 import { remoteTerminalControlFrom, setTerminalAutowrap } from "./overlay-terminal-modes.js";
@@ -287,6 +288,8 @@ export function buildGraphOverlayAdapter(
 	}
 
 	function open(runId: string | null, surface?: OverlayPiSurface, stageId?: string, stageRunId?: string): void {
+		// Atomic UI embeds (usage meter, ∀ spinner, …) require initTheme under stock pi.
+		ensureAtomicThemeInitialized();
 		const ui = surface?.ui ?? pi.ui;
 		observeHostCustomUi(ui);
 

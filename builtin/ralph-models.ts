@@ -18,6 +18,7 @@ export const promptEngineerModelConfig = {
     model: "anthropic/claude-opus-5:high",
     fallbackModels: [
       "github-copilot/claude-opus-5:high",
+      "opencode-go/deepseek-v4-flash:high",
       "anthropic/claude-fable-5:high",
       "github-copilot/claude-fable-5:high",
       "openai-codex/gpt-5.6-sol:xhigh",
@@ -50,6 +51,7 @@ export const promptEngineerModelConfig = {
 export const researchModelConfig = {
     model: "anthropic/claude-opus-5:high",
     fallbackModels: [
+      "opencode-go/deepseek-v4-flash:high",
       "github-copilot/claude-opus-5:high",
       "openai-codex/gpt-5.6-sol:xhigh",
       "github-copilot/gpt-5.6-sol:xhigh",
@@ -84,6 +86,7 @@ export const orchestratorModelConfig = {
     model: "anthropic/claude-opus-5:high",
     fallbackModels: [
       "github-copilot/claude-opus-5:high",
+      "opencode-go/deepseek-v4-flash:high",
       "openai-codex/gpt-5.6-sol:xhigh",
       "github-copilot/gpt-5.6-sol:xhigh",
       "openai/gpt-5.6-sol:xhigh",
@@ -117,6 +120,7 @@ export const reviewerAModelConfig = {
     model: "anthropic/claude-opus-5:high",
     fallbackModels: [
       "github-copilot/claude-opus-5:high",
+      "opencode-go/deepseek-v4-flash:high",
       "anthropic/claude-fable-5:high",
       "github-copilot/claude-fable-5:high",
       "kimi-coding/k3:max",
@@ -151,6 +155,7 @@ export const reviewerBModelConfig = {
     model: "openai-codex/gpt-5.6-sol:xhigh",
     fallbackModels: [
       "github-copilot/gpt-5.6-sol:xhigh",
+      "opencode-go/deepseek-v4-flash:high",
       "openai/gpt-5.6-sol:xhigh",
       "anthropic/claude-opus-5:high",
       "github-copilot/claude-opus-5:high",

@@ -196,7 +196,7 @@ export async function openInlineInputsForm(
 
 	return new Promise<InlineFormResult>((resolve) => {
 		let resolved = false;
-		let activeEditor: PiEditorComponent | undefined;
+		let activeEditor: InlineFormEditor | undefined;
 		let installedFactory: PiEditorFactory | undefined;
 		const shouldRestorePreviousEditor = (): boolean => {
 			if (typeof getEditor !== "function") return true;
@@ -230,6 +230,10 @@ export async function openInlineInputsForm(
 			if (resolved) return;
 			resolved = true;
 			finalizeForm(formId, result.kind === "run" ? "submit" : "cancel");
+			// Flush the frozen submitted/cancelled card frame: same cache-busting
+			// rationale as InlineFormEditor.notifyFormChanged — the host render
+			// cache must not serve the last editing frame after finalize.
+			activeEditor?.notifyFormChanged?.();
 			activeEditor?.dispose?.();
 			activeEditor = undefined;
 			// Restore the previous editor (or default if there wasn't one).

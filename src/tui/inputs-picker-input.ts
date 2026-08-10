@@ -285,14 +285,22 @@ function handleBooleanKey(
 	fields: readonly WorkflowInputEntry[],
 	kb: KeybindingsLike | undefined,
 ): InputsPickerAction {
+	// ↑/↓ move across fields; space / ←/→ flip. Binding selectUp/selectDown to
+	// flip trapped focus on fields like goal.create_pr.
 	if (
 		matchesKey(key, Key.space) ||
-		matchesAction(kb, key, TUI_ACTION.selectUp) ||
-		matchesAction(kb, key, TUI_ACTION.selectDown) ||
 		matchesAction(kb, key, TUI_ACTION.editorCursorLeft) ||
 		matchesAction(kb, key, TUI_ACTION.editorCursorRight)
 	) {
 		state.rawText[field.name] = state.rawText[field.name] === "true" ? "false" : "true";
+		return { kind: "noop" };
+	}
+	if (matchesAction(kb, key, TUI_ACTION.selectUp) || matchesAction(kb, key, TUI_ACTION.editorCursorUp)) {
+		moveFocus(state, fields, -1);
+		return { kind: "noop" };
+	}
+	if (matchesAction(kb, key, TUI_ACTION.selectDown) || matchesAction(kb, key, TUI_ACTION.editorCursorDown)) {
+		moveFocus(state, fields, +1);
 		return { kind: "noop" };
 	}
 	if (matchesAction(kb, key, TUI_ACTION.selectConfirm) || matchesAction(kb, key, TUI_ACTION.inputSubmit)) {

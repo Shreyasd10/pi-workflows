@@ -45,7 +45,7 @@ var __export = (target, all) => {
 };
 var __require = /* @__PURE__ */ createRequire(import.meta.url);
 
-// ../../node_modules/jiti/dist/jiti.cjs
+// node_modules/jiti/dist/jiti.cjs
 var require_jiti = __commonJS((exports, module) => {
   (() => {
     var e = { "./node_modules/.pnpm/mlly@1.8.2/node_modules/mlly/dist lazy recursive"(e2) {
@@ -4318,7 +4318,7 @@ Default "index" lookups for the main are deprecated for ES modules.`, "Deprecati
   })();
 });
 
-// ../../node_modules/jiti/dist/babel.cjs
+// node_modules/jiti/dist/babel.cjs
 var require_babel = __commonJS((exports, module) => {
   (() => {
     var e = { "./node_modules/.pnpm/@babel+core@7.29.0/node_modules/@babel/core/lib/config/files lazy recursive"(e2) {
@@ -35555,8 +35555,7 @@ Defaulting to 2020, but this will stop working in the future.`)), t3.ecmaVersion
   })();
 });
 
-// dist/builtin/workflows/src/intercom/intercom-routing.ts
-import { isStaleExtensionContextError } from "@bastani/atomic";
+// src/intercom/intercom-routing.ts
 function toNoticeLevel(raw) {
   if (raw === "warning" || raw === "error")
     return raw;
@@ -35580,17 +35579,12 @@ function buildIntercomCallbacks(deps) {
         requiresAck: true
       });
       const accepted = typeof confirm === "function" ? await confirm("Subagent needs decision", payload.message).catch(() => false) : false;
-      try {
-        emit?.("subagent:control-intercom:response", {
-          requestId: payload.requestId ?? "",
-          runId: payload.runId ?? "",
-          stageId: payload.stageId ?? "",
-          accepted
-        });
-      } catch (error) {
-        if (!isStaleExtensionContextError(error))
-          throw error;
-      }
+      emit?.("subagent:control-intercom:response", {
+        requestId: payload.requestId ?? "",
+        runId: payload.runId ?? "",
+        stageId: payload.stageId ?? "",
+        accepted
+      });
       store.ackNotice(noticeId);
     },
     onNotify(payload) {
@@ -35616,8 +35610,7 @@ function buildIntercomCallbacks(deps) {
   };
 }
 
-// dist/builtin/workflows/src/intercom/result-intercom.ts
-import { isStaleExtensionContextError as isStaleExtensionContextError2 } from "@bastani/atomic";
+// src/intercom/result-intercom.ts
 function subscribeIntercomControl(pi, callbacks) {
   if (typeof pi.events?.on !== "function")
     return null;
@@ -35642,34 +35635,21 @@ function subscribeIntercomControl(pi, callbacks) {
       Promise.reject(new Error(`atomic-workflows: intercom callback error (type=${payload.type}): ${err instanceof Error ? err.message : String(err)}`));
     });
   };
-  let unsubscribe;
-  try {
-    unsubscribe = pi.events.on("subagent:control-intercom", handler);
-  } catch (error) {
-    if (!isStaleExtensionContextError2(error))
-      throw error;
-    return null;
-  }
+  const unsubscribe = pi.events.on("subagent:control-intercom", handler);
   return () => {
     active = false;
-    try {
-      if (typeof unsubscribe === "function")
-        unsubscribe();
-    } catch (error) {
-      if (!isStaleExtensionContextError2(error))
-        throw error;
-    }
+    if (typeof unsubscribe === "function")
+      unsubscribe();
   };
 }
 
-// dist/builtin/workflows/src/shared/flat-string.ts
+// src/shared/flat-string.ts
 function flattenTruncatedString(value2) {
   return value2.split("").join("");
 }
 
-// dist/builtin/workflows/src/shared/graph-store-snapshot.ts
+// src/shared/graph-store-snapshot.ts
 var COMPACT_RESULT_FIELD_LIMIT = 1024;
-var COMPACT_EXIT_OUTPUT_LIMIT = COMPACT_RESULT_FIELD_LIMIT * 4;
 function compactResultField(value2) {
   if (typeof value2 !== "string")
     return;
@@ -35677,7 +35657,7 @@ function compactResultField(value2) {
     return value2;
   return flattenTruncatedString(value2.slice(0, COMPACT_RESULT_FIELD_LIMIT));
 }
-function compactRunResult(result, preserveExitedOutputs = false) {
+function compactRunResult(result) {
   if (result === undefined)
     return;
   const status = compactResultField(result.status);
@@ -35690,30 +35670,7 @@ function compactRunResult(result, preserveExitedOutputs = false) {
     ...remainingWork !== undefined ? { remaining_work: remainingWork } : {},
     ...resultText !== undefined ? { result: resultText } : {}
   };
-  if (!preserveExitedOutputs)
-    return Object.keys(compact).length === 0 ? undefined : compact;
-  return compactExitedOutputs(result, compact);
-}
-function compactExitedOutputs(result, compact) {
-  try {
-    const serialized = JSON.stringify(result);
-    if (serialized !== undefined && serialized.length <= COMPACT_EXIT_OUTPUT_LIMIT) {
-      const parsed = JSON.parse(serialized);
-      if (parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)) {
-        return compactExitedObject(parsed);
-      }
-    }
-  } catch {}
   return Object.keys(compact).length === 0 ? undefined : compact;
-}
-function compactExitedObject(result) {
-  const compacted = { ...result };
-  for (const key of ["status", "summary", "remaining_work", "result"]) {
-    const value2 = compacted[key];
-    if (typeof value2 === "string")
-      compacted[key] = compactResultField(value2) ?? "";
-  }
-  return Object.keys(compacted).length === 0 ? undefined : compacted;
 }
 function clonePrompt(prompt) {
   return {
@@ -35773,7 +35730,7 @@ function compactToolNode(node) {
 }
 function compactRun(run) {
   const { inputs: _inputs, result: sourceResult, stages, toolNodes, pendingPrompt, ...metadata } = run;
-  const result = compactRunResult(sourceResult, run.exited === true && run.status === "failed");
+  const result = compactRunResult(sourceResult);
   return {
     ...metadata,
     inputs: {},
@@ -35806,7 +35763,7 @@ function deepFreezeGraphValue(value2) {
   }
 }
 
-// dist/builtin/workflows/src/shared/store-internal.ts
+// src/shared/store-internal.ts
 var TERMINAL_STATUSES = new Set([
   "completed",
   "failed",
@@ -36000,7 +35957,7 @@ function createStoreContext(state = createStoreState()) {
   };
 }
 
-// dist/builtin/workflows/src/shared/store-prompt-methods.ts
+// src/shared/store-prompt-methods.ts
 function createPromptStoreMethods(context) {
   const { state } = context;
   return {
@@ -36188,7 +36145,7 @@ function createPromptStoreMethods(context) {
   };
 }
 
-// dist/builtin/workflows/src/shared/run-visibility.ts
+// src/shared/run-visibility.ts
 function isTopLevelWorkflowRun(run) {
   return run.parentRunId === undefined;
 }
@@ -36196,13 +36153,9 @@ function topLevelWorkflowRuns(runs) {
   return runs.filter(isTopLevelWorkflowRun);
 }
 
-// dist/builtin/workflows/src/shared/timing.ts
+// src/shared/timing.ts
 function nonNegative(ms) {
   return Math.max(0, ms);
-}
-function nextControlTimestamp(requestedAt, previousAt) {
-  const candidate = requestedAt ?? Date.now();
-  return previousAt === undefined || candidate > previousAt ? candidate : previousAt + 1;
 }
 function rebasedStageStartedAt(accumulatedDurationMs, resumedAt) {
   return resumedAt - nonNegative(accumulatedDurationMs ?? 0);
@@ -36232,7 +36185,7 @@ function elapsedRunMs(run, now = Date.now()) {
   return nonNegative(run.accumulatedDurationMs ?? 0) + elapsedFromStart(run.startedAt, effectiveNow, run.pausedDurationMs, run.pausedAt);
 }
 
-// dist/builtin/workflows/src/shared/store-run-methods.ts
+// src/shared/store-run-methods.ts
 function createRunStoreMethods(context) {
   const { state } = context;
   return {
@@ -36380,65 +36333,38 @@ function createRunStoreMethods(context) {
       if (TERMINAL_STATUSES.has(run.status))
         return false;
       const wasPaused = run.status === "paused";
+      const enteringQuit = metadata?.exitReason === "quit" && run.exitReason !== "quit";
       if (!wasPaused) {
         run.status = "paused";
-        run.pausedAt = nextControlTimestamp(pausedAt, run.resumedAt);
+        run.pausedAt = pausedAt ?? Date.now();
         run.resumedAt = undefined;
-        delete run.pauseActor;
-        delete run.resumeActor;
-        delete run.resumeSource;
       }
       if (metadata?.resumable !== undefined)
         run.resumable = metadata.resumable;
       if (metadata?.exitReason !== undefined)
         run.exitReason = metadata.exitReason;
-      if (metadata?.exitReason === "quit" && run.quitAt === undefined)
-        run.quitAt = nextControlTimestamp(undefined, run.pausedAt);
-      if (metadata?.actor !== undefined)
-        run.pauseActor = metadata.actor;
+      if (enteringQuit)
+        run.quitAt = Date.now();
       if (wasPaused && metadata === undefined)
         return false;
       context.bumpAndNotify();
       return true;
     },
-    recordRunResumed(runId, resumedAt, metadata) {
+    recordRunResumed(runId, resumedAt) {
       const run = context.findRun(runId);
       if (!run)
         return false;
       if (TERMINAL_STATUSES.has(run.status))
         return false;
-      const claimsRunControl = metadata?.source === "run_control";
-      if (run.status !== "paused") {
-        if (!claimsRunControl || run.status !== "running" || run.resumedAt === undefined)
-          return false;
-        if (run.resumeSource === "run_control" && run.resumeActor === metadata?.actor)
-          return false;
-        run.resumeSource = "run_control";
-        if (metadata?.actor === undefined)
-          delete run.resumeActor;
-        else
-          run.resumeActor = metadata.actor;
-        context.bumpAndNotify();
+      if (run.status !== "paused")
         return false;
-      }
-      const resumedTs = nextControlTimestamp(resumedAt, run.pausedAt);
+      const resumedTs = resumedAt ?? Date.now();
       run.status = "running";
       run.pausedDurationMs = accumulatePausedDurationMs(run.pausedDurationMs, run.pausedAt, resumedTs);
       run.resumedAt = resumedTs;
       run.pausedAt = undefined;
       delete run.quitAt;
       delete run.exitReason;
-      delete run.pauseActor;
-      if (metadata === undefined) {
-        delete run.resumeActor;
-        delete run.resumeSource;
-      } else {
-        run.resumeSource = metadata.source;
-        if (metadata.actor === undefined)
-          delete run.resumeActor;
-        else
-          run.resumeActor = metadata.actor;
-      }
       context.bumpAndNotify();
       return true;
     },
@@ -36477,7 +36403,7 @@ function shouldStoreRunResult(status) {
   return status === "completed" || status === "skipped" || status === "cancelled" || status === "blocked" || status === "failed";
 }
 
-// dist/builtin/workflows/src/shared/store-tool-node-methods.ts
+// src/shared/store-tool-node-methods.ts
 function nextExecutionOrder(run) {
   const stageOrders = run.stages.map((stage) => stage.executionOrder ?? 0);
   const toolOrders = (run.toolNodes ?? []).map((node) => node.executionOrder ?? 0);
@@ -36527,7 +36453,7 @@ function createToolNodeStoreMethods(context) {
   };
 }
 
-// dist/builtin/workflows/src/shared/store-stage-methods.ts
+// src/shared/store-stage-methods.ts
 function createStageStoreMethods(context) {
   return {
     recordStageStart(runId, stage) {
@@ -36791,7 +36717,7 @@ function createStageStoreMethods(context) {
       context.bumpAndNotify();
       return true;
     },
-    recordStagePaused(runId, stageId, pausedAt, metadata) {
+    recordStagePaused(runId, stageId, pausedAt) {
       const run = context.findRun(runId);
       if (!run)
         return false;
@@ -36800,28 +36726,16 @@ function createStageStoreMethods(context) {
       const stage = context.findStage(run, stageId);
       if (!stage)
         return false;
-      if (cannotPause(stage.status)) {
-        if (stage.status !== "paused" || metadata?.actor === undefined)
-          return false;
-        if (stage.pauseActor === metadata.actor)
-          return false;
-        stage.pauseActor = metadata.actor;
-        context.bumpAndNotify();
+      if (cannotPause(stage.status))
         return false;
-      }
       stage.status = "paused";
-      stage.pausedAt = nextControlTimestamp(pausedAt, stage.resumedAt);
+      stage.pausedAt = pausedAt ?? Date.now();
       stage.resumedAt = undefined;
       delete stage.awaitingInputSince;
-      delete stage.resumeActor;
-      if (metadata?.actor === undefined)
-        delete stage.pauseActor;
-      else
-        stage.pauseActor = metadata.actor;
       context.bumpAndNotify();
       return true;
     },
-    recordStageResumed(runId, stageId, resumedAt, metadata) {
+    recordStageResumed(runId, stageId, resumedAt) {
       const run = context.findRun(runId);
       if (!run)
         return false;
@@ -36830,17 +36744,9 @@ function createStageStoreMethods(context) {
       const stage = context.findStage(run, stageId);
       if (!stage)
         return false;
-      if (stage.status !== "paused" && stage.status !== "blocked") {
-        if (stage.status !== "running" || stage.resumedAt === undefined || metadata?.actor === undefined) {
-          return false;
-        }
-        if (stage.resumeActor === metadata.actor)
-          return false;
-        stage.resumeActor = metadata.actor;
-        context.bumpAndNotify();
+      if (stage.status !== "paused" && stage.status !== "blocked")
         return false;
-      }
-      const resumedTs = nextControlTimestamp(resumedAt, stage.pausedAt);
+      const resumedTs = resumedAt ?? Date.now();
       stage.status = "running";
       if (stage.startedAt !== undefined) {
         stage.pausedDurationMs = accumulatePausedDurationMs(stage.pausedDurationMs, stage.pausedAt, resumedTs);
@@ -36849,18 +36755,13 @@ function createStageStoreMethods(context) {
       stage.pausedAt = undefined;
       delete stage.blockedByStageId;
       delete stage.awaitingInputSince;
-      delete stage.pauseActor;
-      if (metadata?.actor === undefined)
-        delete stage.resumeActor;
-      else
-        stage.resumeActor = metadata.actor;
       context.bumpAndNotify();
       return true;
     }
   };
 }
 
-// dist/builtin/workflows/src/shared/store-factory.ts
+// src/shared/store-factory.ts
 function createStore() {
   const context = createStoreContext();
   return {
@@ -36871,7 +36772,7 @@ function createStore() {
   };
 }
 var store = createStore();
-// dist/builtin/workflows/src/tui/color-utils.ts
+// src/tui/color-utils.ts
 function parseHex(hex) {
   const h = hex.replace(/^#/, "");
   const r = parseInt(h.slice(0, 2), 16);
@@ -36907,7 +36808,7 @@ function paint(text, fg, opts = {}) {
   return `${bgSeq}${hexToAnsi(fg)}${boldSeq}${text}${RESET}`;
 }
 
-// dist/builtin/workflows/src/tui/text-helpers.ts
+// src/tui/text-helpers.ts
 import {
   decodeKittyPrintable,
   Key,
@@ -37050,7 +36951,7 @@ function sliceColumns(line, startCol, length, strict = false) {
   return result;
 }
 
-// dist/builtin/workflows/src/tui/chat-surface.ts
+// src/tui/chat-surface.ts
 var ELLIPSIS = "…";
 var DEFAULT_WIDTH = 80;
 var CHAT_HOST_PADDING_X = 2;
@@ -37171,7 +37072,7 @@ function renderHintRows(rows, theme) {
 `);
 }
 
-// dist/builtin/workflows/src/tui/run-identity-rows.ts
+// src/tui/run-identity-rows.ts
 function wrapIdentifierLines(id, width, firstPrefix, continuationPrefix) {
   const rows = [];
   let remaining = id;
@@ -37216,7 +37117,7 @@ function renderRunIdentityRows(opts) {
   return rows;
 }
 
-// dist/builtin/workflows/src/tui/dispatch-confirm.ts
+// src/tui/dispatch-confirm.ts
 var INLINE_INPUT_LIMIT = 3;
 var MIN_INLINE_INPUT_BUDGET = 16;
 function renderDispatchConfirm(opts) {
@@ -37339,14 +37240,10 @@ function renderInputsSegment(inputs, budget, theme) {
     fitted: false
   };
 }
-var ROW_BREAKING_RE = /[\p{Cc}\u2028\u2029]+/gu;
-function toSingleLine(value2) {
-  return value2.replace(ROW_BREAKING_RE, " ");
-}
 function renderInputValue(value2, budget) {
   if (typeof value2 === "string") {
     const interior = Math.max(0, budget - 2);
-    const trimmed = truncateToWidth(toSingleLine(value2), interior, ELLIPSIS);
+    const trimmed = truncateToWidth(value2, interior, ELLIPSIS);
     return `"${trimmed}"`;
   }
   if (typeof value2 === "number" || typeof value2 === "boolean") {
@@ -37355,13 +37252,13 @@ function renderInputValue(value2, budget) {
   if (value2 === null)
     return "null";
   const json = JSON.stringify(value2);
-  return truncateToWidth(toSingleLine(json ?? ""), budget, ELLIPSIS);
+  return truncateToWidth(json ?? "", budget, ELLIPSIS);
 }
 function effectiveWidth(width) {
   return chatWidth(width);
 }
 
-// dist/builtin/workflows/src/tui/status-helpers.ts
+// src/tui/status-helpers.ts
 function statusColor(status, theme) {
   switch (status) {
     case "running":
@@ -37432,7 +37329,7 @@ function fmtDuration(ms) {
   return `${seconds}s`;
 }
 
-// dist/builtin/workflows/src/tui/run-detail.ts
+// src/tui/run-detail.ts
 var STAGE_NAME_COL = 14;
 var KEY_COL = 14;
 function renderRunDetail(detail, opts = {}) {
@@ -37555,8 +37452,6 @@ function summaryRows(detail, now) {
     rows.push(["error", detail.error.split(`
 `)[0] ?? ""]);
   }
-  if (detail.resumeGuidance)
-    rows.push(["guidance", detail.resumeGuidance]);
   return rows;
 }
 function artifactRowsFor(detail) {
@@ -37670,8 +37565,6 @@ function stateBadges(detail, theme) {
   switch (detail.status) {
     case "running":
       return [{ text: "● running", fg: theme.warning }];
-    case "crashed":
-      return [{ text: detail.resumable === true ? "✗ crashed · resumable" : "✗ crashed", fg: theme.error }];
     case "paused":
       return [{ text: "❚❚ paused", fg: theme.warning }];
     case "completed":
@@ -37694,8 +37587,6 @@ function stateLabel(detail) {
   switch (detail.status) {
     case "running":
       return "● running";
-    case "crashed":
-      return detail.resumable === true ? "✗ crashed · resumable" : "✗ crashed";
     case "paused":
       return "❚❚ paused";
     case "completed":
@@ -37735,10 +37626,8 @@ function renderIdentifierRows2(id, width, theme) {
   });
 }
 function renderDetailHintRows(detail, width, theme) {
-  const resumable = detail.status === "paused" && detail.resumable !== false || detail.resumable === true && (detail.status === "crashed" || detail.status === "failed" || detail.status === "blocked");
-  const inspectOnly = detail.ownerActiveElsewhere === true || detail.status === "crashed" && !resumable || detail.endedAt !== undefined && !resumable;
-  const prefix = inspectOnly ? " ▸ workflow status id=" : resumable ? " ▸ workflow resume id=" : " ▸ workflow interrupt   id=";
-  const suffix = inspectOnly ? detail.ownerActiveElsewhere === true ? "    inspect; owner active elsewhere " : "    inspect retained state " : resumable ? "    continue workflow " : "    cancel ";
+  const prefix = detail.endedAt === undefined ? detail.status === "paused" ? " ▸ workflow resume id=" : " ▸ workflow interrupt   id=" : " ▸ workflow resume id=";
+  const suffix = detail.endedAt === undefined ? detail.status === "paused" ? "    continue workflow " : "    cancel " : "    reopen graph ";
   const continuation = "    ";
   const rows = wrapIdentifierLines(detail.runId, width, prefix, continuation);
   const last = rows[rows.length - 1];
@@ -37764,7 +37653,7 @@ function formatTime(ms) {
   return `${hh}:${mm}:${ss}`;
 }
 
-// dist/builtin/workflows/src/shared/returned-run-status.ts
+// src/shared/returned-run-status.ts
 var RETURNED_BLOCKED_STATUSES = new Set(["blocked", "needs_human", "incomplete", "auth_blocked", "active"]);
 function normalizeReturnedWorkflowStatus(status) {
   if (typeof status !== "string")
@@ -37835,52 +37724,7 @@ function stringResultField(result, key) {
   return typeof value2 === "string" && value2.trim().length > 0 ? value2.trim() : undefined;
 }
 
-// dist/builtin/workflows/src/shared/run-indicator-status.ts
-var TERMINAL_OR_BLOCKED = new Set(["completed", "failed", "killed", "cancelled", "skipped", "blocked"]);
-function runIndicatorStatus(run, allRuns = [run]) {
-  const status = effectiveRunStatus(run);
-  if (TERMINAL_OR_BLOCKED.has(status))
-    return status;
-  if (runHasPendingInput(run))
-    return "awaiting_input";
-  const runsById = new Map(allRuns.map((candidate) => [candidate.id, candidate]));
-  for (const candidate of allRuns) {
-    if (candidate.id === run.id || !runBelongsTo(candidate, run, runsById))
-      continue;
-    const candidateStatus = effectiveRunStatus(candidate);
-    if (!TERMINAL_OR_BLOCKED.has(candidateStatus) && runHasPendingInput(candidate))
-      return "awaiting_input";
-  }
-  return status;
-}
-function resolveRunIndicatorStatuses(runs, allRuns) {
-  const statuses = {};
-  for (const run of runs)
-    statuses[run.id] = runIndicatorStatus(run, allRuns);
-  return statuses;
-}
-function runHasPendingInput(run) {
-  if (run.pendingPrompt !== undefined)
-    return true;
-  return run.stages.some((stage) => stage.status === "awaiting_input" || stage.awaitingInputSince !== undefined || stage.pendingPrompt !== undefined || stage.inputRequest !== undefined);
-}
-function runBelongsTo(candidate, ancestor, runsById) {
-  if (candidate.rootRunId === ancestor.id)
-    return true;
-  const visited = new Set;
-  let current = candidate;
-  while (current !== undefined && current.parentRunId !== undefined) {
-    if (current.parentRunId === ancestor.id)
-      return true;
-    if (visited.has(current.id))
-      return false;
-    visited.add(current.id);
-    current = runsById.get(current.parentRunId);
-  }
-  return false;
-}
-
-// dist/builtin/workflows/src/tui/status-list.ts
+// src/tui/status-list.ts
 var STAGE_LABEL_BUDGET = 24;
 function isQuitRun(run) {
   return run.endedAt === undefined && run.status === "paused" && run.exitReason === "quit";
@@ -37900,7 +37744,7 @@ function renderStatusList(runs, opts = {}) {
     for (let i = 0;i < sorted.length; i++) {
       if (i > 0)
         body.push("");
-      body.push(...renderRunEntry(sorted[i], now, cardWidth, opts.theme, opts.allRuns ?? runs, opts.indicatorStatuses));
+      body.push(...renderRunEntry(sorted[i], now, cardWidth, opts.theme));
     }
   }
   if (opts.showDetailHint !== false && sorted.length > 0) {
@@ -37915,12 +37759,11 @@ function renderStatusList(runs, opts = {}) {
     width
   });
 }
-function renderRunEntry(run, now, width, theme, allRuns, indicatorStatuses) {
+function renderRunEntry(run, now, width, theme) {
   const bodyWidth = effectiveWidth2(width);
   const interior = Math.max(8, bodyWidth - 4);
-  const indicatorStatus = indicatorStatuses?.[run.id] ?? runIndicatorStatus(run, allRuns);
-  const glyph = statusIconForRun(run, indicatorStatus);
-  const glyphFg = theme ? hexToAnsi(runAccent(run, theme, indicatorStatus)) : "";
+  const glyph = statusIconForRun(run);
+  const glyphFg = theme ? hexToAnsi(runAccent(run, theme)) : "";
   const accent = theme ? hexToAnsi(theme.accent) : "";
   const text = theme ? hexToAnsi(theme.text) : "";
   const muted = theme ? hexToAnsi(theme.textMuted) : "";
@@ -37956,12 +37799,31 @@ function renderRunEntry(run, now, width, theme, allRuns, indicatorStatuses) {
   const metaLine = `   ${modeSeg}    ${strip}${" ".repeat(gap)}${metaSeg} `;
   return [...identityRows, identity, metaLine];
 }
-function runAccent(run, theme, indicatorStatus) {
+function runAccent(run, theme) {
   if (!theme)
     return "#000000";
   if (isQuitRun(run))
     return theme.warning;
-  return statusColor(indicatorStatus, theme);
+  switch (effectiveRunStatus(run)) {
+    case "completed":
+      return theme.success;
+    case "running":
+      return theme.warning;
+    case "paused":
+      return theme.warning;
+    case "skipped":
+      return theme.dim;
+    case "cancelled":
+      return theme.dim;
+    case "blocked":
+      return theme.dim;
+    case "failed":
+      return theme.error;
+    case "killed":
+      return theme.error;
+    default:
+      return theme.dim;
+  }
 }
 function runTrailing(run, theme) {
   if (isQuitRun(run))
@@ -38016,8 +37878,6 @@ function runCardMeta(run, now) {
     return parts.join(" · ");
   }
   if (effectiveRunStatus(run) === "failed" || effectiveRunStatus(run) === "killed") {
-    if (run.exitReason !== undefined && run.exitReason.length > 0 && run.exited === true)
-      parts.push(run.exitReason);
     const failed = run.stages.find((s) => s.status === "failed");
     if (failed && isChain)
       parts.push(`failed at ${failed.name}`);
@@ -38214,13 +38074,31 @@ function emptyStateLine(theme) {
     return "  no workflow runs in current session";
   return `  ${hexToAnsi(theme.dim)}no workflow runs in current session${RESET}`;
 }
-function statusIconForRun(run, indicatorStatus) {
+function statusIconForRun(run) {
   if (isQuitRun(run))
-    return statusIcon("pending");
-  return statusIcon(indicatorStatus);
+    return "○";
+  switch (effectiveRunStatus(run)) {
+    case "completed":
+      return "✓";
+    case "skipped":
+    case "cancelled":
+      return "⊘";
+    case "blocked":
+      return "↑";
+    case "running":
+      return "●";
+    case "paused":
+      return "❚❚";
+    case "failed":
+      return "✗";
+    case "killed":
+      return "⊘";
+    default:
+      return "○";
+  }
 }
 
-// dist/builtin/workflows/src/tui/workflow-list.ts
+// src/tui/workflow-list.ts
 var INLINE_INPUT_LIMIT2 = 3;
 var TAG_NAME_BUDGET = 50;
 function renderWorkflowList(entries, opts = {}) {
@@ -38321,7 +38199,7 @@ function effectiveWidth3(width) {
   return chatWidth(width);
 }
 
-// dist/builtin/workflows/src/tui/chat-surface-message.ts
+// src/tui/chat-surface-message.ts
 var CHAT_SURFACE_CUSTOM_TYPE = "workflows:chat-surface";
 var rendererRegisteredHosts = new WeakSet;
 function registerChatSurfaceRenderer(pi, theme) {
@@ -38357,12 +38235,7 @@ function renderChatSurfacePlainText(payload, options = {}) {
 `);
     }
     case "status": {
-      const rendered = renderStatusList(payload.runs, {
-        width,
-        now,
-        ...themed,
-        indicatorStatuses: payload.indicatorStatuses
-      });
+      const rendered = renderStatusList(payload.runs, { width, now, ...themed });
       if (payload.runs.length === 0)
         return rendered;
       return [
@@ -38452,12 +38325,7 @@ function renderPayload(payload, theme, width, now) {
         width
       });
     case "status":
-      return renderStatusList(payload.runs, {
-        theme,
-        width,
-        now,
-        indicatorStatuses: payload.indicatorStatuses
-      });
+      return renderStatusList(payload.runs, { theme, width, now });
     case "list":
       return renderWorkflowList(payload.entries, { theme, width });
     case "detail":
@@ -38465,7 +38333,17 @@ function renderPayload(payload, theme, width, now) {
   }
 }
 
-// dist/builtin/workflows/src/tui/graph-theme.ts
+// src/tui/atomic-theme.ts
+import { initTheme } from "@bastani/atomic";
+var ensured = false;
+function ensureAtomicThemeInitialized(themeName) {
+  if (ensured)
+    return;
+  initTheme(themeName);
+  ensured = true;
+}
+
+// src/tui/graph-theme.ts
 var MOCHA = {
   crust: "#11111b",
   mantle: "#181825",
@@ -38583,10 +38461,7 @@ function deriveGraphThemeFromPiTheme(theme) {
   return deriveGraphTheme(cleaned);
 }
 
-// dist/builtin/workflows/src/tui/inline-form-overlay.ts
-import { isStaleExtensionContextError as isStaleExtensionContextError3 } from "@bastani/atomic";
-
-// dist/builtin/workflows/src/tui/header.ts
+// src/tui/header.ts
 function pillFor(run, theme) {
   if (run.status === "failed")
     return { border: theme.error, label: "ORCHESTRATOR" };
@@ -38706,7 +38581,7 @@ function renderHeader(run, opts) {
   });
 }
 
-// dist/builtin/workflows/src/tui/inputs-picker-editing.ts
+// src/tui/inputs-picker-editing.ts
 function previousGraphemeOffset(text, caret) {
   const c = Math.max(0, Math.min(caret, text.length));
   let prev = 0;
@@ -38858,7 +38733,7 @@ function caretLineDown(raw, caret) {
   return nextLineStart + offsetAtVisualColumn(nextLine, col);
 }
 
-// dist/builtin/workflows/src/tui/inputs-picker-types.ts
+// src/tui/inputs-picker-types.ts
 function createInputsPickerState(fields, prefilled = {}) {
   const rawText = {};
   for (const f of fields) {
@@ -38945,13 +38820,11 @@ function computeInvalid(fields, raw) {
   return out;
 }
 
-// dist/builtin/workflows/src/tui/keybindings-adapter.ts
+// src/tui/keybindings-adapter.ts
 var APP_ACTION = {
-  toolsExpand: "app.tools.expand",
-  thinkingToggle: "app.thinking.toggle"
+  toolsExpand: "app.tools.expand"
 };
 var TUI_ACTION = {
-  altScreenBottom: "tui.altScreen.bottom",
   editorCursorUp: "tui.editor.cursorUp",
   editorCursorDown: "tui.editor.cursorDown",
   editorCursorLeft: "tui.editor.cursorLeft",
@@ -39019,31 +38892,7 @@ function deleteRange(text, start, end, caret) {
   return { text: next, caret: nextCaret };
 }
 
-// dist/builtin/workflows/src/tui/inputs-picker-input.ts
-function isInputsPickerKey(key, state, fields, keybindings) {
-  if (fields.length === 0)
-    return isCancelKey(key);
-  if (isCancelKey(key) || matchesKey(key, Key.tab) || matchesKey(key, Key.shift("tab")))
-    return true;
-  if (state.focusedIdx === fields.length) {
-    return matchesAction(keybindings, key, TUI_ACTION.selectUp) || matchesAction(keybindings, key, TUI_ACTION.selectDown) || matchesAction(keybindings, key, TUI_ACTION.editorCursorUp) || matchesAction(keybindings, key, TUI_ACTION.editorCursorDown) || matchesKey(key, Key.enter) || matchesAction(keybindings, key, TUI_ACTION.selectConfirm) || matchesAction(keybindings, key, TUI_ACTION.inputSubmit);
-  }
-  const field = fields[state.focusedIdx];
-  if (!field)
-    return false;
-  if (field.type === "select") {
-    if ((field.choices ?? []).length === 0)
-      return false;
-    return matchesAction(keybindings, key, TUI_ACTION.selectUp) || matchesAction(keybindings, key, TUI_ACTION.selectDown) || matchesAction(keybindings, key, TUI_ACTION.editorCursorLeft) || matchesAction(keybindings, key, TUI_ACTION.editorCursorRight) || matchesAction(keybindings, key, TUI_ACTION.selectConfirm) || matchesAction(keybindings, key, TUI_ACTION.inputSubmit);
-  }
-  if (field.type === "boolean") {
-    return matchesKey(key, Key.space) || matchesAction(keybindings, key, TUI_ACTION.selectUp) || matchesAction(keybindings, key, TUI_ACTION.selectDown) || matchesAction(keybindings, key, TUI_ACTION.editorCursorLeft) || matchesAction(keybindings, key, TUI_ACTION.editorCursorRight) || matchesAction(keybindings, key, TUI_ACTION.selectConfirm) || matchesAction(keybindings, key, TUI_ACTION.inputSubmit);
-  }
-  if (matchesAction(keybindings, key, TUI_ACTION.editorCursorUp) || matchesAction(keybindings, key, TUI_ACTION.editorCursorDown) || matchesAction(keybindings, key, "tui.editor.cursorWordLeft") || matchesAction(keybindings, key, "tui.editor.cursorWordRight") || matchesAction(keybindings, key, "tui.editor.cursorLineStart") || matchesAction(keybindings, key, "tui.editor.cursorLineEnd") || matchesAction(keybindings, key, TUI_ACTION.editorCursorLeft) || matchesAction(keybindings, key, TUI_ACTION.editorCursorRight) || matchesAction(keybindings, key, "tui.editor.deleteWordBackward") || matchesAction(keybindings, key, "tui.editor.deleteWordForward") || matchesAction(keybindings, key, "tui.editor.deleteToLineStart") || matchesAction(keybindings, key, "tui.editor.deleteToLineEnd") || matchesAction(keybindings, key, "tui.editor.deleteCharBackward") || matchesAction(keybindings, key, "tui.editor.deleteCharForward") || matchesAction(keybindings, key, TUI_ACTION.inputSubmit) || matchesAction(keybindings, key, "tui.input.newLine")) {
-    return true;
-  }
-  return isPrintableGrapheme(decodePrintableKey(key) ?? key);
-}
+// src/tui/inputs-picker-input.ts
 function handleInputsPickerInput(key, state, fields, keybindings) {
   if (fields.length === 0) {
     if (isCancelKey(key))
@@ -39204,8 +39053,16 @@ function handleSelectKey(key, field, state, fields, kb) {
   return { kind: "noop" };
 }
 function handleBooleanKey(key, field, state, fields, kb) {
-  if (matchesKey(key, Key.space) || matchesAction(kb, key, TUI_ACTION.selectUp) || matchesAction(kb, key, TUI_ACTION.selectDown) || matchesAction(kb, key, TUI_ACTION.editorCursorLeft) || matchesAction(kb, key, TUI_ACTION.editorCursorRight)) {
+  if (matchesKey(key, Key.space) || matchesAction(kb, key, TUI_ACTION.editorCursorLeft) || matchesAction(kb, key, TUI_ACTION.editorCursorRight)) {
     state.rawText[field.name] = state.rawText[field.name] === "true" ? "false" : "true";
+    return { kind: "noop" };
+  }
+  if (matchesAction(kb, key, TUI_ACTION.selectUp) || matchesAction(kb, key, TUI_ACTION.editorCursorUp)) {
+    moveFocus(state, fields, -1);
+    return { kind: "noop" };
+  }
+  if (matchesAction(kb, key, TUI_ACTION.selectDown) || matchesAction(kb, key, TUI_ACTION.editorCursorDown)) {
+    moveFocus(state, fields, 1);
     return { kind: "noop" };
   }
   if (matchesAction(kb, key, TUI_ACTION.selectConfirm) || matchesAction(kb, key, TUI_ACTION.inputSubmit)) {
@@ -39256,7 +39113,7 @@ function moveFocus(state, fields, delta) {
   const next = fields[state.focusedIdx];
   state.caret = (state.rawText[next.name] ?? "").length;
 }
-// dist/builtin/workflows/src/tui/submit-pane.ts
+// src/tui/submit-pane.ts
 function renderAskChoiceRows(index, label, active, theme, width) {
   const plainPrefix = `${active ? "❯ " : "  "}${index}. `;
   const firstPrefix = `${active ? paint("❯ ", theme.accent) : "  "}${index}. `;
@@ -39315,7 +39172,7 @@ function renderCompactSubmitButton(label, focused, theme, chromeBg) {
   };
 }
 
-// dist/builtin/workflows/src/tui/inputs-picker-render.ts
+// src/tui/inputs-picker-render.ts
 function renderInlineText(value2, focused, cursorOn, usable, theme, placeholder, isEmpty, caret) {
   const showCursor = focused && cursorOn;
   if (isEmpty) {
@@ -39486,7 +39343,7 @@ function renderPickerSubmitControls(fields, state, theme, width) {
     width
   });
 }
-// dist/builtin/workflows/src/tui/inline-form-card.ts
+// src/tui/inline-form-card.ts
 var graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 function graphemes2(text) {
   return Array.from(graphemeSegmenter.segment(text), (s) => s.segment);
@@ -39742,7 +39599,7 @@ function layoutTextField(raw, usable, caret) {
   return { lines: visualLines, cursorRow, cursorCol, cursorOffset };
 }
 
-// dist/builtin/workflows/src/tui/inline-form-store.ts
+// src/tui/inline-form-store.ts
 var FORMS = new Map;
 function createForm(init) {
   const state = { ...init, version: 0 };
@@ -39767,7 +39624,7 @@ function clearForms() {
   FORMS.clear();
 }
 
-// dist/builtin/workflows/src/tui/inline-form-editor-text.ts
+// src/tui/inline-form-editor-text.ts
 var graphemeSegmenter2 = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 function graphemes3(text) {
   return Array.from(graphemeSegmenter2.segment(text), (s) => s.segment);
@@ -39873,7 +39730,7 @@ function isPrintableTextChunk(data) {
   return true;
 }
 
-// dist/builtin/workflows/src/tui/inline-form-editor.ts
+// src/tui/inline-form-editor.ts
 class InlineFormEditor {
   focused = true;
   tui;
@@ -39941,7 +39798,7 @@ class InlineFormEditor {
   handleInput(data) {
     const state = getForm(this.opts.formId);
     if (state?.status !== "editing")
-      return false;
+      return;
     if (data.includes(PASTE_START)) {
       this.isInPaste = true;
       this.pasteBuffer = "";
@@ -39951,33 +39808,35 @@ class InlineFormEditor {
       this.pasteBuffer += data;
       const endIdx = this.pasteBuffer.indexOf(PASTE_END);
       if (endIdx === -1)
-        return true;
+        return;
       const content = this.pasteBuffer.slice(0, endIdx);
       const remaining = this.pasteBuffer.slice(endIdx + PASTE_END.length);
       this.isInPaste = false;
       this.pasteBuffer = "";
       if (content.length > 0 && this.applyPaste(content, state)) {
         touch(state);
-        this.tui.requestRender?.();
+        this.notifyFormChanged();
       }
       if (remaining.length > 0)
         this.handleInput(remaining);
-      return true;
+      return;
     }
     if (data.length > 1 && isPrintableTextChunk(data)) {
-      const consumed2 = this.applyPaste(data, state);
-      if (consumed2) {
+      if (this.applyPaste(data, state)) {
         touch(state);
-        this.tui.requestRender?.();
+        this.notifyFormChanged();
       }
-      return consumed2;
+      return;
     }
     const consumed = this.routeKey(data, state);
     if (consumed) {
       touch(state);
-      this.tui.requestRender?.();
+      this.notifyFormChanged();
     }
-    return consumed;
+  }
+  notifyFormChanged() {
+    this.tui.invalidate?.();
+    this.tui.requestRender?.();
   }
   applyPaste(content, state) {
     const field = state.fields[state.focusedIdx];
@@ -40070,8 +39929,16 @@ class InlineFormEditor {
     return false;
   }
   handleBoolean(data, field, state) {
-    if (matchesKey(data, Key.space) || matchesAction(this.kb, data, TUI_ACTION.selectUp) || matchesAction(this.kb, data, TUI_ACTION.selectDown) || matchesAction(this.kb, data, TUI_ACTION.editorCursorLeft) || matchesAction(this.kb, data, TUI_ACTION.editorCursorRight)) {
+    if (matchesKey(data, Key.space) || matchesAction(this.kb, data, TUI_ACTION.editorCursorLeft) || matchesAction(this.kb, data, TUI_ACTION.editorCursorRight)) {
       state.rawText[field.name] = state.rawText[field.name] === "true" ? "false" : "true";
+      return true;
+    }
+    if (matchesAction(this.kb, data, TUI_ACTION.selectUp) || matchesAction(this.kb, data, TUI_ACTION.editorCursorUp)) {
+      this.moveFocus(state, -1);
+      return true;
+    }
+    if (matchesAction(this.kb, data, TUI_ACTION.selectDown) || matchesAction(this.kb, data, TUI_ACTION.editorCursorDown)) {
+      this.moveFocus(state, 1);
       return true;
     }
     if (matchesAction(this.kb, data, TUI_ACTION.selectConfirm) || matchesAction(this.kb, data, TUI_ACTION.inputSubmit)) {
@@ -40218,7 +40085,7 @@ ${cur.slice(caret)}`;
   }
 }
 
-// dist/builtin/workflows/src/tui/inline-form-overlay.ts
+// src/tui/inline-form-overlay.ts
 var CUSTOM_TYPE = "workflows:input-form";
 var rendererRegisteredHosts2 = new WeakSet;
 function registerInlineFormRenderer(pi, theme) {
@@ -40297,7 +40164,7 @@ async function openInlineInputsForm(pi, ctx, opts) {
       try {
         return getEditor.call(ctx.ui) === installedFactory;
       } catch (err) {
-        if (isStaleExtensionContextError3(err)) {
+        if (err instanceof Error && err.message.includes("This extension ctx is stale")) {
           return false;
         }
         return true;
@@ -40315,6 +40182,7 @@ async function openInlineInputsForm(pi, ctx, opts) {
         return;
       resolved = true;
       finalizeForm(formId, result.kind === "run" ? "submit" : "cancel");
+      activeEditor?.notifyFormChanged?.();
       activeEditor?.dispose?.();
       activeEditor = undefined;
       restorePreviousEditor();
@@ -40367,7 +40235,7 @@ function makeFormId() {
   return `wf-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-control-registry.ts
+// src/runs/foreground/stage-control-registry.ts
 function createStageControlRegistry() {
   const _byRun = new Map;
   function ensureRun(runId) {
@@ -40584,7 +40452,7 @@ function createStageControlRegistry() {
 }
 var stageControlRegistry = createStageControlRegistry();
 
-// dist/builtin/workflows/src/shared/store-observation.ts
+// src/shared/store-observation.ts
 function readGraphStoreSnapshot(store2) {
   return store2.graphSnapshot();
 }
@@ -40592,9 +40460,16 @@ function subscribeStoreInvalidation(store2, listener) {
   return store2.subscribeInvalidation(listener);
 }
 
-// dist/builtin/workflows/src/tui/overlay-terminal-modes.ts
+// src/tui/overlay-terminal-modes.ts
+var MOUSE_SCROLL_TRACKING_ON = "\x1B[?1000h\x1B[?1002h\x1B[?1006h";
+var MOUSE_SCROLL_TRACKING_OFF = "\x1B[?1006l\x1B[?1002l\x1B[?1000l";
 var TERMINAL_AUTOWRAP_ON = "\x1B[?7h";
 var TERMINAL_AUTOWRAP_OFF = "\x1B[?7l";
+function setMouseScrollTracking(enabled, output) {
+  if (!output.isTTY)
+    return;
+  output.write(enabled ? MOUSE_SCROLL_TRACKING_ON : MOUSE_SCROLL_TRACKING_OFF);
+}
 function setTerminalAutowrap(enabled, output) {
   if (output.platform !== "win32" || !output.isTTY)
     return;
@@ -40602,17 +40477,16 @@ function setTerminalAutowrap(enabled, output) {
 }
 function remoteTerminalControlFrom(tui) {
   const terminal = tui.terminal;
-  if (terminal === undefined || typeof terminal.setAutowrap !== "function")
+  if (terminal === undefined || typeof terminal.setMouseScrollTracking !== "function" || typeof terminal.setAutowrap !== "function") {
     return null;
-  return { setAutowrap: terminal.setAutowrap.bind(terminal) };
+  }
+  return {
+    setMouseScrollTracking: terminal.setMouseScrollTracking.bind(terminal),
+    setAutowrap: terminal.setAutowrap.bind(terminal)
+  };
 }
 
-// dist/builtin/workflows/src/tui/workflow-attach-pane.ts
-import {
-  TRANSCRIPT_JUMP_TO_END_URL as TRANSCRIPT_JUMP_TO_END_URL2
-} from "@bastani/atomic";
-
-// dist/builtin/workflows/src/runs/foreground/stage-queued-user-messages.ts
+// src/runs/foreground/stage-queued-user-messages.ts
 var EMPTY_STAGE_QUEUED_USER_MESSAGES = Object.freeze({
   steering: Object.freeze([]),
   followUp: Object.freeze([])
@@ -40657,7 +40531,7 @@ function stageQueuedUserMessageCount(queued) {
   return queued.steering.length + queued.followUp.length;
 }
 
-// dist/builtin/workflows/src/shared/workflow-run-ownership.ts
+// src/shared/workflow-run-ownership.ts
 function authoritativeWorkflowChildRunId(stage) {
   if (stage === undefined || stage.status === "failed" || stage.status === "skipped") {
     return;
@@ -40695,7 +40569,7 @@ function reciprocalWorkflowRootRunId(runById, runId) {
   return;
 }
 
-// dist/builtin/workflows/src/shared/expanded-workflow-graph.ts
+// src/shared/expanded-workflow-graph.ts
 function virtualNodeId(runId, nodeId, isRootRun) {
   return isRootRun ? nodeId : `${runId}:${nodeId}`;
 }
@@ -41027,7 +40901,7 @@ function expandedStageLabel(stage) {
   return `${depthPrefix}${stage.name} (${target.runId}/${target.stageId})`;
 }
 
-// dist/builtin/workflows/src/tui/graph-view-constants.ts
+// src/tui/graph-view-constants.ts
 var HINT_KEYS = [
   { key: "ctrl+x", label: "return to main chat" },
   { key: "↵", label: "open stage chat" },
@@ -41039,11 +40913,14 @@ var COMPACT_HINT_KEYS = [
   { key: "↵", label: "stage chat" }
 ];
 var MODE_PILL_LABEL = "GRAPH";
+var OVERLAY_LINE_COUNT = 32;
+var OVERLAY_VERTICAL_MARGIN_ROWS = 1;
 var ANIMATION_TICK_MS = 100;
 var PULSE_PERIOD_MS = 2000;
 var GRAPH_SCROLL_STEP_COLS = 4;
+var GRAPH_SCROLL_STEP_ROWS = 4;
 
-// dist/builtin/workflows/src/tui/graph-canvas.ts
+// src/tui/graph-canvas.ts
 function dirsForGlyph(ch) {
   switch (ch) {
     case "│":
@@ -41205,7 +41082,7 @@ class GraphCanvas {
   }
 }
 
-// dist/builtin/workflows/src/tui/layout.ts
+// src/tui/layout.ts
 var NODE_W = 24;
 var NODE_H = 5;
 function computeLayout(stages, opts = {}) {
@@ -41301,7 +41178,7 @@ function computeLayout(stages, opts = {}) {
   return nodes;
 }
 
-// dist/builtin/workflows/src/tui/prompt-card-select.ts
+// src/tui/prompt-card-select.ts
 import { SelectList, truncateToWidth as truncateToWidth2 } from "@earendil-works/pi-tui";
 function createPromptSelectList(state, theme, maxVisible = 5) {
   const choices = state.prompt.choices ?? [];
@@ -41371,7 +41248,7 @@ function matchesSelectSubmit(data, keybindings) {
   return matchesAction(keybindings, data, TUI_ACTION.selectConfirm) || matchesKey(data, Key.enter);
 }
 
-// dist/builtin/workflows/src/tui/prompt-card-text.ts
+// src/tui/prompt-card-text.ts
 import { visibleWidth as visibleWidth2 } from "@earendil-works/pi-tui";
 var segmenter2 = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 function graphemeParts(value2) {
@@ -41479,7 +41356,7 @@ function caretLineDown3(raw, caret) {
   return nextLineStart + offsetAtVisualColumn3(nextLine, col);
 }
 
-// dist/builtin/workflows/src/tui/prompt-card-input.ts
+// src/tui/prompt-card-input.ts
 function handlePromptCardInput(data, state, keybindings) {
   if (matchesKey(data, Key.ctrl("c"))) {
     return { kind: "cancel" };
@@ -41641,7 +41518,7 @@ function applyTextEdit(data, state, keybindings, opts) {
   }
   return { kind: "noop" };
 }
-// dist/builtin/workflows/src/tui/prompt-card-render.ts
+// src/tui/prompt-card-render.ts
 import { keyHint, keyText, rawKeyHint } from "@bastani/atomic";
 import { truncateToWidth as truncateToWidth3, visibleWidth as visibleWidth3, wrapTextWithAnsi } from "@earendil-works/pi-tui";
 function renderPromptIdentityBanner(identity, theme, width) {
@@ -42057,7 +41934,7 @@ function renderHints(kind, theme) {
   }
   return graphKeyHint("tui.input.submit", "Submit", theme) + sep + graphRawKeyHint("ctrl+c", "Skip", theme);
 }
-// dist/builtin/workflows/src/tui/prompt-card-state.ts
+// src/tui/prompt-card-state.ts
 function createPromptCardState(prompt) {
   const initial = prompt.initial ?? "";
   return {
@@ -42082,7 +41959,7 @@ function defaultResponseFor(prompt) {
       return;
   }
 }
-// dist/builtin/workflows/src/tui/graph-view-state.ts
+// src/tui/graph-view-state.ts
 class GraphViewState {
   mode;
   runId;
@@ -42095,7 +41972,7 @@ class GraphViewState {
   onDetach;
   initialFocusedStageId;
   initialFocusedRunId;
-  piTui;
+  getViewportRows;
   requestRender;
   piKeybindings;
   footerData;
@@ -42115,11 +41992,12 @@ class GraphViewState {
     targets: new Map
   };
   currentSnapshot = null;
+  graphScrollOffset = 0;
   graphScrollColOffset = 0;
   graphNodeHitRects = [];
   lastGraphViewport = null;
-  lastGraphTopPad = 0;
-  lastGraphVisibleRows = 0;
+  lastGraphTotalRows = 0;
+  lastOverlayFrameWidth = 80;
   pendingEnsureFocusedVisible = true;
   lastAutoFocusedAwaitingInputKey = null;
   lastBuiltSnapshotVersion = null;
@@ -42141,7 +42019,7 @@ class GraphViewState {
     this.onDetach = opts.onDetach;
     this.initialFocusedStageId = opts.initialFocusedStageId;
     this.initialFocusedRunId = opts.initialFocusedRunId;
-    this.piTui = opts.piTui;
+    this.getViewportRows = opts.getViewportRows;
     this.requestRender = opts.requestRender;
     this.piKeybindings = opts.piKeybindings;
     this.footerData = opts.footerData;
@@ -42176,6 +42054,7 @@ class GraphViewState {
       this.cachedRenderGeometry = { canvasWidth: 0, totalRows: 0, bands: [], edges: [] };
       this.expandedGraph = { stages: [], renderStages: [], tools: [], nodes: [], targets: new Map };
       this.focusedIndex = 0;
+      this.graphScrollOffset = 0;
       this.graphScrollColOffset = 0;
       this.graphNodeHitRects = [];
       this.lastGraphViewport = null;
@@ -42307,6 +42186,7 @@ class GraphViewState {
     }
     if (this.cachedLayout.length === 0) {
       this.focusedIndex = 0;
+      this.graphScrollOffset = 0;
       this.graphScrollColOffset = 0;
     } else if (this.focusedIndex >= this.cachedLayout.length) {
       this.focusedIndex = this.cachedLayout.length - 1;
@@ -42447,12 +42327,50 @@ class GraphViewState {
   }
 }
 
-// dist/builtin/workflows/src/tui/workflow-status.ts
+// src/tui/workflow-status.ts
 var WORKFLOW_STATUS_KEY = "pi-workflows";
-var OVERLAY_HIDDEN_STATUS_KEYS = new Set(["mcp", "i-have-adhd"]);
+var OVERLAY_HIDDEN_STATUS_KEYS = new Set(["mcp"]);
 
-// dist/builtin/workflows/src/tui/graph-view-render-helpers.ts
+// src/tui/graph-view-render-helpers.ts
 class GraphViewRenderHelpers extends GraphViewState {
+  _overlayLineCount() {
+    const reported = this.getViewportRows?.();
+    if (typeof reported !== "number" || !Number.isFinite(reported)) {
+      return OVERLAY_LINE_COUNT;
+    }
+    return Math.max(7, Math.floor(reported));
+  }
+  _overlayBodyRows(lineCount) {
+    return Math.max(1, lineCount - 3 - 3);
+  }
+  _overlayVerticalMarginRows(lineCount = this._overlayLineCount()) {
+    return lineCount >= 9 ? OVERLAY_VERTICAL_MARGIN_ROWS : 0;
+  }
+  _overlayPanelLineCount() {
+    const lineCount = this._overlayLineCount();
+    const margins = this._overlayVerticalMarginRows(lineCount) * 2;
+    return Math.max(7, lineCount - margins);
+  }
+  _marginRow(width) {
+    return " ".repeat(width);
+  }
+  _withVerticalMargins(panelLines, width) {
+    const expected = this._overlayLineCount();
+    const marginRows = this._overlayVerticalMarginRows(expected);
+    const panelTarget = this._overlayPanelLineCount();
+    const body = panelLines.slice(0, panelTarget);
+    while (body.length < panelTarget)
+      body.push(this._blankRow(width));
+    const margins = Array.from({ length: marginRows }, () => this._marginRow(width));
+    const lines = [...margins, ...body, ...margins];
+    if (lines.length > expected)
+      return lines.slice(0, expected);
+    while (lines.length < expected) {
+      const insertAt = marginRows > 0 ? Math.max(0, lines.length - marginRows) : lines.length;
+      lines.splice(insertAt, 0, this._blankRow(width));
+    }
+    return lines;
+  }
   _externalStatusText() {
     const entries = Array.from(this.footerData?.getExtensionStatuses() ?? []).filter(([key, value2]) => value2.trim().length > 0 && key !== WORKFLOW_STATUS_KEY && !key.startsWith(`${WORKFLOW_STATUS_KEY}:`) && !OVERLAY_HIDDEN_STATUS_KEYS.has(key)).sort(([a], [b]) => a.localeCompare(b));
     if (entries.length === 0)
@@ -42515,6 +42433,10 @@ class GraphViewRenderHelpers extends GraphViewState {
     const rightPadLen = Math.max(0, totalWidth - leftPad - cardW);
     return `${bg}${" ".repeat(leftPad)}${RESET}${cardLine}${bg}${" ".repeat(rightPadLen)}${RESET}`;
   }
+  _clampGraphScroll(totalRows, bodyRows) {
+    const maxOffset = Math.max(0, totalRows - bodyRows);
+    this.graphScrollOffset = Math.max(0, Math.min(maxOffset, this.graphScrollOffset));
+  }
   _clampGraphHorizontalScroll(totalCols, viewportCols) {
     const maxOffset = Math.max(0, totalCols - viewportCols);
     this.graphScrollColOffset = Math.max(0, Math.min(maxOffset, this.graphScrollColOffset));
@@ -42531,6 +42453,23 @@ class GraphViewRenderHelpers extends GraphViewState {
       this.graphScrollColOffset = end - viewportCols + 1;
     }
     this._clampGraphHorizontalScroll(totalCols, viewportCols);
+  }
+  _scrollFocusedIntoView(frameWidth, bodyRows, totalRows) {
+    const range = this._focusedGraphRowRange(frameWidth);
+    if (!range)
+      return;
+    if (range.start < this.graphScrollOffset) {
+      this.graphScrollOffset = range.start;
+    } else if (range.end >= this.graphScrollOffset + bodyRows) {
+      this.graphScrollOffset = range.end - bodyRows + 1;
+    }
+    this._clampGraphScroll(totalRows, bodyRows);
+  }
+  _focusedGraphRowRange(_frameWidth) {
+    const node = this.cachedLayout[this.focusedIndex];
+    if (!node)
+      return null;
+    return { start: node.y, end: node.y + NODE_H - 1 };
   }
   _plotEdge(canvas, px, py, cx, cy, color) {
     const parentCol = px + Math.floor(NODE_W / 2);
@@ -42594,7 +42533,7 @@ class GraphViewRenderHelpers extends GraphViewState {
   }
 }
 
-// dist/builtin/workflows/src/tui/node-card.ts
+// src/tui/node-card.ts
 function pulseT(phase) {
   return (Math.sin(phase * Math.PI * 2 - Math.PI / 2) + 1) / 2;
 }
@@ -42666,7 +42605,7 @@ function metaText(stage) {
     return "topology unavailable";
   const deps = stage.parentIds.length;
   const dependencyText = deps === 0 ? "root" : deps === 1 ? "1 dep" : `${deps} deps`;
-  return dependencyText;
+  return stage.fastMode === true ? `${dependencyText} · fast` : dependencyText;
 }
 function workflowChildRunRows(stage, width) {
   const child = stage.workflowChild ?? stage.workflowChildRun;
@@ -42782,55 +42721,58 @@ function renderNodeCard(stage, opts) {
   return [top, ...interior, bottom];
 }
 
-// dist/builtin/workflows/src/tui/graph-view-graph-render.ts
+// src/tui/graph-view-graph-render.ts
 class GraphViewGraphRenderer extends GraphViewRenderHelpers {
-  _renderGraph(width, viewportTop, viewportRows, renderRun) {
-    const safeRows = Math.max(0, Math.floor(viewportRows));
-    const run = renderRun !== undefined ? renderRun : this._getCurrentRun();
+  _renderGraph(width) {
+    const run = this._getCurrentRun();
     if (!run || this.cachedLayout.length === 0) {
       this.lastGraphViewport = null;
       this.graphNodeHitRects = [];
-      this.lastGraphTopPad = 0;
-      this.lastGraphVisibleRows = safeRows;
-      const lines = Array.from({ length: safeRows }, () => "");
-      if (safeRows > 0) {
-        const dim = hexToAnsi(this.graphTheme.dim);
-        lines[Math.floor((safeRows - 1) / 2)] = this._centerCanvasContent(`${dim}waiting for stage events…${RESET}`, width);
-      }
-      return lines;
+      this.lastGraphTotalRows = 1;
+      const dim = hexToAnsi(this.graphTheme.dim);
+      return [this._centerCanvasContent(`${dim}waiting for stage events…${RESET}`, width)];
     }
     const graphInner = Math.max(1, width - 4);
     const { canvasWidth, totalRows, bands, edges } = this.cachedRenderGeometry;
+    this.lastGraphTotalRows = totalRows;
     const leftMargin = Math.max(2, canvasWidth <= graphInner ? Math.floor((graphInner - canvasWidth) / 2) : 2);
     const viewportWidth = Math.max(1, width - leftMargin);
     const fullCanvasWidth = Math.max(canvasWidth, viewportWidth);
     this.lastGraphViewport = { leftMargin, viewportWidth };
-    const safeTop = Math.max(0, Math.min(totalRows, Math.floor(viewportTop)));
-    const graphRows = Math.max(0, Math.min(safeRows, totalRows - safeTop));
-    const viewportBottom = safeTop + graphRows;
     this._clampGraphHorizontalScroll(fullCanvasWidth, viewportWidth);
-    const topPad = safeTop === 0 && totalRows <= safeRows ? Math.min(3, Math.floor((safeRows - totalRows) / 2)) : 0;
-    this.lastGraphTopPad = topPad;
-    this.lastGraphVisibleRows = graphRows;
+    if (this.pendingEnsureFocusedVisible) {
+      this._scrollFocusedColumnIntoView(viewportWidth, fullCanvasWidth);
+    }
+    const bodyRows = this._overlayBodyRows(this._overlayPanelLineCount());
+    if (totalRows > bodyRows) {
+      this._clampGraphScroll(totalRows, bodyRows);
+      if (this.pendingEnsureFocusedVisible)
+        this._scrollFocusedIntoView(width, bodyRows, totalRows);
+      this._clampGraphScroll(totalRows, bodyRows);
+    } else {
+      this.graphScrollOffset = 0;
+    }
+    const viewportTop = this.graphScrollOffset;
+    const viewportBottom = Math.min(totalRows, viewportTop + bodyRows);
     const viewportLeft = this.graphScrollColOffset;
     const viewportRight = viewportLeft + viewportWidth;
     const pulsePhase = Date.now() % PULSE_PERIOD_MS / PULSE_PERIOD_MS;
     const edgeCanvas = new GraphCanvas({
-      top: safeTop,
+      top: viewportTop,
       bottom: viewportBottom,
       left: viewportLeft,
       right: viewportRight
     });
     const edgeColor = this.graphTheme.borderDim;
     for (const edge of edges) {
-      if (edge.bottom <= safeTop || edge.top >= viewportBottom || edge.right <= viewportLeft || edge.left >= viewportRight) {
+      if (edge.bottom <= viewportTop || edge.top >= viewportBottom || edge.right <= viewportLeft || edge.left >= viewportRight) {
         continue;
       }
       this._plotEdge(edgeCanvas, edge.parentX, edge.parentY, edge.childX, edge.childY, edgeColor);
     }
     const edgeLines = edgeCanvas.toLines();
     const placements = new Map;
-    for (let bandIndex = this._firstVisibleLayoutBand(safeTop);bandIndex < bands.length; bandIndex++) {
+    for (let bandIndex = this._firstVisibleLayoutBand(viewportTop);bandIndex < bands.length; bandIndex++) {
       const band = bands[bandIndex];
       if (band.top >= viewportBottom)
         break;
@@ -42851,9 +42793,9 @@ class GraphViewGraphRenderer extends GraphViewRenderHelpers {
         const visibleRight = Math.min(node.x + NODE_W, viewportRight);
         for (let li = 0;li < cardLines.length; li++) {
           const globalRow = node.y + li;
-          if (globalRow < safeTop || globalRow >= viewportBottom)
+          if (globalRow < viewportTop || globalRow >= viewportBottom)
             continue;
-          const localRow = globalRow - safeTop;
+          const localRow = globalRow - viewportTop;
           let bucket = placements.get(localRow);
           if (!bucket) {
             bucket = [];
@@ -42869,10 +42811,10 @@ class GraphViewGraphRenderer extends GraphViewRenderHelpers {
     }
     const bg = hexBg(this.graphTheme.bg);
     const leftPad = `${bg}${" ".repeat(leftMargin)}${RESET}`;
-    const composed = Array.from({ length: safeRows }, () => "");
-    for (let localRow = 0;localRow < graphRows; localRow++) {
+    const composed = [];
+    for (let localRow = 0;localRow < viewportBottom - viewportTop; localRow++) {
       const line = this._composeRow(edgeLines[localRow] ?? "", placements.get(localRow) ?? [], edgeColor);
-      composed[topPad + localRow] = `${leftPad}${this._padCanvas(line, viewportWidth)}`;
+      composed.push(`${leftPad}${this._padCanvas(line, viewportWidth)}`);
     }
     return composed;
   }
@@ -42887,8 +42829,8 @@ class GraphViewGraphRenderer extends GraphViewRenderHelpers {
     const viewportLeft = viewport.leftMargin;
     const viewportRight = viewport.leftMargin + viewport.viewportWidth;
     const rects = [];
-    const viewportTop = this._graphScrollTop();
-    const viewportBottom = Math.min(this.cachedRenderGeometry.totalRows, viewportTop + visibleRowCount);
+    const viewportTop = this.graphScrollOffset;
+    const viewportBottom = viewportTop + visibleRowCount;
     const { bands } = this.cachedRenderGeometry;
     for (let bandIndex = this._firstVisibleLayoutBand(viewportTop);bandIndex < bands.length; bandIndex++) {
       const band = bands[bandIndex];
@@ -42911,263 +42853,16 @@ class GraphViewGraphRenderer extends GraphViewRenderHelpers {
     }
     this.graphNodeHitRects = rects;
   }
-}
-
-// dist/builtin/workflows/src/tui/graph-view-layout.ts
-import { ScrollView, VStack } from "@earendil-works/pi-tui";
-import {
-  getScrollbarGeometry,
-  getScrollViewBox,
-  renderLayoutFrame
-} from "@earendil-works/pi-tui/dist/layout.js";
-
-// dist/builtin/workflows/src/tui/mouse-input.ts
-function parseTerminalMouseInput(data) {
-  const sgr = data.match(/^\x1b\[<(\d+);(\d+);(\d+)([Mm])$/);
-  if (sgr) {
-    const oneBasedCol = Number.parseInt(sgr[2], 10);
-    const oneBasedRow = Number.parseInt(sgr[3], 10);
-    if (oneBasedCol < 1 || oneBasedRow < 1)
-      return null;
+  _visibleGraphLines(graphLines, _frameWidth, bodyRows) {
+    this.pendingEnsureFocusedVisible = false;
     return {
-      protocol: "sgr",
-      action: sgr[4] === "M" ? "press" : "release",
-      buttonCode: Number.parseInt(sgr[1], 10),
-      col: oneBasedCol - 1,
-      row: oneBasedRow - 1
+      lines: graphLines,
+      topPad: this.lastGraphTotalRows <= bodyRows ? Math.min(3, Math.max(0, Math.floor((bodyRows - this.lastGraphTotalRows) / 2))) : 0
     };
   }
-  if (!data.startsWith("\x1B[M") || data.length !== 6)
-    return null;
-  const buttonCode = data.charCodeAt(3) - 32;
-  const col = data.charCodeAt(4) - 33;
-  const row = data.charCodeAt(5) - 33;
-  if (buttonCode < 0 || col < 0 || row < 0)
-    return null;
-  return {
-    protocol: "x10",
-    action: (buttonCode & (64 | 32)) === 0 && (buttonCode & 3) === 3 ? "release" : "press",
-    buttonCode,
-    col,
-    row
-  };
-}
-function terminalMouseWheelDirection(event) {
-  if (event.action !== "press" || (event.buttonCode & 64) === 0)
-    return null;
-  const direction = event.buttonCode & 3;
-  if (direction === 0)
-    return "up";
-  if (direction === 1)
-    return "down";
-  if (direction === 2)
-    return "left";
-  return "right";
-}
-function isTerminalLeftMousePress(event) {
-  return event.action === "press" && (event.buttonCode & 64) === 0 && (event.buttonCode & 32) === 0 && (event.buttonCode & 3) === 0;
 }
 
-// dist/builtin/workflows/src/tui/graph-view-layout.ts
-var EMPTY_RENDER = () => {};
-var GRAPH_HEADER_ROWS = 3;
-var GRAPH_FOOTER_ROWS = 3;
-function graphLayoutMarginRows(height) {
-  return Math.max(1, Math.floor(height)) >= 9 ? 1 : 0;
-}
-function graphLayoutBodyRows(height) {
-  const safeHeight = Math.max(1, Math.floor(height));
-  return Math.max(0, safeHeight - GRAPH_HEADER_ROWS - GRAPH_FOOTER_ROWS - graphLayoutMarginRows(safeHeight) * 2);
-}
-function graphLayoutNaturalHeight(bodyRows) {
-  const safeBodyRows = Math.max(1, Math.floor(bodyRows));
-  const base = GRAPH_HEADER_ROWS + GRAPH_FOOTER_ROWS + safeBodyRows;
-  return base >= GRAPH_HEADER_ROWS + GRAPH_FOOTER_ROWS + 3 ? base + 2 : base;
-}
-function collectWrappedRows(box, height, wrappedRows) {
-  if (box.lines) {
-    const offset = box.lineOffset ?? 0;
-    const firstRow = Math.max(box.rect.y, box.clip.y, 0);
-    const lastRow = Math.min(box.rect.y + box.rect.height, box.clip.y + box.clip.height, height);
-    for (let row = firstRow;row < lastRow; row++) {
-      if (box.lines[offset + row - box.rect.y] !== undefined)
-        wrappedRows[row] = true;
-    }
-  }
-  for (const child of box.children)
-    collectWrappedRows(child, height, wrappedRows);
-}
-
-class CallbackComponent {
-  renderLines;
-  constructor(renderLines) {
-    this.renderLines = renderLines;
-  }
-  render(width) {
-    return this.renderLines(width);
-  }
-  invalidate() {}
-}
-
-class GraphViewLayout {
-  scrollView;
-  root;
-  callbacks;
-  bodyViewportRows = 0;
-  bodyContentRows = 0;
-  scrollbar;
-  draggingScrollbar;
-  constructor(callbacks) {
-    this.callbacks = callbacks;
-    const margin = new CallbackComponent(() => [""]);
-    const header = new CallbackComponent((width) => this.callbacks.renderHeader(width));
-    const body = new CallbackComponent((width) => this.renderBody(width));
-    const footer = new CallbackComponent((width) => this.callbacks.renderFooter(width));
-    this.scrollView = new ScrollView(body, {
-      axis: "vertical",
-      follow: "none",
-      overscroll: "contain",
-      scrollbar: "hidden"
-    });
-    const marginVisible = ({ height }) => graphLayoutMarginRows(height) > 0;
-    this.root = new VStack([
-      { component: margin, basis: 1, grow: 0, shrink: 0, minSize: 0, visible: marginVisible },
-      { component: header, basis: GRAPH_HEADER_ROWS, grow: 0, shrink: 1, minSize: 0 },
-      { component: this.scrollView, basis: 0, grow: 1, shrink: 1, minSize: 0 },
-      { component: footer, basis: GRAPH_FOOTER_ROWS, grow: 0, shrink: 1, minSize: 1 },
-      { component: margin, basis: 1, grow: 0, shrink: 0, minSize: 0, visible: marginVisible }
-    ]);
-  }
-  render(width, height) {
-    const safeWidth = Math.max(1, Math.floor(width));
-    const safeHeight = Math.max(1, Math.floor(height));
-    const marginRows = graphLayoutMarginRows(safeHeight);
-    this.bodyViewportRows = graphLayoutBodyRows(safeHeight);
-    this.bodyContentRows = Math.max(0, Math.floor(this.callbacks.bodyContentHeight(safeWidth, this.bodyViewportRows)));
-    const requestRender = this.callbacks.requestRender ?? EMPTY_RENDER;
-    this.scrollView.updateLayout(this.bodyContentRows, this.bodyViewportRows, requestRender);
-    this.scrollView.setScrollbar(this.bodyContentRows > this.bodyViewportRows ? "always" : "hidden");
-    this.callbacks.beforeFrame?.(this.scrollView, this.bodyViewportRows, this.bodyContentRows, safeWidth);
-    const frame = renderLayoutFrame(this.root, safeWidth, safeHeight, requestRender);
-    const bodyBox = getScrollViewBox(frame, this.scrollView);
-    this.scrollbar = bodyBox ? getScrollbarGeometry(bodyBox) : undefined;
-    if (!this.scrollbar)
-      this.draggingScrollbar = undefined;
-    const wrappedRows = Array.from({ length: safeHeight }, () => false);
-    collectWrappedRows(frame.root, safeHeight, wrappedRows);
-    return {
-      frame,
-      bodyBox,
-      topMarginRows: marginRows,
-      bottomMarginRows: marginRows,
-      wrappedRows,
-      scrollbar: this.scrollbar
-    };
-  }
-  paintScrollbar(lines, width) {
-    const geometry = this.scrollbar;
-    if (!geometry)
-      return;
-    for (let offset = 0;offset < geometry.thumbHeight; offset++) {
-      const row = geometry.thumbTop + offset;
-      if (row < 0 || row >= lines.length || geometry.column < 0 || geometry.column >= width)
-        continue;
-      const line = lines[row] ?? " ".repeat(width);
-      const before = sliceColumns(line, 0, geometry.column, true);
-      const after = sliceColumns(line, geometry.column + 1, width - geometry.column - 1, true);
-      const beforePad = " ".repeat(Math.max(0, geometry.column - visibleWidth(before)));
-      const afterPad = " ".repeat(Math.max(0, width - geometry.column - 1 - visibleWidth(after)));
-      lines[row] = `${before}${beforePad}${this.scrollView.scrollbarStyle(" ")}${after}${afterPad}`;
-    }
-  }
-  dispose() {
-    this.draggingScrollbar = undefined;
-    this.scrollbar = undefined;
-    this.scrollView.updateLayout(this.bodyContentRows, this.bodyViewportRows, EMPTY_RENDER);
-    this.scrollView.setScrollbarActive(false);
-    this.scrollView.setScrollbar("hidden");
-  }
-  get viewportRows() {
-    return this.bodyViewportRows;
-  }
-  get contentRows() {
-    return this.bodyContentRows;
-  }
-  get scrollbarGeometry() {
-    return this.scrollbar;
-  }
-  isScrollbarInput(data) {
-    const event = parseTerminalMouseInput(data);
-    if (!event)
-      return false;
-    if (this.draggingScrollbar) {
-      return event.action === "release" || (event.buttonCode & 32) !== 0 && (event.buttonCode & 3) === 0;
-    }
-    const geometry = this.scrollbar;
-    return geometry !== undefined && event.action === "press" && (event.buttonCode & 64) === 0 && (event.buttonCode & 32) === 0 && (event.buttonCode & 3) === 0 && event.col === geometry.column && event.row >= geometry.trackTop && event.row < geometry.trackTop + geometry.trackHeight;
-  }
-  handleScrollbarInput(data) {
-    const event = parseTerminalMouseInput(data);
-    if (!event)
-      return false;
-    if (event.action === "release") {
-      if (!this.draggingScrollbar)
-        return false;
-      this.draggingScrollbar = undefined;
-      return true;
-    }
-    const moving = (event.buttonCode & 32) !== 0;
-    const leftButton = (event.buttonCode & 3) === 0;
-    if (this.draggingScrollbar && moving && leftButton) {
-      this.scrollToScrollbarRow(event.row);
-      return true;
-    }
-    const geometry = this.scrollbar;
-    if (!geometry)
-      return false;
-    if (!isTerminalLeftMousePress(event) || event.col !== geometry.column)
-      return false;
-    if (event.row < geometry.trackTop || event.row >= geometry.trackTop + geometry.trackHeight)
-      return false;
-    if (event.row >= geometry.thumbTop && event.row < geometry.thumbTop + geometry.thumbHeight) {
-      this.draggingScrollbar = { grabOffset: event.row - geometry.thumbTop };
-    } else {
-      this.scrollToScrollbarRow(event.row - Math.floor(geometry.thumbHeight / 2));
-    }
-    return true;
-  }
-  invalidate() {
-    this.root.invalidate();
-  }
-  renderBody(width) {
-    const contentRows = this.bodyContentRows;
-    const lines = new Array(contentRows);
-    const top = Math.max(0, Math.min(contentRows, this.scrollView.scrollTop));
-    const rows = Math.max(0, Math.min(this.bodyViewportRows, contentRows - top));
-    const visible = this.callbacks.renderBody(width, top, rows, contentRows);
-    for (let index = 0;index < visible.length && index < rows; index++) {
-      lines[top + index] = visible[index];
-    }
-    if (top > 0)
-      lines[top - 1] = " ";
-    return lines;
-  }
-  scrollToScrollbarRow(row) {
-    const geometry = this.scrollbar;
-    if (!geometry || geometry.maxScrollTop <= 0)
-      return;
-    const maxThumbTop = Math.max(0, geometry.trackHeight - geometry.thumbHeight);
-    if (maxThumbTop === 0) {
-      this.scrollView.scrollTo(0);
-      return;
-    }
-    const thumbTop = Math.max(geometry.trackTop, Math.min(geometry.trackTop + maxThumbTop, row - (this.draggingScrollbar?.grabOffset ?? 0)));
-    const ratio = (thumbTop - geometry.trackTop) / maxThumbTop;
-    this.scrollView.scrollTo(Math.round(ratio * geometry.maxScrollTop));
-  }
-}
-
-// dist/builtin/workflows/src/tui/switcher.ts
+// src/tui/switcher.ts
 function filterStages(stages, query) {
   if (!query)
     return [...stages];
@@ -43260,48 +42955,19 @@ function renderSwitcher(stages, state, opts) {
   return lines;
 }
 
-// dist/builtin/workflows/src/tui/graph-view-render.ts
-var LAYOUT_OSC_RESET = "\x1B[0m\x1B]8;;\x07";
-function stripLayoutWrapper(line) {
-  const startsWithWrapper = line.startsWith(LAYOUT_OSC_RESET);
-  const endsWithWrapper = line.endsWith(LAYOUT_OSC_RESET);
-  const start = startsWithWrapper ? LAYOUT_OSC_RESET.length : 0;
-  const end = endsWithWrapper ? line.length - LAYOUT_OSC_RESET.length : line.length;
-  return line.slice(start, Math.max(start, end));
-}
-
+// src/tui/graph-view-render.ts
 class GraphViewRenderer extends GraphViewGraphRenderer {
-  graphLayout;
-  lastOverlayFrameHeight = 0;
-  hasReportedViewportRows = false;
-  renderRun;
-  constructor(opts) {
-    super(opts);
-    this.graphLayout = new GraphViewLayout({
-      renderHeader: (width) => this._renderHeader(width),
-      renderBody: (width, top, rows, contentRows) => this._renderBody(width, top, rows, contentRows),
-      renderFooter: (width) => this._renderStatusline(width),
-      bodyContentHeight: (_width, viewportRows) => this._graphBodyContentHeight(viewportRows),
-      beforeFrame: (scrollView, viewportRows, contentRows, width) => this._prepareGraphScroll(scrollView, viewportRows, contentRows, width),
-      requestRender: () => this.requestRender?.()
-    });
-  }
-  _graphScrollTop() {
-    return this.graphLayout.scrollView.scrollTop;
-  }
   render(width) {
-    if (this.mode === "widget")
+    if (this.mode === "widget") {
       return this._renderWidget(width);
+    }
     return this._renderOverlay(width);
-  }
-  dispose() {
-    this.graphLayout.dispose();
-    super.dispose();
   }
   _renderWidget(width) {
     const run = this._getCurrentRun();
-    if (!run)
+    if (!run) {
       return [`${hexToAnsi(this.graphTheme.dim)}no active workflow${RESET}`];
+    }
     const displayStages = this._displayStages(run);
     const headerLines = renderHeader({ ...run, stages: displayStages }, { width, theme: this.graphTheme });
     const counts = this._counts(displayStages);
@@ -43310,150 +42976,95 @@ class GraphViewRenderer extends GraphViewGraphRenderer {
   }
   _renderOverlay(width) {
     const frameWidth = Math.max(40, width);
+    this.lastOverlayFrameWidth = frameWidth;
+    const lines = [];
     const run = this._getCurrentRun();
-    this.renderRun = run;
-    try {
-      const frameHeight = this._overlayFrameHeight(run);
-      const layoutFrame = this.graphLayout.render(frameWidth, frameHeight);
-      const lines = this._normalizeLayoutLines(layoutFrame.frame.lines, layoutFrame.wrappedRows, frameWidth, frameHeight, layoutFrame.topMarginRows, layoutFrame.bottomMarginRows);
-      const bodyStart = layoutFrame.bodyBox?.rect.y ?? layoutFrame.topMarginRows + GRAPH_HEADER_ROWS;
-      const bodyRows = layoutFrame.bodyBox?.rect.height ?? this.graphLayout.viewportRows;
-      if (run) {
-        this._recordGraphNodeHitRects(bodyStart + this.lastGraphTopPad, this.lastGraphVisibleRows);
-        this._renderSwitcherOverlay(lines, run, frameWidth, bodyStart, bodyRows);
-        this._renderPromptOverlay(lines, frameWidth, bodyStart, bodyRows);
-      } else {
-        this.graphNodeHitRects = [];
-        this.lastGraphViewport = null;
-      }
-      this.graphLayout.paintScrollbar(lines, frameWidth);
-      return lines;
-    } finally {
-      this.renderRun = undefined;
+    if (!run) {
+      return this._renderEmptyState(frameWidth);
     }
-  }
-  _overlayFrameHeight(run = this._currentRenderRun()) {
-    const reported = this.piTui?.terminal?.rows;
-    if (typeof reported === "number" && Number.isFinite(reported) && reported > 0) {
-      this.hasReportedViewportRows = true;
-      this.lastOverlayFrameHeight = Math.max(1, Math.floor(reported));
-      return this.lastOverlayFrameHeight;
+    lines.push(...renderHeader({ ...run, stages: this._displayStages(run) }, { width: frameWidth, theme: this.graphTheme }));
+    const graphLines = this._renderGraph(frameWidth);
+    const bodyTarget = this._overlayBodyRows(this._overlayPanelLineCount());
+    const visibleGraph = this._visibleGraphLines(graphLines, frameWidth, bodyTarget);
+    this._recordGraphNodeHitRects(this._overlayVerticalMarginRows() + 3 + visibleGraph.topPad, visibleGraph.lines.length);
+    for (let i = 0;i < visibleGraph.topPad; i++)
+      lines.push(this._blankRow(frameWidth));
+    for (const line of visibleGraph.lines) {
+      lines.push(this._canvasRow(line, frameWidth));
     }
-    if (this.hasReportedViewportRows && this.lastOverlayFrameHeight > 0)
-      return this.lastOverlayFrameHeight;
-    const bodyRows = run ? Math.max(1, this.cachedRenderGeometry.totalRows) : 2;
-    this.lastOverlayFrameHeight = graphLayoutNaturalHeight(bodyRows);
-    return this.lastOverlayFrameHeight;
+    while (lines.length < 3 + bodyTarget)
+      lines.push(this._blankRow(frameWidth));
+    if (lines.length > 3 + bodyTarget)
+      lines.length = 3 + bodyTarget;
+    this._renderSwitcherOverlay(lines, run, frameWidth, bodyTarget);
+    this._renderPromptOverlay(lines, frameWidth, bodyTarget);
+    lines.push(...this._renderStatusline(frameWidth));
+    return this._withVerticalMargins(lines, frameWidth);
   }
-  _currentRenderRun() {
-    return this.renderRun !== undefined ? this.renderRun : this._getCurrentRun();
-  }
-  _graphBodyContentHeight(viewportRows) {
-    const rows = Math.max(0, Math.floor(viewportRows));
-    if (!this._currentRenderRun() || this.cachedRenderGeometry.totalRows <= 0)
-      return rows;
-    return Math.max(rows, this.cachedRenderGeometry.totalRows);
-  }
-  _prepareGraphScroll(scrollView, viewportRows, _contentRows, width) {
-    const run = this._currentRenderRun();
-    if (viewportRows <= 0)
-      return;
-    if (!run || this.cachedRenderGeometry.totalRows <= 0) {
-      scrollView.scrollToStart();
-      this.pendingEnsureFocusedVisible = false;
-      return;
-    }
-    if (this.pendingEnsureFocusedVisible) {
-      const node = this.cachedLayout[this.focusedIndex];
-      if (node) {
-        let next = scrollView.scrollTop;
-        if (node.y < next)
-          next = node.y;
-        else if (node.y + NODE_H > next + viewportRows)
-          next = node.y + NODE_H - viewportRows;
-        scrollView.scrollTo(next);
-        const graphInner = Math.max(1, width - 4);
-        const leftMargin = Math.max(2, this.cachedRenderGeometry.canvasWidth <= graphInner ? Math.floor((graphInner - this.cachedRenderGeometry.canvasWidth) / 2) : 2);
-        const viewportWidth = Math.max(1, width - leftMargin);
-        const fullCanvasWidth = Math.max(this.cachedRenderGeometry.canvasWidth, viewportWidth);
-        this._scrollFocusedColumnIntoView(viewportWidth, fullCanvasWidth);
-      }
-      this.pendingEnsureFocusedVisible = false;
-    }
-  }
-  _renderHeader(width) {
-    const run = this._currentRenderRun();
-    if (run)
-      return renderHeader({ ...run, stages: this._displayStages(run) }, { width, theme: this.graphTheme });
+  _renderEmptyState(width) {
+    this.graphNodeHitRects = [];
+    this.lastGraphViewport = null;
     const t = this.graphTheme;
     const muted = hexToAnsi(t.textMuted);
+    const dim = hexToAnsi(t.dim);
+    const accent = hexToAnsi(t.accent);
     const chromeBg = hexBg(t.backgroundPanel);
     const { top, mid, bot, visibleWidth: pillW } = renderOutlinePill("ORCHESTRATOR", t.accent, chromeBg);
+    const idleLabel = `  ${muted}idle${RESET}`;
     const fillerVisible = Math.max(0, width - 1 - pillW - 6 - 2);
     const filler = " ".repeat(fillerVisible);
-    return [
+    const lines = [
       `${chromeBg} ${RESET}${top}${chromeBg}${" ".repeat(6 + fillerVisible)}${" ".repeat(2)}${RESET}`,
-      `${chromeBg} ${RESET}${mid}${chromeBg}  ${muted}idle${RESET}${filler}${" ".repeat(2)}${RESET}`,
+      `${chromeBg} ${RESET}${mid}${chromeBg}${idleLabel}${filler}${" ".repeat(2)}${RESET}`,
       `${chromeBg} ${RESET}${bot}${chromeBg}${" ".repeat(6 + fillerVisible)}${" ".repeat(2)}${RESET}`
     ];
-  }
-  _renderBody(width, top, rows, _contentRows) {
-    const run = this._currentRenderRun();
-    const raw = run ? this._renderGraph(width, top, rows, run) : this._renderEmptyBody(width, rows);
-    return raw.map((line) => this._canvasRow(line, width));
-  }
-  _renderEmptyBody(width, rows) {
+    const bodyTarget = this._overlayBodyRows(this._overlayPanelLineCount());
     const body = [
-      this._centerCanvasContent(`  ${hexToAnsi(this.graphTheme.textMuted)}No active workflow run.${RESET}`, width),
-      this._centerCanvasContent(`  ${hexToAnsi(this.graphTheme.dim)}Start one with ${hexToAnsi(this.graphTheme.accent)}/workflow <name>${RESET}${hexToAnsi(this.graphTheme.dim)} or press ${hexToAnsi(this.graphTheme.accent)}F2${RESET}${hexToAnsi(this.graphTheme.dim)} on an active run.${RESET}`, width)
+      this._canvasRow(`  ${muted}No active workflow run.${RESET}`, width),
+      this._canvasRow(`  ${dim}Start one with ${accent}/workflow <name>${RESET}${dim} or press ${accent}F2${RESET}${dim} on an active run.${RESET}`, width)
     ];
-    const lines = Array.from({ length: rows }, () => "");
-    const topPad = Math.max(0, Math.floor((rows - body.length) / 2));
-    for (let index = 0;index < body.length; index++) {
-      const target = topPad + index;
-      if (target < lines.length)
-        lines[target] = body[index];
-    }
-    return lines;
+    const topPad = Math.max(0, Math.floor((bodyTarget - body.length) / 2));
+    for (let i = 0;i < topPad; i++)
+      lines.push(this._blankRow(width));
+    for (const l of body)
+      lines.push(l);
+    while (lines.length < 3 + bodyTarget)
+      lines.push(this._blankRow(width));
+    lines.push(...this._renderStatusline(width));
+    return this._withVerticalMargins(lines, width);
   }
-  _normalizeLayoutLines(lines, wrappedRows, width, height, topMarginRows, bottomMarginRows) {
-    return Array.from({ length: height }, (_, row) => {
-      if (row < topMarginRows || row >= height - bottomMarginRows)
-        return " ".repeat(width);
-      const source = lines[row] ?? "";
-      const clean = wrappedRows[row] === true ? stripLayoutWrapper(source) : source;
-      if (visibleWidth(clean) === 0)
-        return this._blankRow(width);
-      if (visibleWidth(clean) > width)
-        return truncateToWidth(clean, width, "…", true);
-      return `${clean}${" ".repeat(width - visibleWidth(clean))}`;
-    });
-  }
-  _renderSwitcherOverlay(lines, run, frameWidth, bodyStart, bodyRows) {
+  _renderSwitcherOverlay(lines, run, frameWidth, bodyTarget) {
     if (!this.switcherOpen)
       return;
-    const bodyEnd = bodyStart + bodyRows;
-    for (let row = bodyStart;row < bodyEnd; row++)
+    const bodyStart = 3;
+    const bodyEnd = 3 + bodyTarget;
+    for (let row = bodyStart;row < bodyEnd; row++) {
       lines[row] = this._blankRow(frameWidth);
+    }
     const switcherWidth = Math.min(60, Math.max(40, frameWidth - 8));
     const switcherLines = renderSwitcher(this._displayStages(run), this.switcherState, {
       width: switcherWidth,
       theme: this.graphTheme,
       canOpenStageChat: (stage) => this._stageChatTarget(stage) !== undefined
     });
-    const insertAt = Math.max(bodyStart, bodyStart + Math.min(2, Math.floor((bodyRows - switcherLines.length) / 3)));
+    const insertAt = Math.max(bodyStart, bodyStart + Math.min(2, Math.floor((bodyTarget - switcherLines.length) / 3)));
     const switcherLeft = Math.max(2, Math.floor((frameWidth - switcherWidth) / 2));
-    for (let index = 0;index < switcherLines.length; index++) {
-      const lineIndex = insertAt + index;
-      if (lineIndex >= bodyEnd)
+    for (let i = 0;i < switcherLines.length; i++) {
+      const lineIdx = insertAt + i;
+      if (lineIdx >= bodyEnd)
         break;
-      lines[lineIndex] = this._overlayCard(lines[lineIndex] ?? this._blankRow(frameWidth), switcherLines[index], switcherLeft, frameWidth);
+      const base = lines[lineIdx] ?? this._blankRow(frameWidth);
+      const merged = this._overlayCard(base, switcherLines[i], switcherLeft, frameWidth);
+      if (lineIdx < lines.length)
+        lines[lineIdx] = merged;
+      else
+        lines.push(merged);
     }
   }
-  _renderPromptOverlay(lines, frameWidth, bodyStart, bodyRows) {
+  _renderPromptOverlay(lines, frameWidth, bodyTarget) {
     if (!this.promptState || this.switcherOpen)
       return;
-    const run = this._currentRenderRun();
+    const run = this._getCurrentRun();
     const cardWidth = Math.min(72, Math.max(40, frameWidth - 6));
     const cardLines = renderPromptCard({
       state: this.promptState,
@@ -43461,42 +43072,92 @@ class GraphViewRenderer extends GraphViewGraphRenderer {
       width: cardWidth,
       cursorOn: (Date.now() / 530 | 0) % 2 === 0,
       identity: run ? { runId: run.id, name: run.name } : undefined,
-      maxRows: bodyRows
+      maxRows: bodyTarget
     });
-    const bodyEnd = bodyStart + bodyRows;
-    const slot = Math.max(bodyStart, bodyStart + Math.floor((bodyRows - cardLines.length) / 2));
-    if (cardLines.length > bodyRows || slot + cardLines.length > bodyEnd)
+    const bodyStart = 3;
+    const bodyEnd = bodyStart + bodyTarget;
+    const slot = Math.max(bodyStart, bodyStart + Math.floor((bodyTarget - cardLines.length) / 2));
+    if (cardLines.length > bodyTarget || slot + cardLines.length > bodyEnd)
       return;
     const leftPad = Math.max(0, Math.floor((frameWidth - cardWidth) / 2));
-    for (let index = 0;index < cardLines.length; index++) {
-      const lineIndex = slot + index;
-      lines[lineIndex] = this._overlayCard(lines[lineIndex] ?? this._blankRow(frameWidth), cardLines[index], leftPad, frameWidth);
+    for (let i = 0;i < cardLines.length; i++) {
+      const lineIdx = slot + i;
+      const base = lines[lineIdx] ?? this._blankRow(frameWidth);
+      lines[lineIdx] = this._overlayCard(base, cardLines[i], leftPad, frameWidth);
     }
   }
 }
 
-// dist/builtin/workflows/src/tui/graph-view-input.ts
-var GRAPH_SCROLL_WHEEL_LINES = 4;
+// src/tui/mouse-input.ts
+function parseTerminalMouseInput(data) {
+  const sgr = data.match(/^\x1b\[<(\d+);(\d+);(\d+)([Mm])$/);
+  if (sgr) {
+    const oneBasedCol = Number.parseInt(sgr[2], 10);
+    const oneBasedRow = Number.parseInt(sgr[3], 10);
+    if (oneBasedCol < 1 || oneBasedRow < 1)
+      return null;
+    return {
+      protocol: "sgr",
+      action: sgr[4] === "M" ? "press" : "release",
+      buttonCode: Number.parseInt(sgr[1], 10),
+      col: oneBasedCol - 1,
+      row: oneBasedRow - 1
+    };
+  }
+  if (!data.startsWith("\x1B[M") || data.length !== 6)
+    return null;
+  const buttonCode = data.charCodeAt(3) - 32;
+  const col = data.charCodeAt(4) - 33;
+  const row = data.charCodeAt(5) - 33;
+  if (buttonCode < 0 || col < 0 || row < 0)
+    return null;
+  return {
+    protocol: "x10",
+    action: (buttonCode & (64 | 32)) === 0 && (buttonCode & 3) === 3 ? "release" : "press",
+    buttonCode,
+    col,
+    row
+  };
+}
+function terminalMouseWheelDirection(event) {
+  if (event.action !== "press" || (event.buttonCode & 64) === 0)
+    return null;
+  const direction = event.buttonCode & 3;
+  if (direction === 0)
+    return "up";
+  if (direction === 1)
+    return "down";
+  if (direction === 2)
+    return "left";
+  return "right";
+}
+function isTerminalLeftMousePress(event) {
+  return event.action === "press" && (event.buttonCode & 64) === 0 && (event.buttonCode & 32) === 0 && (event.buttonCode & 3) === 0;
+}
 
+// src/tui/graph-view-input.ts
 class GraphViewInputController extends GraphViewRenderer {
   handleInput(data) {
     if (this._isReturnToMainChatInput(data)) {
       this._returnToMainChat();
       return true;
     }
-    if (this.graphLayout.isScrollbarInput(data))
-      return this._handleGraphInput(data);
-    if (this.switcherOpen)
+    if (this.switcherOpen) {
       return this._handleSwitcherInput(data);
-    const wheelDelta = this._mouseWheelDelta(data);
-    if (wheelDelta)
-      return this._handleWheelDelta(wheelDelta);
-    if (this.promptState)
+    }
+    if (this.promptState) {
+      if (this._isNonTextGraphControlBeforePrompt(data)) {
+        return this._handleGraphInput(data);
+      }
       return this._handlePromptInput(data);
+    }
     return this._handleGraphInput(data);
   }
   _promptKeybindings() {
     return isKeybindingsLike(this.piKeybindings) ? this.piKeybindings : undefined;
+  }
+  _isNonTextGraphControlBeforePrompt(data) {
+    return this._mouseWheelDelta(data) !== null;
   }
   _isReturnToMainChatInput(data) {
     return matchesKey(data, Key.ctrl("x"));
@@ -43531,13 +43192,14 @@ class GraphViewInputController extends GraphViewRenderer {
   }
   _handleGraphInput(data) {
     const stageCount = this.cachedLayout.length;
-    if (this.graphLayout.handleScrollbarInput(data)) {
-      this.pendingEnsureFocusedVisible = false;
+    const wheelDelta = this._mouseWheelDelta(data);
+    if (wheelDelta) {
+      if (wheelDelta.rows !== 0)
+        this._scrollGraphBy(wheelDelta.rows);
+      if (wheelDelta.cols !== 0)
+        this._scrollGraphHorizontallyBy(wheelDelta.cols);
       return true;
     }
-    const wheelDelta = this._mouseWheelDelta(data);
-    if (wheelDelta)
-      return this._handleWheelDelta(wheelDelta);
     const clickedNodeIndex = this._graphNodeIndexForClick(data);
     if (clickedNodeIndex !== undefined) {
       if (clickedNodeIndex !== null) {
@@ -43612,18 +43274,21 @@ class GraphViewInputController extends GraphViewRenderer {
       this.switcherOpen = false;
       return true;
     }
-    const wheelEvent = parseTerminalMouseInput(data);
-    const wheelDirection = wheelEvent ? terminalMouseWheelDirection(wheelEvent) : null;
-    if (wheelDirection === "down")
-      return this._moveSwitcherSelection(1);
-    if (wheelDirection === "up")
-      return this._moveSwitcherSelection(-1);
-    if (wheelDirection !== null)
+    if (matchesKey(data, Key.down)) {
+      const filtered = filterStages(stages, this.switcherState.query);
+      this.switcherState = {
+        ...this.switcherState,
+        selectedIndex: Math.min(this.switcherState.selectedIndex + 1, filtered.length - 1)
+      };
       return true;
-    if (matchesKey(data, Key.down))
-      return this._moveSwitcherSelection(1);
-    if (matchesKey(data, Key.up))
-      return this._moveSwitcherSelection(-1);
+    }
+    if (matchesKey(data, Key.up)) {
+      this.switcherState = {
+        ...this.switcherState,
+        selectedIndex: Math.max(this.switcherState.selectedIndex - 1, 0)
+      };
+      return true;
+    }
     if (matchesKey(data, Key.backspace)) {
       this.switcherState = {
         query: this.switcherState.query.slice(0, -1),
@@ -43639,16 +43304,6 @@ class GraphViewInputController extends GraphViewRenderer {
       return true;
     }
     return false;
-  }
-  _moveSwitcherSelection(step) {
-    const stages = this.cachedLayout.map((layoutNode) => layoutNode.stage);
-    const filtered = filterStages(stages, this.switcherState.query);
-    const maxIndex = Math.max(0, filtered.length - 1);
-    this.switcherState = {
-      ...this.switcherState,
-      selectedIndex: Math.max(0, Math.min(this.switcherState.selectedIndex + step, maxIndex))
-    };
-    return true;
   }
   _moveByDepth(step) {
     const cur = this.cachedLayout[this.focusedIndex];
@@ -43706,16 +43361,9 @@ class GraphViewInputController extends GraphViewRenderer {
     this.focusedIndex = next;
     this.pendingEnsureFocusedVisible = true;
   }
-  _scrollGraphVertically(deltaRows) {
+  _scrollGraphBy(deltaRows) {
     this.pendingEnsureFocusedVisible = false;
-    this.graphLayout.scrollView.scrollBy(deltaRows);
-  }
-  _handleWheelDelta(delta) {
-    if (delta.rows !== 0)
-      this._scrollGraphVertically(delta.rows);
-    if (delta.cols !== 0)
-      this._scrollGraphHorizontallyBy(delta.cols);
-    return true;
+    this.graphScrollOffset = Math.max(0, this.graphScrollOffset + deltaRows);
   }
   _scrollGraphHorizontallyBy(deltaCols) {
     this.pendingEnsureFocusedVisible = false;
@@ -43748,17 +43396,14 @@ class GraphViewInputController extends GraphViewRenderer {
       return null;
     const direction = terminalMouseWheelDirection(event);
     if (direction === "up")
-      return { cols: 0, rows: -GRAPH_SCROLL_WHEEL_LINES };
+      return { cols: 0, rows: -GRAPH_SCROLL_STEP_ROWS };
     if (direction === "down")
-      return { cols: 0, rows: GRAPH_SCROLL_WHEEL_LINES };
+      return { cols: 0, rows: GRAPH_SCROLL_STEP_ROWS };
     if (direction === "left")
       return { cols: -GRAPH_SCROLL_STEP_COLS, rows: 0 };
     if (direction === "right")
       return { cols: GRAPH_SCROLL_STEP_COLS, rows: 0 };
     return null;
-  }
-  get _graphScrollbarGeometry() {
-    return this.graphLayout.scrollbarGeometry;
   }
   get _focusedIndex() {
     return this.focusedIndex;
@@ -43770,18 +43415,18 @@ class GraphViewInputController extends GraphViewRenderer {
     return this.switcherState;
   }
   get _graphScrollOffset() {
-    return this._graphScrollTop();
+    return this.graphScrollOffset;
   }
   get _graphScrollColOffset() {
     return this.graphScrollColOffset;
   }
 }
 
-// dist/builtin/workflows/src/tui/graph-view.ts
+// src/tui/graph-view.ts
 class GraphView extends GraphViewInputController {
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-composer-drafts.ts
+// src/tui/stage-chat-composer-drafts.ts
 function draftKey(runId, stageId) {
   return `${runId}\x00${stageId}`;
 }
@@ -43802,10 +43447,7 @@ class StageChatComposerDrafts {
   }
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view.ts
-import { keyText as keyText2, TranscriptFollowIndicator } from "@bastani/atomic";
-
-// dist/builtin/workflows/src/tui/stage-chat-layout.ts
+// src/tui/stage-chat-layout.ts
 function resolveStageChatViewportRows(reported, fallbackRows) {
   if (typeof reported !== "number" || !Number.isFinite(reported)) {
     return fallbackRows;
@@ -43845,13 +43487,13 @@ function fitStageChatFrame(lines, viewportRows, blankLine) {
   return lines;
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-archive-history.ts
+// src/tui/stage-chat-view-archive-history.ts
 import { Box as Box2, Text as Text2 } from "@earendil-works/pi-tui";
 
-// dist/builtin/workflows/src/tui/stage-chat-view-footer-status.ts
+// src/tui/stage-chat-view-footer-status.ts
 import { Box, Text } from "@earendil-works/pi-tui";
 
-// dist/builtin/workflows/src/tui/stage-chat-view-render-helpers.ts
+// src/tui/stage-chat-view-render-helpers.ts
 var ITALIC = "\x1B[3m";
 var FG_RESET = "\x1B[39m";
 var WEIGHT_RESET = "\x1B[22m";
@@ -43957,17 +43599,6 @@ function stripAnsi(s) {
 function blendBg(baseHex, tintHex, alpha) {
   return lerpColor(baseHex, tintHex, Math.max(0, Math.min(1, alpha)));
 }
-function workingIndicatorPalette(theme) {
-  const { selection: dark, accent, text: peak } = theme;
-  return {
-    dark,
-    lift: lerpColor(dark, accent, 0.25),
-    muted: lerpColor(dark, accent, 0.6),
-    accent,
-    bright: lerpColor(accent, peak, 0.55),
-    peak
-  };
-}
 function renderHintsForPrompt(kind, theme) {
   if (kind === "input" || kind === "editor") {
     return `${paint2("enter", theme.textMuted, { bold: true })} Submit · ${paint2("ctrl+c", theme.textMuted, { bold: true })} Skip`;
@@ -43978,7 +43609,17 @@ function renderHintsForPrompt(kind, theme) {
   return `${paint2("enter", theme.textMuted, { bold: true })} Select · ${paint2("ctrl+c", theme.textMuted, { bold: true })} Skip`;
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-footer-status.ts
+// src/tui/stage-chat-view-types.ts
+var VIEW_LINE_COUNT = 32;
+var PROMPT_SCROLL_STEP_ROWS = 4;
+var HEADER_ROWS = 2;
+var SEP_ROWS = 1;
+var STAGE_CHAT_MOUSE_SCROLL_TOGGLE_LABEL = "ctrl+t";
+function isReadOnlyArchiveStatus(status) {
+  return status === "completed" || status === "failed" || status === "skipped";
+}
+
+// src/tui/stage-chat-view-footer-status.ts
 function renderHeader2(ctx, width, stage) {
   const t = ctx.theme;
   const stageName = stage?.name ?? "stage";
@@ -44066,13 +43707,14 @@ function embedOrchestratorReturnHintInWidget(ctx, widgetLines, width) {
   return lines;
 }
 function mergeOrchestratorReturnHintIntoLine(ctx, line, width, options = {}) {
+  const copyModeState = ctx.mouseScrollCaptureEnabled ? "off" : "on";
   const fullHint = {
-    plain: "ctrl+x return to graph",
-    styled: paint2("ctrl+x", ctx.theme.text, { bold: true }) + paint2(" return to graph", ctx.theme.textMuted)
+    plain: `ctrl+x return to graph · ${STAGE_CHAT_MOUSE_SCROLL_TOGGLE_LABEL} copy mode ${copyModeState}`,
+    styled: paint2("ctrl+x", ctx.theme.text, { bold: true }) + paint2(" return to graph · ", ctx.theme.textMuted) + paint2(STAGE_CHAT_MOUSE_SCROLL_TOGGLE_LABEL, ctx.theme.text, { bold: true }) + paint2(` copy mode ${copyModeState}`, ctx.theme.textMuted)
   };
   const compactHint = {
-    plain: "ctrl+x graph",
-    styled: paint2("ctrl+x", ctx.theme.text, { bold: true }) + paint2(" graph", ctx.theme.textMuted)
+    plain: `ctrl+x graph · ${STAGE_CHAT_MOUSE_SCROLL_TOGGLE_LABEL} ${copyModeState}`,
+    styled: paint2("ctrl+x", ctx.theme.text, { bold: true }) + paint2(" graph · ", ctx.theme.textMuted) + paint2(STAGE_CHAT_MOUSE_SCROLL_TOGGLE_LABEL, ctx.theme.text, { bold: true }) + paint2(` ${copyModeState}`, ctx.theme.textMuted)
   };
   const trailingBorder = options.preserveTrailingBorder === true ? trailingWidgetBorderChar(line) : "";
   const suffixWidth = visibleWidth(trailingBorder);
@@ -44124,7 +43766,7 @@ function editorRuleColor(ctx, disabled, agentSession, state) {
   }
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-archive-history.ts
+// src/tui/stage-chat-view-archive-history.ts
 function postMortemUnavailableMessage(reason) {
   switch (reason) {
     case "no_adapter":
@@ -44139,7 +43781,7 @@ function postMortemUnavailableMessage(reason) {
       return;
   }
 }
-function renderReadOnlyArchiveBody(ctx, width, budget, stage, indicatorLines = [], renderIndicator = () => indicatorLines) {
+function renderReadOnlyArchiveBody(ctx, width, budget, stage) {
   if (stage?.promptFootprint) {
     return renderReadOnlyPromptArchiveBody(ctx, width, budget, stage);
   }
@@ -44150,13 +43792,8 @@ function renderReadOnlyArchiveBody(ctx, width, budget, stage, indicatorLines = [
   callout.push(...bannerLines(ctx, width, unavailableMessage === undefined ? "info" : "warning", unavailableMessage === undefined ? "◌" : "!", unavailableMessage === undefined ? "READ-ONLY SESSION" : "SESSION UNAVAILABLE", unavailableMessage === undefined ? stage?.sessionFile ? "archived transcript" : "no live chat session" : "post-mortem chat cannot be reopened"));
   callout.push(...new Text2(paint2(unavailableMessage ?? "This node is no longer attached to a live chat session.", t.textMuted), 2, 0).render(width));
   const transcriptBudget = Math.max(0, budget - callout.length);
-  const reservedIndicatorRows = indicatorLines.length > 0 && transcriptBudget > indicatorLines.length ? indicatorLines.length : 0;
-  const transcriptRows = transcriptBudget - reservedIndicatorRows;
-  const lines = transcriptRows > 0 ? ctx.chatHost.renderBody(width, transcriptRows) : [];
-  const visibleIndicatorLines = reservedIndicatorRows > 0 ? [...renderIndicator().slice(0, reservedIndicatorRows)] : [];
-  while (visibleIndicatorLines.length < reservedIndicatorRows)
-    visibleIndicatorLines.push(blankLine(width));
-  lines.push(...visibleIndicatorLines, ...callout);
+  const lines = transcriptBudget > 0 ? ctx.chatHost.renderBody(width, transcriptBudget) : [];
+  lines.push(...callout);
   while (lines.length < budget)
     lines.push(blankLine(width));
   if (lines.length > budget)
@@ -44232,21 +43869,16 @@ function formatReadOnlyPromptAnswer(value2, kind) {
     return String(value2);
   }
 }
-function renderPausedBody(ctx, width, budget, indicatorLines = [], renderIndicator = () => indicatorLines) {
+function renderPausedBody(ctx, width, budget) {
   const t = ctx.theme;
   const callout = [];
   callout.push(blankLine(width));
   callout.push(...bannerLines(ctx, width, "warning", "❚❚", "PAUSED", "enter resumes · ctrl+x return to graph"));
   callout.push(...new Text2(paint2("This workflow stage is paused. Type a message below and press Enter to resume.", t.textMuted), 2, 0).render(width));
-  const calloutRows = Math.min(callout.length, Math.max(0, budget));
-  const transcriptBudget = Math.max(0, budget - calloutRows);
-  const reservedIndicatorRows = indicatorLines.length > 0 && transcriptBudget > indicatorLines.length ? indicatorLines.length : 0;
-  const transcriptRows = transcriptBudget - reservedIndicatorRows;
-  const lines = transcriptRows > 0 ? ctx.chatHost.renderBody(width, transcriptRows) : [];
-  const visibleIndicatorLines = reservedIndicatorRows > 0 ? [...renderIndicator().slice(0, reservedIndicatorRows)] : [];
-  while (visibleIndicatorLines.length < reservedIndicatorRows)
-    visibleIndicatorLines.push(blankLine(width));
-  lines.push(...visibleIndicatorLines, ...callout.slice(0, calloutRows));
+  const calloutRows = Math.min(callout.length, Math.max(0, budget - 1));
+  const transcriptBudget = Math.max(1, budget - calloutRows);
+  const lines = ctx.chatHost.renderBody(width, transcriptBudget);
+  lines.push(...callout.slice(0, calloutRows));
   while (lines.length < budget)
     lines.push(blankLine(width));
   if (lines.length > budget)
@@ -44414,7 +44046,7 @@ function fitBodyLines(width, budget, lines) {
   return framed;
 }
 
-// dist/builtin/workflows/src/shared/stage-ui-broker.ts
+// src/shared/stage-ui-broker.ts
 import { randomUUID } from "node:crypto";
 function key(runId, stageId) {
   return `${runId}\x00${stageId}`;
@@ -44599,7 +44231,7 @@ async function mountStageCustomUi(request, tui, theme, keybindings, broker, onDo
   });
   const component = {
     render: (width) => rawComponent.render(width),
-    ...rawComponent.handleInput !== undefined ? { handleInput: (data) => rawComponent.handleInput?.(data) === true } : {},
+    ...rawComponent.handleInput !== undefined ? { handleInput: (data) => rawComponent.handleInput?.(data) } : {},
     invalidate: () => rawComponent.invalidate?.(),
     ...rawComponent.dispose !== undefined ? { dispose: () => rawComponent.dispose?.() } : {}
   };
@@ -44617,7 +44249,7 @@ async function mountStageCustomUi(request, tui, theme, keybindings, broker, onDo
 }
 var stageUiBroker = new StageUiBroker;
 
-// dist/builtin/workflows/src/tui/stage-chat-view-custom-ui.ts
+// src/tui/stage-chat-view-custom-ui.ts
 async function showCustomUi(ctx, request) {
   ctx.mountedCustomUi?.component.dispose?.();
   ctx.mountedCustomUi = null;
@@ -44689,14 +44321,11 @@ function canSubmitPrompt(ctx, promptId) {
   return ctx.canSubmitPrompt?.(ctx.runId, ctx.stageId, promptId) ?? true;
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-input.ts
-import { TRANSCRIPT_JUMP_TO_END_URL } from "@bastani/atomic";
-
-// dist/builtin/workflows/src/tui/stage-chat-view-state.ts
+// src/tui/stage-chat-view-state.ts
 import { ChatSessionHost } from "@bastani/atomic";
 import { Editor } from "@earendil-works/pi-tui";
 
-// dist/builtin/workflows/src/tui/stage-chat-view-status.ts
+// src/tui/stage-chat-view-status.ts
 var TERMINAL_OR_NON_STREAMING_STAGE_CHAT_STATUSES = new Set([
   "success",
   "complete",
@@ -44725,7 +44354,7 @@ function isTerminalStageChatState(status) {
   return isTerminalOrNonStreamingStageChatStatus(status);
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-delivery-activity.ts
+// src/tui/stage-chat-view-delivery-activity.ts
 function subscribeStageChatDeliveryActivity(ctx) {
   const handle = ctx.handle;
   if (!handle?.subscribeDeliveryActivity)
@@ -44779,7 +44408,7 @@ function invalidateStageChatDeliveryLifecycles(ctx) {
   ctx.terminalLifecycleFenced = true;
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-live-events.ts
+// src/tui/stage-chat-view-live-events.ts
 function applyStageChatLiveHandleEvent(ctx, event) {
   const staleTerminalStart = isStaleTerminalLifecycleStart(ctx, event);
   ctx.chatHost.applyAgentEvent(event);
@@ -44829,14 +44458,14 @@ function isToolExecutionLiveEvent(event) {
   return type === "tool_execution_start" || type === "tool_execution_update";
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-pending-tools.ts
+// src/tui/stage-chat-view-pending-tools.ts
 function replayPendingToolExecutions(ctx) {
   const events = ctx.handle?.isDisposed === true ? [] : ctx.handle?.pendingToolExecutionEvents?.() ?? [];
   for (const event of events)
     ctx.chatHost.applyAgentEvent(event);
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-render-settings.ts
+// src/tui/stage-chat-view-render-settings.ts
 function stageChatRenderSettings(ctx, opts) {
   const inherited = opts.getChatRenderSettings?.();
   const stageSession = ctx.handle?.isDisposed === true ? undefined : ctx.handle?.agentSession;
@@ -44856,8 +44485,8 @@ function chatHostStyle(ctx) {
     textMuted: (text) => paint2(text, ctx.theme.textMuted),
     accent: (text) => paint2(text, ctx.theme.accent),
     accentBold: (text) => paint2(text, ctx.theme.accent, { bold: true }),
-    workingIndicatorPalette: ctx.piTheme === undefined ? () => workingIndicatorPalette(ctx.theme) : undefined,
-    workingIndicatorUseGlobalTheme: ctx.piTheme !== undefined,
+    workingIndicatorPalette: undefined,
+    workingIndicatorUseGlobalTheme: false,
     rule: (hex, text) => hexToAnsi(hex) + text + RESET,
     cursor: () => cursorBlock2(),
     blank: (width) => blankLine(width),
@@ -44865,7 +44494,7 @@ function chatHostStyle(ctx) {
   };
 }
 
-// dist/builtin/workflows/src/tui/workflow-notice-card.ts
+// src/tui/workflow-notice-card.ts
 var MIN_CARD_WIDTH = 32;
 var FIELD_LABEL_WIDTH = 9;
 function renderWorkflowNoticeCard(opts) {
@@ -44983,7 +44612,7 @@ function fit(line, width) {
   return truncateToWidth(line, width, "…", true);
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-transcript.ts
+// src/tui/stage-chat-view-transcript.ts
 function noticeSummary(n) {
   const base = `~ ${n.kind} → ${n.to}`;
   return n.from ? `${base} (was ${n.from})` : base;
@@ -45186,16 +44815,7 @@ function stageNoticeFields(entry, valueTone = "text") {
   ];
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-types.ts
-var VIEW_LINE_COUNT = 32;
-var PROMPT_SCROLL_STEP_ROWS = 4;
-var HEADER_ROWS = 2;
-var SEP_ROWS = 1;
-function isReadOnlyArchiveStatus(status) {
-  return status === "completed" || status === "failed" || status === "skipped";
-}
-
-// dist/builtin/workflows/src/tui/stage-chat-view-state.ts
+// src/tui/stage-chat-view-state.ts
 function initializeStageChatView(ctx, opts) {
   ctx.store = opts.store;
   ctx.theme = opts.graphTheme;
@@ -45209,6 +44829,7 @@ function initializeStageChatView(ctx, opts) {
   ctx.requestRender = opts.requestRender;
   ctx.requestFocus = opts.requestFocus;
   ctx.focusHoldTimer = undefined;
+  ctx.getViewportRows = opts.getViewportRows;
   ctx.piTui = opts.piTui;
   ctx.piTheme = opts.piTheme;
   ctx.piKeybindings = opts.piKeybindings;
@@ -45228,6 +44849,7 @@ function initializeStageChatView(ctx, opts) {
   ctx.promptMaxScroll = 0;
   ctx.promptVisibleRows = 0;
   ctx.localPaused = false;
+  ctx.mouseScrollCaptureEnabled = true;
   ctx.lastObservedStageStatus = undefined;
   ctx.lastObservedRunStatus = undefined;
   ctx.seenNoticeIds = new Set;
@@ -45436,7 +45058,6 @@ function snapshotMessagesFromHandle(ctx) {
   if (!handle)
     return;
   ctx.chatHost.appendMessages(handle.messages);
-  ctx.chatHost.hydrateStreamingAssistantMessage(handle.agentSession?.agent?.state.streamingMessage);
 }
 function snapshotMessagesFromSessionFile(ctx, stage) {
   ctx.chatHost.loadSessionFile(liveHandle(ctx)?.sessionFile ?? stage?.sessionFile);
@@ -45569,7 +45190,7 @@ function resolvePromptResponse(ctx, promptId, response, metadata = {}) {
     ctx.onDetach("prompt-resolved", metadata);
 }
 function viewLineCount(ctx) {
-  const reported = ctx.piTui?.terminal?.rows;
+  const reported = ctx.getViewportRows?.();
   if (typeof reported !== "number" || !Number.isFinite(reported)) {
     return VIEW_LINE_COUNT;
   }
@@ -45664,14 +45285,8 @@ function promptPageSize(ctx) {
   return Math.max(4, viewLineCount(ctx) - HEADER_ROWS - SEP_ROWS - 2);
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view-input.ts
+// src/tui/stage-chat-view-input.ts
 function handleStageChatInput(ctx, data) {
-  if (data === TRANSCRIPT_JUMP_TO_END_URL)
-    return handleStageChatJumpToBottom(ctx, data);
-  const keybindings = isKeybindingsLike(ctx.piKeybindings) ? ctx.piKeybindings : undefined;
-  if (matchesKey(data, Key.ctrl("t")) && matchesAction(keybindings, data, APP_ACTION.thinkingToggle)) {
-    return false;
-  }
   if (matchesKey(data, Key.ctrl("x"))) {
     if (ctx.mountedCustomUi)
       releaseMountedCustomUi(ctx);
@@ -45681,6 +45296,11 @@ function handleStageChatInput(ctx, data) {
       recordCurrentPromptDraft(ctx);
     }
     ctx.onDetach();
+    return true;
+  }
+  if (matchesKey(data, Key.ctrl("t"))) {
+    ctx.mouseScrollCaptureEnabled = !ctx.mouseScrollCaptureEnabled;
+    ctx.requestRender?.();
     return true;
   }
   if (ctx.mountedCustomUi) {
@@ -45701,8 +45321,6 @@ function handleStageChatInput(ctx, data) {
   if (readOnlyPromptArchive && handlePromptScrollInput(ctx, data, true)) {
     return true;
   }
-  if (handleStageChatJumpToBottom(ctx, data))
-    return true;
   if (ctx.chatHost.handleScrollInput(data))
     return true;
   if (matchesKey(data, Key.escape)) {
@@ -45733,13 +45351,6 @@ function handleStageChatInput(ctx, data) {
     return true;
   return ctx.chatHost.handleInput(data);
 }
-function handleStageChatJumpToBottom(ctx, data) {
-  const keybindings = isKeybindingsLike(ctx.piKeybindings) ? ctx.piKeybindings : undefined;
-  if (data !== TRANSCRIPT_JUMP_TO_END_URL && !matchesAction(keybindings, data, TUI_ACTION.altScreenBottom))
-    return false;
-  ctx.chatHost.scrollToBottom();
-  return true;
-}
 function handleToolsExpandInput(ctx, data) {
   const keybindings = isKeybindingsLike(ctx.piKeybindings) ? ctx.piKeybindings : undefined;
   if (!matchesAction(keybindings, data, APP_ACTION.toolsExpand))
@@ -45763,19 +45374,15 @@ function handleMountedCustomUiInput(ctx, data) {
     ctx.onClose();
     return true;
   }
-  if (handleStageChatJumpToBottom(ctx, data)) {
-    ctx.requestRender?.();
-    return true;
-  }
   if (ctx.chatHost.handleScrollInput(data)) {
     ctx.requestRender?.();
     return true;
   }
   const component = mounted.component;
   setComponentFocused(component, ctx.focused);
-  const handled = component.handleInput?.(data) === true;
+  component.handleInput?.(data);
   ctx.requestRender?.();
-  return handled;
+  return true;
 }
 function handlePromptInput(ctx, data) {
   const state = ctx.promptState;
@@ -45858,7 +45465,7 @@ function scrollPromptBy(ctx, deltaRows) {
   ctx.requestRender?.();
 }
 
-// dist/builtin/workflows/src/tui/stage-chat-view.ts
+// src/tui/stage-chat-view.ts
 class StageChatView {
   focused = true;
   store;
@@ -45873,6 +45480,7 @@ class StageChatView {
   requestRender;
   requestFocus;
   focusHoldTimer;
+  getViewportRows;
   piTui;
   piTheme;
   piKeybindings;
@@ -45893,6 +45501,7 @@ class StageChatView {
   promptMaxScroll;
   promptVisibleRows;
   localPaused;
+  mouseScrollCaptureEnabled;
   seenNoticeIds;
   _unsubscribeStore;
   _unsubscribeHandle;
@@ -45941,12 +45550,6 @@ class StageChatView {
     if (blocked)
       this.chatHost.scrollToBottom();
     let bodyLines;
-    let transcriptBodyActive = false;
-    let reservedIndicatorLines = [];
-    const indicator = new TranscriptFollowIndicator({
-      isFollowing: () => this.chatHost.bodyScrollFromBottom() === 0,
-      keyLabel: () => keyText2("tui.altScreen.bottom")
-    });
     if (bodyBudget <= 0) {
       bodyLines = [];
     } else if (promptActive) {
@@ -45954,24 +45557,16 @@ class StageChatView {
     } else if (blocked) {
       bodyLines = renderBlockedBody(ctx, w, bodyBudget, stage);
     } else if (!readOnlyArchive && isPaused(ctx, stage)) {
-      reservedIndicatorLines = bodyBudget > 1 ? indicator.render(w) : [];
-      bodyLines = renderPausedBody(ctx, w, bodyBudget, reservedIndicatorLines, () => indicator.render(w));
+      bodyLines = renderPausedBody(ctx, w, bodyBudget);
     } else if (readOnlyArchive) {
-      reservedIndicatorLines = bodyBudget > 1 ? indicator.render(w) : [];
-      bodyLines = renderReadOnlyArchiveBody(ctx, w, bodyBudget, stage, reservedIndicatorLines, () => indicator.render(w));
+      bodyLines = renderReadOnlyArchiveBody(ctx, w, bodyBudget, stage);
     } else {
-      transcriptBodyActive = true;
       bodyLines = this.chatHost.renderBody(w, bodyBudget);
     }
-    const indicatorLines = transcriptBodyActive && bodyBudget > 1 ? indicator.render(w) : [];
-    const indicatorVisible = indicatorLines.length > 0;
-    const dropBodyRow = transcriptBodyActive && indicatorVisible && bodyLines.length >= bodyBudget;
-    const visibleBodyLines = bodyLines.slice(dropBodyRow ? 1 : 0, bodyBudget);
     const lines = [
       ...headerLines,
       ...sepLines,
-      ...visibleBodyLines,
-      ...indicatorLines,
+      ...bodyLines,
       ...visiblePendingLines,
       ...visibleWorkingLines,
       ...visibleUsageLines,
@@ -45979,6 +45574,9 @@ class StageChatView {
       ...visibleFooterLines
     ];
     return fitStageChatFrame(lines, totalRows, blankLine(w));
+  }
+  wantsMouseScrollTracking() {
+    return this.mouseScrollCaptureEnabled;
   }
   handleInput(data) {
     return handleStageChatInput(this._ctx(), data);
@@ -46002,6 +45600,7 @@ class StageChatView {
     this.requestRender;
     this.requestFocus;
     this.focusHoldTimer;
+    this.getViewportRows;
     this.piTui;
     this.piTheme;
     this.piKeybindings;
@@ -46018,6 +45617,7 @@ class StageChatView {
     this.promptScrollOffset;
     this.promptMaxScroll;
     this.promptVisibleRows;
+    this.mouseScrollCaptureEnabled;
     this.seenNoticeIds;
     this._unsubscribeStore;
     this._unsubscribeHandle;
@@ -46048,7 +45648,7 @@ class StageChatView {
   }
 }
 
-// dist/builtin/workflows/src/tui/workflow-attach-pane-handle.ts
+// src/tui/workflow-attach-pane-handle.ts
 function resolveAttachedStageHandle(registry, resolvePostMortemHandle, runId, stageId) {
   const liveHandle2 = registry?.claim(runId, stageId);
   if (liveHandle2 !== undefined)
@@ -46059,7 +45659,7 @@ function resolveAttachedStageHandle(registry, resolvePostMortemHandle, runId, st
   return postMortem?.ok === false ? { postMortemUnavailableReason: postMortem.reason } : {};
 }
 
-// dist/builtin/workflows/src/tui/workflow-attach-pane.ts
+// src/tui/workflow-attach-pane.ts
 var ENTER_TRANSITION_QUARANTINE_MS = 200;
 
 class WorkflowAttachPane {
@@ -46072,8 +45672,10 @@ class WorkflowAttachPane {
   onClose;
   onHide;
   onPromptResolve;
+  getViewportRows;
   hostRequestRender;
   hostRequestFocus;
+  setMouseScrollTracking;
   piTui;
   piTheme;
   piKeybindings;
@@ -46105,8 +45707,10 @@ class WorkflowAttachPane {
     this.onClose = opts.onClose;
     this.onHide = opts.onHide;
     this.onPromptResolve = opts.onPromptResolve;
+    this.getViewportRows = opts.getViewportRows;
     this.hostRequestRender = opts.requestRender;
     this.hostRequestFocus = opts.requestFocus;
+    this.setMouseScrollTracking = opts.setMouseScrollTracking;
     this.piTui = opts.piTui;
     this.piTheme = opts.piTheme;
     this.piKeybindings = opts.piKeybindings;
@@ -46124,6 +45728,7 @@ class WorkflowAttachPane {
     } else {
       this._syncAwaitingInputKeys(readGraphStoreSnapshot(this.store));
       this._armGraphEnterQuarantineIfRunNeedsInput();
+      this._syncMouseScrollTracking();
     }
   }
   _buildGraphView(initialFocusedStageId, initialFocusedRunId) {
@@ -46144,7 +45749,7 @@ class WorkflowAttachPane {
       },
       initialFocusedStageId,
       initialFocusedRunId,
-      piTui: this.piTui,
+      getViewportRows: this.getViewportRows,
       piKeybindings: this.piKeybindings,
       footerData: this.footerData,
       getStageQueuedMessageCount: (runId, stageId) => this._stageQueuedMessageCount(runId, stageId),
@@ -46206,12 +45811,14 @@ class WorkflowAttachPane {
       getToolsExpanded: this.getToolsExpanded,
       setToolsExpanded: this.setToolsExpanded,
       footerData: this.footerData,
+      getViewportRows: this.getViewportRows,
       stageUiBroker: this.stageUiBroker,
       canSubmitPrompt: (candidateRunId, candidateStageId) => this.visible && this.mode === "stage-chat" && this.chatView === chatView && this.attachedRunId === candidateRunId && this.lastAttachedStageId === candidateStageId && this._isStageMarkedAttached(candidateRunId, candidateStageId)
     });
     this.chatView = chatView;
     this.mode = "stage-chat";
     this.store.recordStageAttached(runId, stageId, this.visible);
+    this._syncMouseScrollTracking();
   }
   _detachFromStage(reason = "user", metadata = {}) {
     this.composerDrafts.capture(this.attachedRunId, this.lastAttachedStageId, this.chatView?._inputBuffer);
@@ -46228,6 +45835,7 @@ class WorkflowAttachPane {
     this.lastStageAwaitingInputKey = null;
     this.lastGraphAwaitingInputKey = this.runId ? this._runAwaitingInputKey(readGraphStoreSnapshot(this.store), this.runId) : null;
     this.graphEnterQuarantineUntil = reason === "prompt-resolved" && metadata.suppressNextGraphSubmit === true ? this.now() + ENTER_TRANSITION_QUARANTINE_MS : 0;
+    this._syncMouseScrollTracking();
   }
   retarget(runId, stageId, stageRunId) {
     if (this.chatView && this.attachedRunId && this.lastAttachedStageId) {
@@ -46252,6 +45860,7 @@ class WorkflowAttachPane {
       }
     }
     this._armGraphEnterQuarantineIfRunNeedsInput();
+    this._syncMouseScrollTracking();
   }
   _resolveGraphStageTarget(rootRunId, stageId) {
     const graph = expandWorkflowGraph(readGraphStoreSnapshot(this.store), rootRunId);
@@ -46307,6 +45916,15 @@ class WorkflowAttachPane {
       this.store.recordStageAttached(this.attachedRunId, this.lastAttachedStageId, visible);
     }
   }
+  _syncMouseScrollTracking() {
+    this.setMouseScrollTracking?.(this.wantsMouseScrollTracking());
+  }
+  wantsMouseScrollTracking() {
+    if (this.mode === "stage-chat" && this.chatView) {
+      return this.chatView.wantsMouseScrollTracking();
+    }
+    return this.mode === "graph";
+  }
   wantsFocusForAwaitingInput(snapshot) {
     if (!this.visible)
       return false;
@@ -46337,10 +45955,13 @@ class WorkflowAttachPane {
     if (this.mode === "stage-chat" && this.chatView) {
       if (this._shouldQuarantineStagePromptEnter(data))
         return true;
-      return this.chatView.handleInput(data);
+      const beforeMouseTracking = this.chatView.wantsMouseScrollTracking();
+      const handled = this.chatView.handleInput(data);
+      const afterMouseTracking = this.chatView?.wantsMouseScrollTracking();
+      if (afterMouseTracking !== undefined && afterMouseTracking !== beforeMouseTracking)
+        this._syncMouseScrollTracking();
+      return handled;
     }
-    if (data === TRANSCRIPT_JUMP_TO_END_URL2)
-      return false;
     if (this._shouldQuarantineGraphEnter(data))
       return true;
     return this.graphView.handleInput(data);
@@ -46457,6 +46078,7 @@ class WorkflowAttachPane {
     this.chatView?.dispose();
     this.chatView = null;
     this.graphView.dispose();
+    this.setMouseScrollTracking?.(false);
   }
   get _mode() {
     return this.mode;
@@ -46475,7 +46097,7 @@ class WorkflowAttachPane {
   }
 }
 
-// dist/builtin/workflows/src/tui/overlay-adapter.ts
+// src/tui/overlay-adapter.ts
 var FULLSCREEN_OVERLAY_OPTIONS = {
   anchor: "center",
   width: "100%",
@@ -46496,7 +46118,12 @@ function buildGraphOverlayAdapter(pi, store2, buildOpts = {}) {
     }
   };
   let remoteTerminalControl = null;
-  let localTerminalModesSuppressed = false;
+  const updateMouseScrollTracking = (enabled) => {
+    if (remoteTerminalControl)
+      remoteTerminalControl.setMouseScrollTracking(enabled);
+    else
+      setMouseScrollTracking(enabled, terminalOutput);
+  };
   let currentView = null;
   let currentHandle = null;
   let mounted = false;
@@ -46515,8 +46142,7 @@ function buildGraphOverlayAdapter(pi, store2, buildOpts = {}) {
         remoteTerminalControl.setAutowrap(!visible);
       return;
     }
-    if (!localTerminalModesSuppressed)
-      setTerminalAutowrap(!visible, terminalOutput);
+    setTerminalAutowrap(!visible, terminalOutput);
   }
   function readHostCustomUiActive(ui = observedUi) {
     const state = ui?.getHostCustomUiState?.();
@@ -46550,6 +46176,7 @@ function buildGraphOverlayAdapter(pi, store2, buildOpts = {}) {
     updateMainChatInputHint(readHostCustomUiActive(ui));
   }
   function close() {
+    updateMouseScrollTracking(false);
     currentHandle?.hide();
     updateTerminalAutowrap(false);
     finishMounted?.();
@@ -46560,11 +46187,11 @@ function buildGraphOverlayAdapter(pi, store2, buildOpts = {}) {
     currentView = null;
     mounted = false;
     remoteTerminalControl = null;
-    localTerminalModesSuppressed = false;
     requestMountedRender = null;
     clearHostCustomUiObservation();
   }
   function hideMounted() {
+    updateMouseScrollTracking(false);
     observedUi?.setStatus?.(MAIN_CHAT_INPUT_STATUS_KEY, undefined);
     if (currentHandle) {
       currentView?.setVisible(false);
@@ -46607,11 +46234,11 @@ function buildGraphOverlayAdapter(pi, store2, buildOpts = {}) {
         const consumed = view.handleInput(data);
         if (consumed)
           tui.requestRender?.();
-        return consumed === true;
       },
       invalidate: () => tui.requestRender?.(),
       dispose: () => {
         updateTerminalAutowrap(false);
+        updateMouseScrollTracking(false);
         remoteTerminalControl = null;
         requestMountedRender = null;
         unsubscribe();
@@ -46620,12 +46247,14 @@ function buildGraphOverlayAdapter(pi, store2, buildOpts = {}) {
     };
   }
   function open(runId, surface, stageId, stageRunId) {
+    ensureAtomicThemeInitialized();
     const ui = surface?.ui ?? pi.ui;
     observeHostCustomUi(ui);
     if (mounted && currentHandle?.isHidden()) {
       currentView?.retarget(runId, stageId, stageRunId);
       currentView?.setVisible(true);
       updateTerminalAutowrap(true);
+      updateMouseScrollTracking(currentView?.wantsMouseScrollTracking() ?? true);
       currentHandle.setHidden(false);
       currentHandle.focus();
       requestMountedRender?.();
@@ -46634,6 +46263,7 @@ function buildGraphOverlayAdapter(pi, store2, buildOpts = {}) {
     if (mounted) {
       currentView?.retarget(runId, stageId, stageRunId);
       updateTerminalAutowrap(true);
+      updateMouseScrollTracking(currentView?.wantsMouseScrollTracking() ?? true);
       currentHandle?.focus();
       return;
     }
@@ -46642,12 +46272,12 @@ function buildGraphOverlayAdapter(pi, store2, buildOpts = {}) {
       return;
     let settled = false;
     const factory = (tui, theme, keybindings, done) => {
-      localTerminalModesSuppressed = tui.mode === "fullscreen";
       remoteTerminalControl = remoteTerminalControlFrom(tui);
       const finish = () => {
         if (settled)
           return;
         settled = true;
+        updateMouseScrollTracking(false);
         observedUi?.setStatus?.(MAIN_CHAT_INPUT_STATUS_KEY, undefined);
         currentView?.dispose();
         currentView = null;
@@ -46661,7 +46291,6 @@ function buildGraphOverlayAdapter(pi, store2, buildOpts = {}) {
         } finally {
           updateTerminalAutowrap(false);
           remoteTerminalControl = null;
-          localTerminalModesSuppressed = false;
         }
       };
       const view = new WorkflowAttachPane({
@@ -46683,6 +46312,7 @@ function buildGraphOverlayAdapter(pi, store2, buildOpts = {}) {
         getToolsExpanded: ui?.getToolsExpanded,
         setToolsExpanded: ui?.setToolsExpanded,
         footerData: ui?.getFooterDataProvider?.(),
+        getViewportRows: () => tui.terminal?.rows,
         requestRender: () => {
           if (currentHandle?.isHidden() === true)
             return;
@@ -46695,12 +46325,14 @@ function buildGraphOverlayAdapter(pi, store2, buildOpts = {}) {
             return;
           currentHandle?.focus();
         },
+        setMouseScrollTracking: updateMouseScrollTracking,
         now: buildOpts.now
       });
       currentView = view;
       finishMounted = finish;
       mounted = true;
       updateTerminalAutowrap(true);
+      updateMouseScrollTracking(view.wantsMouseScrollTracking());
       updateMainChatInputHint(readHostCustomUiActive(ui));
       return makeComponent2(view, tui);
     };
@@ -46708,7 +46340,6 @@ function buildGraphOverlayAdapter(pi, store2, buildOpts = {}) {
       overlay: true,
       deferInlineCustomUiFocus: true,
       handlesCtrlC: true,
-      handlesInternalUiAction: true,
       overlayOptions: FULLSCREEN_OVERLAY_OPTIONS,
       onHandle: (handle) => {
         currentHandle = handle;
@@ -46724,6 +46355,7 @@ function buildGraphOverlayAdapter(pi, store2, buildOpts = {}) {
       currentView?.setVisible(!nowHidden);
       if (!nowHidden)
         updateTerminalAutowrap(true);
+      updateMouseScrollTracking(nowHidden ? false : currentView?.wantsMouseScrollTracking() ?? true);
       currentHandle.setHidden(nowHidden);
       if (nowHidden)
         updateTerminalAutowrap(false);
@@ -46742,14 +46374,13 @@ function buildGraphOverlayAdapter(pi, store2, buildOpts = {}) {
   return { open, toggle, close };
 }
 
-// dist/builtin/workflows/src/tui/store-widget-installer.ts
+// src/tui/store-widget-installer.ts
 import {
   decideReactiveWidgetAction,
-  installReactiveWidget,
-  isStaleExtensionContextError as isStaleExtensionContextError4
+  installReactiveWidget
 } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/tui/widget.ts
+// src/tui/widget.ts
 var RECENT_ENDED_WINDOW_MS = 30000;
 var COLLAPSED_BREAKPOINT_COLS = 80;
 function formatDuration(ms) {
@@ -46779,8 +46410,13 @@ function quitExpiryTimestamp(run) {
 function recentlyQuit(run, now) {
   return isQuitRun2(run) && now - quitExpiryTimestamp(run) <= RECENT_ENDED_WINDOW_MS;
 }
+function runAwaitsInput(run) {
+  return run.endedAt === undefined && (run.pendingPrompt !== undefined || run.stages.some((s) => s.status === "awaiting_input"));
+}
 function subtreeAwaitsInput(root, allRuns) {
-  return runIndicatorStatus(root, allRuns) === "awaiting_input";
+  if (runAwaitsInput(root))
+    return true;
+  return allRuns.some((run) => run.rootRunId === root.id && runAwaitsInput(run));
 }
 function countRuns(runs, allRuns = runs) {
   const counts = { active: 0, paused: 0, quit: 0, done: 0, blocked: 0, failed: 0, awaiting: 0 };
@@ -46798,7 +46434,7 @@ function countRuns(runs, allRuns = runs) {
       counts.done++;
     else if (status === "failed" || status === "killed")
       counts.failed++;
-    if (r.endedAt === undefined && !isQuitRun2(r) && subtreeAwaitsInput(r, allRuns))
+    if (r.endedAt === undefined && subtreeAwaitsInput(r, allRuns))
       counts.awaiting++;
   }
   return counts;
@@ -46830,17 +46466,32 @@ function selectDisplayRuns(snap, now) {
   const sort = (xs) => [...xs].sort((a, b) => (b.startedAt ?? 0) - (a.startedAt ?? 0));
   return [...sort(active), ...sort(recent)];
 }
-function statusGlyph(run, allRuns) {
+function statusGlyph(run) {
   if (isQuitRun2(run))
-    return statusIcon("pending");
-  return statusIcon(runIndicatorStatus(run, allRuns));
+    return "○";
+  switch (effectiveRunStatus(run)) {
+    case "running":
+      return "●";
+    case "paused":
+      return "❚❚";
+    case "completed":
+      return "✓";
+    case "skipped":
+    case "cancelled":
+      return "⊘";
+    case "blocked":
+      return "↑";
+    case "failed":
+      return "✗";
+    case "killed":
+      return "⊘";
+    default:
+      return "○";
+  }
 }
-function statusFg(run, theme, allRuns) {
+function statusFg(run, theme) {
   if (isQuitRun2(run))
     return theme.warning;
-  const indicatorStatus = runIndicatorStatus(run, allRuns);
-  if (indicatorStatus === "awaiting_input")
-    return statusColor(indicatorStatus, theme);
   switch (effectiveRunStatus(run)) {
     case "running":
     case "paused":
@@ -46938,25 +46589,25 @@ function formatTitleBadges(badges, theme, themed) {
   const fallbackFg = hexToAnsi(theme.border);
   return badges.map((b) => `${b.fg ? hexToAnsi(b.fg) : fallbackFg}${b.text}${RESET}${fallbackFg}`).join("  ");
 }
-function themedRunLines(run, now, theme, allRuns) {
+function themedRunLines(run, now, theme) {
   const meta = metaLine(run, now);
   const metaColor = effectiveRunStatus(run) === "running" ? theme.textMuted : theme.dim;
   return renderRunIdentityRows({
     runId: run.id,
     name: run.name,
     meta,
-    glyph: statusGlyph(run, allRuns),
-    glyphColor: statusFg(run, theme, allRuns),
+    glyph: statusGlyph(run),
+    glyphColor: statusFg(run, theme),
     metaColor,
     theme
   });
 }
-function plainRunLines(run, now, allRuns) {
+function plainRunLines(run, now) {
   return renderRunIdentityRows({
     runId: run.id,
     name: run.name,
     meta: metaLine(run, now),
-    glyph: statusGlyph(run, allRuns)
+    glyph: statusGlyph(run)
   });
 }
 function themedCollapsed(counts, theme) {
@@ -47005,7 +46656,7 @@ function buildThemedWidgetLines(snap, piTheme, width = 120, now = Date.now()) {
   const body = [];
   for (let i = 0;i < display.length; i++) {
     const run = display[i];
-    const runLines = themed ? themedRunLines(run, now, graphTheme, snap.runs) : plainRunLines(run, now, snap.runs);
+    const runLines = themed ? themedRunLines(run, now, graphTheme) : plainRunLines(run, now);
     body.push(...runLines);
     if (i < display.length - 1)
       body.push("");
@@ -47019,18 +46670,15 @@ function buildThemedWidgetLines(snap, piTheme, width = 120, now = Date.now()) {
   });
 }
 
-// dist/builtin/workflows/src/tui/store-widget-installer.ts
+// src/tui/store-widget-installer.ts
 var defaultTimerApi = {
   setTimeout: (handler, delayMs) => setTimeout(handler, delayMs),
   clearTimeout: (handle) => clearTimeout(handle)
 };
 var WIDGET_KEY = "workflow.run";
-function liveWidgetSnapshot(storeInstance) {
-  return {
-    runs: storeInstance.runs(),
-    notices: storeInstance.notices(),
-    version: 0
-  };
+var STALE_CONTEXT = "This extension ctx is stale";
+function isStale(err) {
+  return err instanceof Error && err.message.includes(STALE_CONTEXT);
 }
 function installStoreWidget(pi, storeInstance, timers = defaultTimerApi) {
   const ui = pi.ui;
@@ -47045,13 +46693,13 @@ function installStoreWidget(pi, storeInstance, timers = defaultTimerApi) {
     key: WIDGET_KEY,
     placement: "belowEditor",
     timers,
-    getSnapshot: () => liveWidgetSnapshot(storeInstance),
+    getSnapshot: () => readGraphStoreSnapshot(storeInstance),
     subscribe: (listener) => subscribeStoreInvalidation(storeInstance, listener),
     getPreviewLines: (snap, now) => buildThemedWidgetLines(snap, undefined, 120, now),
     render: (snap, { theme, width, now }) => buildThemedWidgetLines(snap, theme, width, now),
     getNextRefreshDelayMs: (snap, now) => nextWidgetRefreshDelayMs(snap, now),
     requestRenderOnStateNoop: false,
-    isStaleError: isStaleExtensionContextError4
+    isStaleError: isStale
   });
   return () => controller.dispose();
 }
@@ -47182,7 +46830,7 @@ function toolInput(payload) {
   return payload.input ?? payload.args;
 }
 
-// dist/builtin/workflows/src/extension/completed-stage-intercom-ask.ts
+// src/extension/completed-stage-intercom-ask.ts
 var LATE_STAGE_MESSAGE_EVENT = "atomic:workflow-stage-late-message";
 var POST_MORTEM_ATTACH_TIMEOUT_MS = 1e4;
 function registerCompletedStageIntercomAskRouter(pi, resolveHandle) {
@@ -47265,13 +46913,13 @@ function unavailableReason(runId, stageId, reason) {
   }
 }
 
-// dist/builtin/workflows/src/durable/format-version.ts
+// src/durable/format-version.ts
 var DURABLE_FORMAT_VERSION = 3;
 function isCurrentDurableFormat(value2) {
   return value2 === DURABLE_FORMAT_VERSION;
 }
 
-// dist/builtin/workflows/src/shared/workflow-failures-signals.ts
+// src/shared/workflow-failures-signals.ts
 function asRecord(value2) {
   return value2 !== null && typeof value2 === "object" ? value2 : undefined;
 }
@@ -47518,7 +47166,7 @@ function redactSensitiveText(value2) {
   return value2.replace(/(sk-[A-Za-z0-9_-]{8})[A-Za-z0-9_-]+/g, redactedSecretReplacement("$1")).replace(/\b(authorization\s*:\s*bearer\s+)[^\s,;]+/gi, "$1[redacted]").replace(/\b(bearer\s+)[A-Za-z0-9._~+/-]{8,}=*/gi, "$1[redacted]").replace(/((?:api[_-]?key|token|credential|secret)\s*[:=]\s*)[^\s,;]+/gi, "$1[redacted]");
 }
 
-// dist/builtin/workflows/src/durable/tool-outcome.ts
+// src/durable/tool-outcome.ts
 var TOOL_FAILURE_TEXT_LIMIT_BYTES = 16384;
 var TRUNCATION_PREFIX = `[workflow tool output truncated; showing final bytes]
 `;
@@ -47620,12 +47268,12 @@ function replayedWorkflowToolOutcome(outcome) {
   return { ...outcome, cached: true };
 }
 
-// dist/builtin/workflows/src/durable/types.ts
+// src/durable/types.ts
 var DURABLE_TOOL_TOPOLOGY_VERSION = 1;
 var DURABLE_STAGE_TOPOLOGY_VERSION = 1;
 var DURABLE_BOUNDARY_TOPOLOGY_VERSION = 1;
 
-// dist/builtin/workflows/src/durable/dbos-envelope.ts
+// src/durable/dbos-envelope.ts
 var DBOS_ENVELOPE_VERSION = DURABLE_FORMAT_VERSION;
 var ENVELOPE_MARKER = "__dbos_checkpoint__";
 function withCurrentStageTopology(cp) {
@@ -47901,7 +47549,7 @@ function isModelUsage(value2) {
   if (typeof value2 !== "object" || value2 === null || Array.isArray(value2))
     return false;
   const usage = value2;
-  return ["input", "output", "cacheRead", "cacheWrite", "cost", "turns"].every((key2) => usage[key2] === undefined || typeof usage[key2] === "number" && Number.isFinite(usage[key2]) && usage[key2] >= 0);
+  return ["input", "output", "cacheRead", "cacheWrite", "cost", "turns"].every((key2) => usage[key2] === undefined || typeof usage[key2] === "number" && Number.isFinite(usage[key2]));
 }
 function isUiPromptKind(value2) {
   return value2 === "input" || value2 === "confirm" || value2 === "select" || value2 === "editor" || value2 === "custom";
@@ -47921,7 +47569,7 @@ function checkpointOutputValue(cp) {
   return "output" in stage ? stage.output : undefined;
 }
 
-// dist/builtin/workflows/src/durable/prompt-reservation-state.ts
+// src/durable/prompt-reservation-state.ts
 function promptReservationToken(entry) {
   return entry;
 }
@@ -48045,7 +47693,7 @@ class PromptReservationState {
   }
 }
 
-// dist/builtin/workflows/src/durable/resume-eligibility.ts
+// src/durable/resume-eligibility.ts
 function workflowRunHasPausedState(run) {
   return run.status === "paused" || run.exitReason === "quit" || run.stages.some((stage) => stage.status === "paused" || stage.status === "blocked");
 }
@@ -48078,7 +47726,7 @@ function isLiveRunningWorkflow(candidate, now = Date.now()) {
   return candidate.status === "running" && now - candidate.updatedAt < FOREIGN_LIVE_WORKFLOW_WINDOW_MS;
 }
 
-// dist/builtin/workflows/src/durable/durable-hash.ts
+// src/durable/durable-hash.ts
 import { createHash } from "node:crypto";
 function durableHash(value2) {
   const canonical = canonicalJsonString(value2);
@@ -48095,7 +47743,7 @@ function canonicalJsonString(value2) {
   return `{${keys.map((key2) => `${JSON.stringify(key2)}:${canonicalJsonString(object[key2])}`).join(",")}}`;
 }
 
-// dist/builtin/workflows/src/durable/backend.ts
+// src/durable/backend.ts
 function checkpointKey(c) {
   return `${c.kind}:${c.checkpointId}`;
 }
@@ -48118,7 +47766,6 @@ class InMemoryDurableBackend {
       createdAt: handle.createdAt,
       status: handle.status,
       ...handle.invocationCwd !== undefined ? { invocationCwd: handle.invocationCwd } : existing?.handle.invocationCwd !== undefined ? { invocationCwd: existing.handle.invocationCwd } : {},
-      ...handle.origin !== undefined ? { origin: handle.origin } : existing?.handle.origin !== undefined ? { origin: existing.handle.origin } : {},
       ...handle.workflowCwd !== undefined ? { workflowCwd: handle.workflowCwd } : existing?.handle.workflowCwd !== undefined ? { workflowCwd: existing.handle.workflowCwd } : {},
       ...handle.repositoryRoot !== undefined ? { repositoryRoot: handle.repositoryRoot } : existing?.handle.repositoryRoot !== undefined ? { repositoryRoot: existing.handle.repositoryRoot } : {},
       ...handle.gitWorktreeRoot !== undefined ? { gitWorktreeRoot: handle.gitWorktreeRoot } : existing?.handle.gitWorktreeRoot !== undefined ? { gitWorktreeRoot: existing.handle.gitWorktreeRoot } : {},
@@ -48129,7 +47776,7 @@ class InMemoryDurableBackend {
       ...handle.label !== undefined ? { label: handle.label } : {},
       ...handle.rootWorkflowId !== undefined ? { rootWorkflowId: handle.rootWorkflowId } : {},
       ...handle.resumable !== undefined ? { resumable: handle.resumable } : {},
-      ...workflowFailureFields(hasWorkflowFailureMetadata(handle) ? handle : handle.status === "running" ? undefined : existing?.handle),
+      ...workflowFailureFields(handle.error !== undefined ? handle : handle.status === "running" ? undefined : existing?.handle),
       ...handle.ownerExecutorId !== undefined ? { ownerExecutorId: handle.ownerExecutorId } : existing?.handle.ownerExecutorId !== undefined ? { ownerExecutorId: existing.handle.ownerExecutorId } : {}
     };
     if (existing)
@@ -48227,12 +47874,6 @@ class InMemoryDurableBackend {
     return this.getWorkflow(workflowId);
   }
   async hydrateWorkflow(_workflowId) {}
-  async hydrateWorkflowForInspection(workflowId) {
-    const handle = this.getLoadableWorkflow(workflowId);
-    if (handle !== undefined)
-      return { kind: "current", handle };
-    return { kind: this.deletedWorkflowIds.has(workflowId) ? "deleted" : "absent" };
-  }
   async hydrateResumableWorkflows() {}
   async prepareWorkflowCatalog() {
     return { resumable: this.listResumableWorkflows(), completed: this.listCompletedWorkflows() };
@@ -48244,8 +47885,6 @@ class InMemoryDurableBackend {
     rec.handle = {
       ...rec.handle,
       error: undefined,
-      exited: undefined,
-      exitReason: undefined,
       failureKind: undefined,
       failureCode: undefined,
       failureRecoverability: undefined,
@@ -48341,7 +47980,6 @@ class InMemoryDurableBackend {
       ...h.resumable !== undefined ? { resumable: h.resumable } : {},
       ...workflowFailureFields(h),
       ...h.invocationCwd !== undefined ? { invocationCwd: h.invocationCwd } : {},
-      ...h.origin !== undefined ? { origin: h.origin } : {},
       ...h.workflowCwd !== undefined ? { workflowCwd: h.workflowCwd } : {},
       ...h.repositoryRoot !== undefined ? { repositoryRoot: h.repositoryRoot } : {},
       ...h.gitWorktreeRoot !== undefined ? { gitWorktreeRoot: h.gitWorktreeRoot } : {},
@@ -48380,16 +48018,11 @@ function hasResumeProgress(handle) {
 function isHistoricalHandle(handle) {
   return handle.status === "completed" && hasResumeProgress(handle) || handle.status === "failed" && !isDurableWorkflowResumable(handle) && hasResumeProgress(handle);
 }
-function hasWorkflowFailureMetadata(handle) {
-  return handle.error !== undefined || handle.exited !== undefined || handle.exitReason !== undefined || handle.failureKind !== undefined || handle.failureCode !== undefined || handle.failureRecoverability !== undefined || handle.failureDisposition !== undefined || handle.failedToolNodeId !== undefined;
-}
 function workflowFailureFields(handle) {
   if (handle === undefined)
     return {};
   return {
     ...handle.error !== undefined ? { error: handle.error } : {},
-    ...handle.exited !== undefined ? { exited: handle.exited } : {},
-    ...handle.exitReason !== undefined ? { exitReason: handle.exitReason } : {},
     ...handle.failureKind !== undefined ? { failureKind: handle.failureKind } : {},
     ...handle.failureCode !== undefined ? { failureCode: handle.failureCode } : {},
     ...handle.failureRecoverability !== undefined ? { failureRecoverability: handle.failureRecoverability } : {},
@@ -48414,7 +48047,6 @@ function toResumableEntry(handle) {
     ...handle.resumable !== undefined ? { resumable: handle.resumable } : {},
     ...workflowFailureFields(handle),
     ...handle.invocationCwd !== undefined ? { invocationCwd: handle.invocationCwd } : {},
-    ...handle.origin !== undefined ? { origin: handle.origin } : {},
     ...handle.workflowCwd !== undefined ? { workflowCwd: handle.workflowCwd } : {},
     ...handle.repositoryRoot !== undefined ? { repositoryRoot: handle.repositoryRoot } : {},
     ...handle.gitWorktreeRoot !== undefined ? { gitWorktreeRoot: handle.gitWorktreeRoot } : {},
@@ -48423,7 +48055,7 @@ function toResumableEntry(handle) {
   };
 }
 
-// dist/builtin/workflows/src/durable/stage-topology-validation.ts
+// src/durable/stage-topology-validation.ts
 function immutableStageGroupError(stages) {
   const occurrenceError = promptOccurrenceIdentityError(stages);
   if (occurrenceError !== undefined)
@@ -48598,7 +48230,7 @@ function hasCycle(topologies) {
   return topologies.some((topology) => cyclic(topology.stageId));
 }
 
-// dist/builtin/workflows/src/durable/workflow-child-result.ts
+// src/durable/workflow-child-result.ts
 function parseWorkflowChildResult(value2) {
   if (!isOrdinaryObject(value2))
     return;
@@ -48630,7 +48262,7 @@ function isWorkflowChildResult(value2) {
   return parseWorkflowChildResult(value2) !== undefined;
 }
 function isWorkflowExitStatus(value2) {
-  return value2 === "completed" || value2 === "skipped" || value2 === "cancelled" || value2 === "blocked" || value2 === "failed";
+  return value2 === "completed" || value2 === "skipped" || value2 === "cancelled" || value2 === "blocked";
 }
 function isOrdinaryObject(value2) {
   if (typeof value2 !== "object" || value2 === null || Array.isArray(value2))
@@ -48639,7 +48271,7 @@ function isOrdinaryObject(value2) {
   return prototype === Object.prototype || prototype === null;
 }
 
-// dist/builtin/workflows/src/durable/boundary-lifecycle.ts
+// src/durable/boundary-lifecycle.ts
 function resolveBoundaryLifecycle(start, stages, requireTerminal) {
   const startTopology = start.topology;
   const startBoundary = startTopology?.boundary;
@@ -48710,7 +48342,7 @@ function sameBoundaryChild(actual, expected) {
 function failure(error) {
   return { error };
 }
-// dist/builtin/workflows/src/durable/boundary-topology.ts
+// src/durable/boundary-topology.ts
 class DurableNestedTopologyError extends Error {
   constructor(message) {
     super(`atomic-workflows: durable nested topology is non-resumable: ${message}`);
@@ -48996,7 +48628,7 @@ function validatedInvocationRecords(input) {
   return { stages, start };
 }
 
-// dist/builtin/workflows/src/shared/workflow-failures-contract.ts
+// src/shared/workflow-failures-contract.ts
 var WORKFLOW_AUTH_FAILURE_MESSAGE = "You must be logged in to run workflows. Run /login and try again.";
 var WORKFLOW_MISSING_API_KEY_FAILURE_MESSAGE = "A required model provider API key is missing. Configure the provider credentials and resume the workflow.";
 var WORKFLOW_INVALID_PROVIDER_CREDENTIALS_MESSAGE = "The configured model provider credentials are invalid. Update the provider API key, then start a new workflow run.";
@@ -49036,7 +48668,7 @@ function isWorkflowFailureDisposition(value2) {
   return value2 === "active_blocked" || value2 === "terminal_killed" || value2 === "terminal_failed";
 }
 
-// dist/builtin/workflows/src/shared/workflow-failures-decisions.ts
+// src/shared/workflow-failures-decisions.ts
 var INVALID_API_KEY_CODES = new Set([
   "401",
   "invalid_api_key",
@@ -49401,7 +49033,7 @@ function fallbackDecisionFromMessage(message, name) {
   return decision;
 }
 
-// dist/builtin/workflows/src/shared/workflow-failures-classifier.ts
+// src/shared/workflow-failures-classifier.ts
 function makeWorkflowFailure(kind, message, opts) {
   return {
     kind,
@@ -49573,7 +49205,7 @@ function classifyWorkflowFailure(error) {
   }
   return failureForDecision(unknownDecision(), message, error);
 }
-// dist/builtin/workflows/src/durable/workflow-status-transition.ts
+// src/durable/workflow-status-transition.ts
 function getLoadableDurableWorkflow(backend, workflowId) {
   return backend.getLoadableWorkflow(workflowId);
 }
@@ -49584,7 +49216,7 @@ async function transitionDurableWorkflowStatus(backend, workflowId, expectedStat
   return await backend.transitionWorkflowStatus(workflowId, expectedStatuses, status, pendingPrompts, resumable);
 }
 
-// dist/builtin/workflows/src/durable/dbos-metadata.ts
+// src/durable/dbos-metadata.ts
 var METADATA_STEP_PREFIX = "__atomic_metadata";
 function metadataStepName(ts) {
   return `${METADATA_STEP_PREFIX}:${ts}:${crypto.randomUUID()}`;
@@ -49618,15 +49250,12 @@ function encodeMetadata(metadata) {
       ...metadata.label !== undefined ? { label: metadata.label } : {},
       ...metadata.rootWorkflowId !== undefined ? { rootWorkflowId: metadata.rootWorkflowId } : {},
       ...metadata.resumable !== undefined ? { resumable: metadata.resumable } : {},
-      ...metadata.exited !== undefined ? { exited: metadata.exited } : {},
-      ...metadata.exitReason !== undefined ? { exitReason: metadata.exitReason } : {},
       ...metadata.error !== undefined ? { error: metadata.error } : {},
       ...metadata.failureKind !== undefined ? { failureKind: metadata.failureKind } : {},
       ...metadata.failureCode !== undefined ? { failureCode: metadata.failureCode } : {},
       ...metadata.failureRecoverability !== undefined ? { failureRecoverability: metadata.failureRecoverability } : {},
       ...metadata.failureDisposition !== undefined ? { failureDisposition: metadata.failureDisposition } : {},
       ...metadata.failedToolNodeId !== undefined ? { failedToolNodeId: metadata.failedToolNodeId } : {},
-      ...metadata.origin !== undefined ? { origin: metadata.origin } : {},
       ...metadata.invocationCwd !== undefined ? { invocationCwd: metadata.invocationCwd } : {},
       ...metadata.workflowCwd !== undefined ? { workflowCwd: metadata.workflowCwd } : {},
       ...metadata.repositoryRoot !== undefined ? { repositoryRoot: metadata.repositoryRoot } : {},
@@ -49670,22 +49299,15 @@ function parseDurableWorkflowMetadata(value2, workflowId) {
   if (typeof value2 !== "object" || value2 === null || Array.isArray(value2))
     return;
   const metadata = value2;
-  if (metadata.workflowId !== workflowId || typeof metadata.workflowId !== "string" || typeof metadata.name !== "string" || typeof metadata.inputs !== "object" || metadata.inputs === null || Array.isArray(metadata.inputs) || typeof metadata.status !== "string" || !isDurableWorkflowStatus(metadata.status) || typeof metadata.completedCheckpoints !== "number" || typeof metadata.createdAt !== "number" || typeof metadata.pendingPrompts !== "number" || typeof metadata.promptReservationEpoch !== "string" || typeof metadata.updatedAt !== "number" || metadata.ownerExecutorId !== undefined && typeof metadata.ownerExecutorId !== "string" || metadata.transitionClaimId !== undefined && typeof metadata.transitionClaimId !== "string" || metadata.sessionFile !== undefined && typeof metadata.sessionFile !== "string" || metadata.label !== undefined && typeof metadata.label !== "string" || metadata.rootWorkflowId !== undefined && typeof metadata.rootWorkflowId !== "string" || metadata.resumable !== undefined && typeof metadata.resumable !== "boolean" || metadata.exited !== undefined && typeof metadata.exited !== "boolean" || metadata.exitReason !== undefined && typeof metadata.exitReason !== "string" || metadata.error !== undefined && typeof metadata.error !== "string" || metadata.failureKind !== undefined && !isWorkflowFailureKind(metadata.failureKind) || metadata.failureCode !== undefined && !isWorkflowFailureCode(metadata.failureCode) || metadata.failureRecoverability !== undefined && !isWorkflowFailureRecoverability(metadata.failureRecoverability) || metadata.failureDisposition !== undefined && !isWorkflowFailureDisposition(metadata.failureDisposition) || metadata.failedToolNodeId !== undefined && typeof metadata.failedToolNodeId !== "string" || metadata.invocationCwd !== undefined && typeof metadata.invocationCwd !== "string" || metadata.workflowCwd !== undefined && typeof metadata.workflowCwd !== "string" || metadata.repositoryRoot !== undefined && typeof metadata.repositoryRoot !== "string" || metadata.gitWorktreeRoot !== undefined && typeof metadata.gitWorktreeRoot !== "string")
+  if (metadata.workflowId !== workflowId || typeof metadata.workflowId !== "string" || typeof metadata.name !== "string" || typeof metadata.inputs !== "object" || metadata.inputs === null || Array.isArray(metadata.inputs) || typeof metadata.status !== "string" || !isDurableWorkflowStatus(metadata.status) || typeof metadata.completedCheckpoints !== "number" || typeof metadata.createdAt !== "number" || typeof metadata.pendingPrompts !== "number" || typeof metadata.promptReservationEpoch !== "string" || typeof metadata.updatedAt !== "number" || metadata.ownerExecutorId !== undefined && typeof metadata.ownerExecutorId !== "string" || metadata.transitionClaimId !== undefined && typeof metadata.transitionClaimId !== "string" || metadata.sessionFile !== undefined && typeof metadata.sessionFile !== "string" || metadata.label !== undefined && typeof metadata.label !== "string" || metadata.rootWorkflowId !== undefined && typeof metadata.rootWorkflowId !== "string" || metadata.resumable !== undefined && typeof metadata.resumable !== "boolean" || metadata.error !== undefined && typeof metadata.error !== "string" || metadata.failureKind !== undefined && !isWorkflowFailureKind(metadata.failureKind) || metadata.failureCode !== undefined && !isWorkflowFailureCode(metadata.failureCode) || metadata.failureRecoverability !== undefined && !isWorkflowFailureRecoverability(metadata.failureRecoverability) || metadata.failureDisposition !== undefined && !isWorkflowFailureDisposition(metadata.failureDisposition) || metadata.failedToolNodeId !== undefined && typeof metadata.failedToolNodeId !== "string" || metadata.invocationCwd !== undefined && typeof metadata.invocationCwd !== "string" || metadata.workflowCwd !== undefined && typeof metadata.workflowCwd !== "string" || metadata.repositoryRoot !== undefined && typeof metadata.repositoryRoot !== "string" || metadata.gitWorktreeRoot !== undefined && typeof metadata.gitWorktreeRoot !== "string")
     return;
-  const { origin, ...metadataWithoutOrigin } = metadata;
-  return {
-    ...metadataWithoutOrigin,
-    ...isWorkflowActor(origin) ? { origin } : {}
-  };
-}
-function isWorkflowActor(value2) {
-  return value2 === "user" || value2 === "agent";
+  return metadata;
 }
 function isDurableWorkflowStatus(value2) {
   return value2 === "running" || value2 === "paused" || value2 === "completed" || value2 === "failed" || value2 === "cancelled" || value2 === "blocked";
 }
 
-// dist/builtin/workflows/src/durable/dbos-prompt-reservations.ts
+// src/durable/dbos-prompt-reservations.ts
 var RESERVATION_PREFIX = "__atomic_prompt_reservation";
 function emptyDbosPromptReservationState(baseline = 0, epoch = crypto.randomUUID()) {
   const normalized = Math.max(0, Math.trunc(baseline));
@@ -49936,7 +49558,7 @@ function consumeToken(state, tokenId) {
   state.consumedTokens.add(tokenId);
 }
 
-// dist/builtin/workflows/src/durable/dbos-status-transition.ts
+// src/durable/dbos-status-transition.ts
 async function transitionDbosWorkflowStatus(input) {
   await input.flush();
   const authoritative = await input.read();
@@ -49975,7 +49597,7 @@ async function transitionDbosWorkflowStatus(input) {
   return true;
 }
 
-// dist/builtin/workflows/src/durable/dbos-tombstone.ts
+// src/durable/dbos-tombstone.ts
 var DBOS_DELETION_STEP = "__atomic_deleted";
 function encodeDbosDeletionTombstone(workflowId) {
   return {
@@ -49996,7 +49618,7 @@ function classifyDbosDeletionTombstone(records, workflowId) {
   return isCurrentDurableFormat(raw.version) ? "current" : "unknown";
 }
 
-// dist/builtin/workflows/src/durable/dbos-sdk-handle.ts
+// src/durable/dbos-sdk-handle.ts
 var ATOMIC_EXECUTOR_ID = `atomic-${process.pid.toString(36)}-${crypto.randomUUID().slice(0, 8)}`;
 function getAtomicExecutorId() {
   return ATOMIC_EXECUTOR_ID;
@@ -50097,7 +49719,7 @@ function statusToInfo(status, fallbackId) {
   return info;
 }
 
-// dist/builtin/workflows/src/durable/dbos-backend.ts
+// src/durable/dbos-backend.ts
 var SILENT_DBOS_LOGGER = {
   info() {},
   debug() {},
@@ -50368,24 +49990,17 @@ class DbosDurableBackend {
     throw first;
   }
   async hydrateWorkflow(workflowId) {
-    await this.hydrateWorkflowForInspection(workflowId);
-  }
-  async hydrateWorkflowForInspection(workflowId) {
-    if (this.locallyRegistered.has(workflowId)) {
-      const handle = this.getLoadableWorkflow(workflowId);
-      return handle === undefined ? { kind: "malformed" } : { kind: "current", handle };
-    }
+    if (this.locallyRegistered.has(workflowId))
+      return;
     const info = await this.sdk.retrieveWorkflow(workflowId);
-    if (info !== undefined)
-      return await this.hydrateInfo(info);
+    if (info !== undefined) {
+      await this.hydrateInfo(info);
+      return;
+    }
     const records = await this.sdk.listStepRecords(workflowId);
     const deletion = classifyDbosDeletionTombstone(records, workflowId);
-    if (deletion === "absent" && records.length === 0)
-      return { kind: "absent" };
-    await this.suppressWorkflow(workflowId);
-    if (deletion === "absent")
-      return { kind: "malformed" };
-    return { kind: deletion === "current" ? "deleted" : "malformed" };
+    if (deletion !== "absent")
+      await this.suppressWorkflow(workflowId);
   }
   async hydrateResumableWorkflows() {
     const all = await this.sdk.listAllWorkflows();
@@ -50397,15 +50012,10 @@ class DbosDurableBackend {
   }
   async hydrateInfo(info) {
     const records = await this.sdk.listStepRecords(info.workflowId);
-    const deletion = classifyDbosDeletionTombstone(records, info.workflowId);
-    if (deletion !== "absent") {
-      await this.suppressWorkflow(info.workflowId);
-      return { kind: deletion === "current" ? "deleted" : "malformed" };
-    }
     const metadata = classifyLatestMetadata(records, info.workflowId);
     if (metadata.kind !== "current") {
       await this.suppressWorkflow(info.workflowId);
-      return { kind: "malformed" };
+      return;
     }
     const checkpoints = [];
     for (const record of records) {
@@ -50414,7 +50024,7 @@ class DbosDurableBackend {
       const classified = classifyCheckpointPayload(info.workflowId, record.stepName, record.output);
       if (classified.kind === "unknown") {
         await this.suppressWorkflow(info.workflowId);
-        return { kind: "malformed" };
+        return;
       }
       checkpoints.push(classified.checkpoint);
     }
@@ -50425,21 +50035,14 @@ class DbosDurableBackend {
     for (const checkpoint of checkpoints)
       this.mem.recordCheckpoint(checkpoint);
     const current = this.mem.getWorkflow(info.workflowId);
-    if (current === undefined) {
-      await this.suppressWorkflow(info.workflowId);
-      return { kind: "malformed" };
+    if (current !== undefined) {
+      const pendingPrompts2 = this.promptReservations.hydrate(info.workflowId, metadata.metadata.pendingPrompts, records, metadata.metadata.promptReservationEpoch);
+      this.applyMetadata(info.workflowId, {
+        ...metadata.metadata,
+        pendingPrompts: pendingPrompts2,
+        completedCheckpoints: current.completedCheckpoints
+      });
     }
-    const pendingPrompts2 = this.promptReservations.hydrate(info.workflowId, metadata.metadata.pendingPrompts, records, metadata.metadata.promptReservationEpoch);
-    this.applyMetadata(info.workflowId, {
-      ...metadata.metadata,
-      pendingPrompts: pendingPrompts2,
-      completedCheckpoints: current.completedCheckpoints
-    });
-    const handle = this.getLoadableWorkflow(info.workflowId);
-    if (handle !== undefined)
-      return { kind: "current", handle };
-    await this.suppressWorkflow(info.workflowId);
-    return { kind: "malformed" };
   }
   async suppressWorkflow(workflowId) {
     this.invalid.add(workflowId);
@@ -50479,7 +50082,7 @@ class DbosDurableBackend {
   }
 }
 
-// dist/builtin/workflows/src/durable/dbos-embedded-postgres.ts
+// src/durable/dbos-embedded-postgres.ts
 import {
   chmodSync,
   chownSync,
@@ -50493,24 +50096,75 @@ import {
   writeFileSync
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname as dirname2, join as join2, relative } from "node:path";
+import { dirname as dirname2, join as join3, relative } from "node:path";
 
-// dist/builtin/workflows/src/durable/dbos-embedded-postgres-root.ts
+// src/durable/dbos-embedded-postgres-root.ts
 import { cpSync, existsSync } from "node:fs";
-import { homedir } from "node:os";
-import { dirname, join } from "node:path";
+import { homedir as homedir2 } from "node:os";
 
-// dist/builtin/workflows/src/durable/local-command.ts
+// src/shared/host-paths.ts
+import { homedir } from "node:os";
+import { join } from "node:path";
+import { getEnvValue } from "@bastani/atomic";
+var HOST_CONFIG_DIR_NAME = ".pi";
+var HOST_CONFIG_DIR_NAMES = [HOST_CONFIG_DIR_NAME];
+var ENV_WORKFLOW_ARTIFACT_DIR = "PI_WORKFLOW_ARTIFACT_DIR";
+var LEGACY_ENV_WORKFLOW_ARTIFACT_DIR = "ATOMIC_WORKFLOW_ARTIFACT_DIR";
+var ENV_AGENT_DIR = "PI_CODING_AGENT_DIR";
+var LEGACY_ENV_AGENT_DIR = "ATOMIC_CODING_AGENT_DIR";
+function expandTildePath(value2) {
+  if (value2 === "~")
+    return homedir();
+  if (value2.startsWith("~/") || value2.startsWith("~\\"))
+    return join(homedir(), value2.slice(2));
+  return value2;
+}
+function firstEnv(...names) {
+  for (const name of names) {
+    const value2 = getEnvValue(name) ?? process.env[name];
+    if (value2 !== undefined && value2.length > 0)
+      return value2;
+  }
+  return;
+}
+function getHostAgentDir() {
+  const override = firstEnv(ENV_AGENT_DIR, LEGACY_ENV_AGENT_DIR);
+  if (override !== undefined)
+    return expandTildePath(override);
+  return join(homedir(), HOST_CONFIG_DIR_NAME, "agent");
+}
+function getHostAgentDirs() {
+  return [getHostAgentDir()];
+}
+function getHostProjectConfigDirs(cwd) {
+  return HOST_CONFIG_DIR_NAMES.map((name) => join(cwd, name));
+}
+function getHostProjectConfigPaths(cwd, ...segments) {
+  return getHostProjectConfigDirs(cwd).map((dir) => join(dir, ...segments));
+}
+function getHostWorkflowArtifactRoot() {
+  const override = firstEnv(ENV_WORKFLOW_ARTIFACT_DIR, LEGACY_ENV_WORKFLOW_ARTIFACT_DIR);
+  if (override !== undefined)
+    return expandTildePath(override);
+  return join(homedir(), HOST_CONFIG_DIR_NAME, "workflows");
+}
+function getHostProjectPath(cwd, ...segments) {
+  return join(cwd, HOST_CONFIG_DIR_NAME, ...segments);
+}
+
+// src/durable/dbos-embedded-postgres-root.ts
+import { dirname, join as join2 } from "node:path";
+
+// src/durable/local-command.ts
 import { spawn } from "node:child_process";
 import { connect } from "node:net";
-import { createChildProcessEnvironment } from "@bastani/atomic";
 var OUTPUT_LIMIT_BYTES = 16384;
 function runLocalCommand(command, args, options) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, [...args], {
       stdio: ["ignore", "pipe", "pipe"],
       windowsHide: true,
-      env: createChildProcessEnvironment(options?.env ? { ...options.env } : undefined),
+      ...options?.env !== undefined ? { env: { ...process.env, ...options.env } } : {},
       ...options?.uid !== undefined ? { uid: options.uid } : {},
       ...options?.gid !== undefined ? { gid: options.gid } : {}
     });
@@ -50553,11 +50207,11 @@ function boundedAppend(current, chunk) {
   return next.length <= OUTPUT_LIMIT_BYTES ? next : next.slice(-OUTPUT_LIMIT_BYTES);
 }
 
-// dist/builtin/workflows/src/durable/dbos-embedded-postgres-root.ts
+// src/durable/dbos-embedded-postgres-root.ts
 var ROOT_EMBEDDED_BASE_DIR = "/var/lib/atomic-postgres";
 var OWNER_CANDIDATES = ["postgres", "nobody", "daemon"];
 function defaultEmbeddedBaseDir() {
-  return join(homedir(), ".atomic", "postgres");
+  return join2(homedir2(), HOST_CONFIG_DIR_NAME, "postgres");
 }
 async function resolveEmbeddedRunContext(runner = runLocalCommand, euid = process.getuid?.(), platform = process.platform) {
   if (platform !== "linux" || euid !== 0) {
@@ -50601,15 +50255,15 @@ async function prepareBinariesForOwner(binaries, context, runner = runLocalComma
   if (probe !== undefined && probe.exitCode === 0)
     return binaries;
   const nativeDir = dirname(dirname(binaries.initdb));
-  const copiedNativeDir = join(context.baseDir, "pg-runtime", "native");
+  const copiedNativeDir = join2(context.baseDir, "pg-runtime", "native");
   const copied = {
-    pg_ctl: join(copiedNativeDir, "bin", "pg_ctl"),
-    initdb: join(copiedNativeDir, "bin", "initdb")
+    pg_ctl: join2(copiedNativeDir, "bin", "pg_ctl"),
+    initdb: join2(copiedNativeDir, "bin", "initdb")
   };
   if (!existsSync(copied.initdb)) {
     cpSync(nativeDir, copiedNativeDir, { recursive: true });
   }
-  const chown = await runner("chown", ["-R", `${owner.uid}:${owner.gid}`, join(context.baseDir, "pg-runtime")]);
+  const chown = await runner("chown", ["-R", `${owner.uid}:${owner.gid}`, join2(context.baseDir, "pg-runtime")]);
   if (chown.exitCode !== 0) {
     throw new Error(`Could not hand the copied embedded Postgres runtime to ${owner.name}: ${chown.stderr.trim() || chown.stdout.trim() || `exit ${chown.exitCode}`}`);
   }
@@ -50637,7 +50291,7 @@ function shellCommand(command, args) {
   return [command, ...args].map((part) => `'${part.replaceAll("'", "'\\''")}'`).join(" ");
 }
 
-// dist/builtin/workflows/src/durable/dbos-embedded-postgres.ts
+// src/durable/dbos-embedded-postgres.ts
 var EMBEDDED_HOST = "127.0.0.1";
 var EMBEDDED_PORT = 5439;
 var EMBEDDED_USER = "postgres";
@@ -50647,13 +50301,13 @@ var READY_ATTEMPTS = 120;
 var READY_DELAY_MS = 250;
 var SETUP_LOCK_STALE_MS = 120000;
 var EMBEDDED_DBOS_SYSTEM_DATABASE_URL = `postgresql://${EMBEDDED_USER}:${EMBEDDED_PASSWORD}@${EMBEDDED_HOST}:${EMBEDDED_PORT}/atomic_workflows_dbos_sys?connect_timeout=10&sslmode=disable`;
-var ensured;
+var ensured2;
 function ensureEmbeddedDbosPostgres() {
-  ensured ??= ensure().catch((error) => {
-    ensured = undefined;
+  ensured2 ??= ensure().catch((error) => {
+    ensured2 = undefined;
     throw error;
   });
-  return ensured;
+  return ensured2;
 }
 async function ensure() {
   if (await tcpReachable(EMBEDDED_HOST, EMBEDDED_PORT))
@@ -50662,16 +50316,16 @@ async function ensure() {
   hydrateBinaryLibraryLinks(loaded.pg_ctl);
   const context = await resolveEmbeddedRunContext();
   const root = context.baseDir;
-  const dataDir = join2(root, `v${EMBEDDED_PG_MAJOR}`);
-  const logFile = join2(root, `v${EMBEDDED_PG_MAJOR}.log`);
+  const dataDir = join3(root, `v${EMBEDDED_PG_MAJOR}`);
+  const logFile = join3(root, `v${EMBEDDED_PG_MAJOR}.log`);
   mkdirSync(root, { recursive: true, mode: 448 });
   if (context.owner !== undefined)
     chownSync(root, context.owner.uid, context.owner.gid);
   const binaries = await prepareBinariesForOwner(loaded, context);
-  await withSetupLock(join2(root, `v${EMBEDDED_PG_MAJOR}.setup-lock`), async () => {
+  await withSetupLock(join3(root, `v${EMBEDDED_PG_MAJOR}.setup-lock`), async () => {
     if (await tcpReachable(EMBEDDED_HOST, EMBEDDED_PORT))
       return;
-    if (!existsSync2(join2(dataDir, "PG_VERSION")))
+    if (!existsSync2(join3(dataDir, "PG_VERSION")))
       await initializeCluster(binaries.initdb, dataDir, context);
     await startCluster(binaries.pg_ctl, dataDir, logFile, context);
   });
@@ -50683,7 +50337,7 @@ async function ensure() {
   throw new Error(`Embedded Postgres started but never accepted connections on ${EMBEDDED_HOST}:${EMBEDDED_PORT}; see ${logFile}.`);
 }
 async function initializeCluster(initdb, dataDir, context) {
-  const passwordFile = join2(tmpdir(), `atomic-pg-pw-${process.pid}-${crypto.randomUUID().slice(0, 8)}`);
+  const passwordFile = join3(tmpdir(), `atomic-pg-pw-${process.pid}-${crypto.randomUUID().slice(0, 8)}`);
   writeFileSync(passwordFile, `${EMBEDDED_PASSWORD}
 `, { mode: 384 });
   try {
@@ -50731,13 +50385,13 @@ function hydrateBinaryLibraryLinks(pgCtlPath) {
   const packageRoot = dirname2(dirname2(dirname2(pgCtlPath)));
   let manifest;
   try {
-    manifest = JSON.parse(readFileSync(join2(packageRoot, "native", "pg-symlinks.json"), "utf8"));
+    manifest = JSON.parse(readFileSync(join3(packageRoot, "native", "pg-symlinks.json"), "utf8"));
   } catch {
     return;
   }
   for (const { source, target } of manifest) {
-    const absoluteSource = join2(packageRoot, source);
-    const absoluteTarget = join2(packageRoot, target);
+    const absoluteSource = join3(packageRoot, source);
+    const absoluteTarget = join3(packageRoot, target);
     if (existsSync2(absoluteTarget) || !existsSync2(absoluteSource))
       continue;
     try {
@@ -50765,7 +50419,7 @@ async function loadEmbeddedPostgresBinaries() {
   for (const binary of [
     binaries.pg_ctl,
     binaries.initdb,
-    join2(dirname2(binaries.pg_ctl), process.platform === "win32" ? "postgres.exe" : "postgres")
+    join3(dirname2(binaries.pg_ctl), process.platform === "win32" ? "postgres.exe" : "postgres")
   ]) {
     ensureExecutable(binary);
   }
@@ -50819,7 +50473,7 @@ ${lines.slice(-5).join(`
   }
 }
 
-// dist/builtin/workflows/src/durable/dbos-local-postgres.ts
+// src/durable/dbos-local-postgres.ts
 var DOCKER_CONTAINER = "dbos-db";
 var DOCKER_IMAGE = "pgvector/pgvector:pg16";
 var DOCKER_READY_ATTEMPTS = 60;
@@ -50908,7 +50562,7 @@ async function requireDockerSuccess(action, args) {
   throw new Error(`Could not ${action}: ${commandFailureDetail(result)}`);
 }
 
-// dist/builtin/workflows/src/durable/dbos-lifecycle.ts
+// src/durable/dbos-lifecycle.ts
 class DbosDurabilityError extends Error {
   constructor(message, options) {
     super(message, options);
@@ -51037,7 +50691,7 @@ function dbosLifecycleState() {
   return state;
 }
 
-// dist/builtin/workflows/src/runs/background/cancellation-registry.ts
+// src/runs/background/cancellation-registry.ts
 class CancellationRegistryImpl {
   _runs = new Map;
   register(runId, controller) {
@@ -51098,7 +50752,7 @@ function createCancellationRegistry() {
 }
 var cancellationRegistry = createCancellationRegistry();
 
-// dist/builtin/workflows/src/durable/factory.ts
+// src/durable/factory.ts
 var injectedBackend;
 var initializedBackend;
 var initializing;
@@ -51137,7 +50791,7 @@ function degradeToNonDurableBackend(error) {
   return new InMemoryDurableBackend;
 }
 
-// dist/builtin/workflows/src/durable/run-timing.ts
+// src/durable/run-timing.ts
 var RUN_TIMING_CHECKPOINT_NAME = "workflow-run-timing";
 var RUN_TIMING_DURATION_BUCKET_MS = 30000;
 function timingBucket(elapsedMs) {
@@ -51153,34 +50807,20 @@ function priorRunElapsedMs(backend, workflowId) {
   return elapsedMs;
 }
 function recordRunTimingCheckpoint(backend, run, options) {
-  const checkpoint = runTimingCheckpoint(backend, run, options);
-  if (checkpoint === undefined)
-    return false;
-  backend.recordCheckpoint(checkpoint);
-  return true;
-}
-async function recordRunTimingCheckpointAsync(backend, run, options) {
-  const checkpoint = runTimingCheckpoint(backend, run, options);
-  if (checkpoint === undefined)
-    return false;
-  await backend.recordCheckpointAsync(checkpoint);
-  return true;
-}
-function runTimingCheckpoint(backend, run, options) {
   const now = options?.now ?? Date.now();
   const elapsedMs = elapsedRunMs(run, now);
   if (elapsedMs <= 0)
-    return;
+    return false;
   if (backend.listCheckpoints(run.id).length === 0)
-    return;
+    return false;
   const recorded = priorRunElapsedMs(backend, run.id);
   if (recorded !== undefined) {
     if (elapsedMs <= recorded)
-      return;
+      return false;
     if (options?.debounce === true && timingBucket(elapsedMs) === timingBucket(recorded))
-      return;
+      return false;
   }
-  return {
+  const checkpoint = {
     kind: "tool",
     workflowId: run.id,
     checkpointId: `run-timing:${elapsedMs}`,
@@ -51189,6 +50829,8 @@ function runTimingCheckpoint(backend, run, options) {
     output: { elapsedMs },
     completedAt: now
   };
+  backend.recordCheckpoint(checkpoint);
+  return true;
 }
 function inheritedRunElapsedMs(input) {
   const now = input.now ?? Date.now();
@@ -51197,7 +50839,7 @@ function inheritedRunElapsedMs(input) {
   return inherited !== undefined && inherited > 0 ? inherited : undefined;
 }
 
-// dist/builtin/workflows/src/engine/workflow-tool-abort.ts
+// src/engine/workflow-tool-abort.ts
 class WorkflowToolAbortError extends Error {
   runId;
   nodeId;
@@ -51248,7 +50890,7 @@ function findWorkflowGracefulQuit(value2) {
   return;
 }
 
-// dist/builtin/workflows/src/engine/run-tool-control-registry.ts
+// src/engine/run-tool-control-registry.ts
 var TOOL_QUIT_SETTLEMENT_TIMEOUT_MS = 500;
 function createToolControlRegistry() {
   const byRun = new Map;
@@ -51341,7 +50983,7 @@ function sameToolNodeIdentity(left, right) {
   return left.runId === right.runId && left.nodeId === right.nodeId;
 }
 
-// dist/builtin/workflows/src/runs/background/job-tracker.ts
+// src/runs/background/job-tracker.ts
 class JobTrackerImpl {
   _jobs = new Map;
   register(entry) {
@@ -51384,7 +51026,7 @@ function createJobTracker() {
 }
 var jobTracker = createJobTracker();
 
-// dist/builtin/workflows/src/runs/background/workflow-lifecycle-aggregate.ts
+// src/runs/background/workflow-lifecycle-aggregate.ts
 function expandedControlRunIds(store2, runId) {
   const graph = expandWorkflowGraph(readGraphStoreSnapshot(store2), runId);
   const ids = new Set([runId]);
@@ -51408,7 +51050,7 @@ function workflowHasPausedState(store2, runId) {
   });
 }
 
-// dist/builtin/workflows/src/runs/background/quit.ts
+// src/runs/background/quit.ts
 async function quitRun(runId, opts) {
   const activeStore = opts?.store ?? store;
   const registry = opts?.stageControlRegistry ?? stageControlRegistry;
@@ -51472,7 +51114,7 @@ async function quitRun(runId, opts) {
     return { ok: false, runId, reason: "already_ended" };
   const suspendedByAbort = toolHandles.length > 0;
   const publish = (resumable) => {
-    publishLocalQuit(activeStore, runId, pausedRunIds, resumable, opts?.actor);
+    publishLocalQuit(activeStore, runId, pausedRunIds, resumable);
     if (abandonedTools.length > 0)
       jobs.detach(runId, jobs.get(runId));
   };
@@ -51493,17 +51135,10 @@ async function quitRun(runId, opts) {
   publish(true);
   return { ok: true, runId, paused, cancelledTools, abandonedTools };
 }
-function publishLocalQuit(activeStore, runId, pausedRunIds, resumable, actor) {
-  for (const pausedRunId of pausedRunIds) {
-    if (pausedRunId === runId)
-      continue;
+function publishLocalQuit(activeStore, runId, pausedRunIds, resumable) {
+  for (const pausedRunId of pausedRunIds)
     activeStore.recordRunPaused(pausedRunId);
-  }
-  activeStore.recordRunPaused(runId, undefined, {
-    exitReason: "quit",
-    resumable,
-    ...actor === undefined ? {} : { actor }
-  });
+  activeStore.recordRunPaused(runId, undefined, { exitReason: "quit", resumable });
 }
 function unrecordedDurableQuitMessage(error) {
   const detail = error instanceof Error ? error.message : String(error);
@@ -51586,8 +51221,7 @@ async function quitAllRuns(opts) {
     store: activeStore,
     stageControlRegistry: opts?.stageControlRegistry,
     toolControlRegistry: opts?.toolControlRegistry,
-    jobs: opts?.jobs,
-    ...opts?.actor === undefined ? {} : { actor: opts.actor }
+    jobs: opts?.jobs
   }));
   const settled = await Promise.allSettled(attempts);
   return settled.map((result, index) => {
@@ -51603,7 +51237,7 @@ async function quitAllRuns(opts) {
   });
 }
 
-// dist/builtin/workflows/src/engine/run-terminal-event.ts
+// src/engine/run-terminal-event.ts
 var activeArbiters = new Map;
 function createRunTerminalEventArbiter(runId) {
   let selected;
@@ -51629,7 +51263,7 @@ function selectedRunTerminalEvent(runId) {
   return activeArbiters.get(runId)?.winner();
 }
 
-// dist/builtin/workflows/src/shared/persistence-session-entries.ts
+// src/shared/persistence-session-entries.ts
 function appendRunStart(api, payload) {
   if (typeof api.appendEntry !== "function")
     return;
@@ -51641,7 +51275,6 @@ function appendRunStart(api, payload) {
     ...payload.parentStageId !== undefined ? { parentStageId: payload.parentStageId } : {},
     ...payload.rootRunId !== undefined ? { rootRunId: payload.rootRunId } : {},
     ...payload.resumedFromRunId !== undefined ? { resumedFromRunId: payload.resumedFromRunId } : {},
-    ...payload.origin !== undefined ? { origin: payload.origin } : {},
     ...payload.resumeFromStageId !== undefined ? { resumeFromStageId: payload.resumeFromStageId } : {},
     ...payload.accumulatedDurationMs !== undefined ? { accumulatedDurationMs: payload.accumulatedDurationMs } : {},
     ts: payload.ts
@@ -51752,7 +51385,7 @@ function appendRunBlocked(api, payload) {
   });
 }
 
-// dist/builtin/workflows/src/runs/background/durable-resume-transition.ts
+// src/runs/background/durable-resume-transition.ts
 var pendingRunningTransitions = new WeakMap;
 function transitionsFor(backend) {
   let transitions = pendingRunningTransitions.get(backend);
@@ -51798,7 +51431,7 @@ async function markDurableResumed(runId) {
   }
 }
 
-// dist/builtin/workflows/src/runs/background/resume-acknowledgements.ts
+// src/runs/background/resume-acknowledgements.ts
 function targetStage(store2, target) {
   return store2.runs().find((run) => run.id === target.controlRunId)?.stages.find((stage) => stage.id === target.handle.stageId);
 }
@@ -51845,7 +51478,7 @@ async function settleResumeAcknowledgements(store2, targets, message) {
       failures.push(qualified);
   });
   for (const controlRunId of resumedRunIds)
-    store2.recordRunResumed(controlRunId, undefined, { source: "acknowledgement" });
+    store2.recordRunResumed(controlRunId);
   return { resumed, acknowledged, failures, lateFailures };
 }
 async function waitForResumeReconciliation(acknowledged) {
@@ -51858,7 +51491,7 @@ function resumeAcknowledgementMessage(acknowledged, resumed, runId, current) {
   return `Resume acknowledged; workflow ${runId} ${current.endedAt !== undefined ? `reached terminal status ${current.status}` : "can continue"}.`;
 }
 
-// dist/builtin/workflows/src/runs/background/run-inspect.ts
+// src/runs/background/run-inspect.ts
 function inspectRun(runId, opts) {
   const activeStore = opts?.store ?? store;
   const candidate = activeStore.runs().find((r) => r.id === runId);
@@ -51899,7 +51532,7 @@ function inspectRun(runId, opts) {
   };
   return { ok: true, runId: copy.id, detail };
 }
-// dist/builtin/workflows/src/runs/background/status.ts
+// src/runs/background/status.ts
 function killRun(runId, opts) {
   const activeStore = opts?.store ?? store;
   const runs = activeStore.runs();
@@ -51966,17 +51599,9 @@ async function resumeRun(runId, opts) {
     const currentRun2 = activeStore.runs().find((candidate) => candidate.id === runId);
     const hasPausedDescendant = workflowHasPausedStages(activeStore, runId);
     if (acknowledgements.acknowledged > 0 || handles.length === 0 && acknowledgements.failures.length === 0 && !hasPausedDescendant && currentRun2?.status === "paused") {
-      const attributeStage = opts?.stageId !== undefined && (hasPausedDescendant || currentRun2?.resumedAt === undefined);
-      activeStore.recordRunResumed(runId, undefined, {
-        source: "run_control",
-        ...opts?.actor === undefined || attributeStage ? {} : { actor: opts.actor }
-      });
-      if (aggregateRootRunId !== runId) {
-        activeStore.recordRunResumed(aggregateRootRunId, undefined, { source: "run_control" });
-      }
-      if (attributeStage && opts?.actor !== undefined && opts.stageId !== undefined) {
-        activeStore.recordStageResumed(runId, opts.stageId, undefined, { actor: opts.actor });
-      }
+      activeStore.recordRunResumed(runId);
+      if (aggregateRootRunId !== runId)
+        activeStore.recordRunResumed(aggregateRootRunId);
     }
     const reconciledRoot = activeStore.runs().find((candidate) => candidate.id === runId);
     if (acknowledgements.failures.length > 0) {
@@ -52027,16 +51652,6 @@ async function resumeRun(runId, opts) {
       message: "This workflow is not resumable; inspect the snapshot and start a new workflow run when ready."
     };
   }
-  if (current.status === "failed" && current.endedAt !== undefined && current.exited === true && current.resumable === true) {
-    return {
-      ok: true,
-      runId,
-      snapshot,
-      resumed: resumedCopy,
-      mode: "snapshot",
-      message: `This failed run is marked resumable; use /workflow resume ${runId} to ask the durable backend to retry it or start a new workflow run.`
-    };
-  }
   if (current.endedAt === undefined && current.resumable === true && current.failureRecoverability === "recoverable" && current.failedStageId !== undefined) {
     return {
       ok: true,
@@ -52061,7 +51676,6 @@ async function pauseRun(runId, opts) {
   const activeStore = opts?.store ?? store;
   const registry = opts?.stageControlRegistry ?? stageControlRegistry;
   const run = activeStore.runs().find((candidate) => candidate.id === runId);
-  const actorMetadata = opts?.actor === undefined ? undefined : { actor: opts.actor };
   if (!run)
     return { ok: false, runId, reason: "not_found" };
   if (run.endedAt !== undefined)
@@ -52080,9 +51694,7 @@ async function pauseRun(runId, opts) {
     const paused2 = stage === undefined ? [] : [structuredClone(stage)];
     const stillActive = currentRun2?.stages.some((candidate) => candidate.id !== opts.stageId && (candidate.status === "running" || candidate.status === "pending")) ?? false;
     if (!stillActive)
-      activeStore.recordRunPaused(runId, undefined, actorMetadata);
-    else if (actorMetadata !== undefined)
-      activeStore.recordStagePaused(runId, opts.stageId, undefined, actorMetadata);
+      activeStore.recordRunPaused(runId);
     return { ok: true, runId, paused: paused2 };
   }
   const controlRunIds = expandedControlRunIds(activeStore, runId);
@@ -52100,22 +51712,15 @@ async function pauseRun(runId, opts) {
     if (stage !== undefined)
       paused.push(structuredClone(stage));
   }
-  for (const pausedRunId of pausedRunIds) {
-    if (pausedRunId === runId)
-      continue;
+  for (const pausedRunId of pausedRunIds)
     activeStore.recordRunPaused(pausedRunId);
-  }
-  activeStore.recordRunPaused(runId, undefined, actorMetadata);
+  activeStore.recordRunPaused(runId);
   return { ok: true, runId, paused };
 }
 async function pauseAllRuns(opts) {
   const activeStore = opts?.store ?? store;
   const inFlight = topLevelWorkflowRuns(activeStore.runs()).filter((run) => run.endedAt === undefined);
-  return Promise.all(inFlight.map((run) => pauseRun(run.id, {
-    store: activeStore,
-    stageControlRegistry: opts?.stageControlRegistry,
-    ...opts?.actor === undefined ? {} : { actor: opts.actor }
-  })));
+  return Promise.all(inFlight.map((run) => pauseRun(run.id, { store: activeStore, stageControlRegistry: opts?.stageControlRegistry })));
 }
 async function interruptRun(runId, opts) {
   return pauseRun(runId, opts);
@@ -52126,7 +51731,7 @@ async function interruptAllRuns(opts) {
   return Promise.all(inFlight.map((run) => interruptRun(run.id, { store: activeStore, stageControlRegistry: opts?.stageControlRegistry })));
 }
 
-// dist/builtin/workflows/src/shared/persistence-compaction-policy.ts
+// src/shared/persistence-compaction-policy.ts
 function installCompactionHook(api, store2) {
   if (typeof api.on !== "function")
     return;
@@ -52157,7 +51762,7 @@ function installCompactionHook(api, store2) {
   });
 }
 
-// dist/builtin/workflows/src/extension/hil-answer-notifications.ts
+// src/extension/hil-answer-notifications.ts
 var HIL_ANSWER_NOTICE_CUSTOM_TYPE = "workflows:hil-answer-notice";
 var HIL_ANSWER_SNIPPET_LIMIT = 1000;
 var rendererRegisteredHosts3 = new WeakSet;
@@ -52399,7 +52004,7 @@ function themeFromRenderer(piTheme) {
   return piTheme === undefined ? undefined : deriveGraphThemeFromPiTheme(piTheme);
 }
 
-// dist/builtin/workflows/src/extension/lifecycle-notification-delivery.ts
+// src/extension/lifecycle-notification-delivery.ts
 function createLifecycleNoticeDelivery(options) {
   const retryTimers = new Set;
   const attempts = new Map;
@@ -52459,18 +52064,14 @@ function createLifecycleNoticeDelivery(options) {
   };
 }
 
-// dist/builtin/workflows/src/extension/lifecycle-notifications.ts
+// src/extension/lifecycle-notifications.ts
 var LIFECYCLE_NOTICE_CUSTOM_TYPE = "workflows:lifecycle-notice";
 var LIFECYCLE_NOTICE_SNIPPET_LIMIT = 240;
 var WORKFLOW_LIFECYCLE_NOTICE_KINDS = [
-  "started",
   "completed",
   "failed",
   "blocked",
-  "awaiting_input",
-  "paused",
-  "quit",
-  "resumed"
+  "awaiting_input"
 ];
 var rendererRegisteredHosts4 = new WeakSet;
 function createWorkflowLifecycleNotificationState() {
@@ -52502,12 +52103,6 @@ function seedWorkflowLifecycleNotificationState(state2, snapshot) {
       const key2 = terminalRunKey(noticeKind, run);
       if (!state2.pendingTerminalRuns.has(key2) && !state2.retryableTerminalRuns.has(key2)) {
         state2.deliveredTerminalRuns.add(key2);
-      }
-    }
-    for (const occurrence of controlOccurrences(run)) {
-      const controlKey = controlOccurrenceKey(run, occurrence);
-      if (!state2.pendingTerminalRuns.has(controlKey) && !state2.retryableTerminalRuns.has(controlKey)) {
-        state2.deliveredTerminalRuns.add(controlKey);
       }
     }
     if (run.pendingPrompt !== undefined) {
@@ -52580,22 +52175,6 @@ function installWorkflowLifecycleNotifications(options) {
     }
     delivery.deliver(key2, makeTerminalNotice(run, kind));
   };
-  const emitControlNoticesOnce = (run) => {
-    for (const occurrence of controlOccurrences(run)) {
-      if (!notifyOn.has(occurrence.kind))
-        continue;
-      const key2 = controlOccurrenceKey(run, occurrence);
-      if (state2.deliveredTerminalRuns.has(key2) || state2.pendingTerminalRuns.has(key2) || state2.retryableTerminalRuns.has(key2))
-        continue;
-      if (state2.suppressionDepth > 0) {
-        state2.deliveredTerminalRuns.add(key2);
-        state2.retryableTerminalRuns.delete(key2);
-        state2.retryableTerminalNotices.delete(key2);
-        continue;
-      }
-      delivery.deliver(key2, makeControlNotice(run, occurrence));
-    }
-  };
   const emitStageAwaitingInputNoticeOnce = (run, stage) => {
     if (stage.status !== "awaiting_input")
       return;
@@ -52619,7 +52198,6 @@ function installWorkflowLifecycleNotifications(options) {
       emitTerminalNoticeOnce(run, "completed");
       emitTerminalNoticeOnce(run, "failed");
       emitTerminalNoticeOnce(run, "blocked");
-      emitControlNoticesOnce(run);
       if (!notifyOn.has("awaiting_input"))
         continue;
       emitRunAwaitingInputNoticeOnce(run);
@@ -52658,43 +52236,20 @@ function registerLifecycleNoticeRenderer(options) {
 }
 function formatWorkflowLifecycleNoticeText(details) {
   const workflowName = escapeQuotedText2(details.workflowName);
-  const origin = details.origin === undefined ? "" : details.origin === "agent" ? ", which you started" : ", which the user started";
-  const actor = details.actor === "agent" ? "You" : "The user";
-  if (details.kind === "started") {
-    return `▶ ${actor} started workflow "${workflowName}" (run ${details.runId}). It is running in the background; you will be notified when it completes.`;
-  }
   if (details.kind === "completed") {
-    return `✓ Workflow "${workflowName}" completed (run ${details.runId})${origin}. Inspect: /workflow status ${details.runId}`;
+    return `✓ Workflow "${workflowName}" completed (run ${details.runId}). Inspect: /workflow status ${details.runId}`;
   }
   if (details.kind === "failed") {
     const stage2 = details.stageName ?? details.failedStageId ?? details.stageId;
     const tool = lifecycleToolOrigin(details);
-    const failureSite = stage2 ? `, stage ${stage2}` : tool !== undefined ? `, tool ${tool}` : "";
+    const originText = stage2 ? `, stage ${stage2}` : tool !== undefined ? `, tool ${tool}` : "";
     const errorText = details.error ? `: ${details.error}` : "";
-    const outputsText = formatLifecycleOutputs(details.outputs);
-    const outputSuffix = outputsText === undefined ? "" : ` Partial outputs: ${outputsText}`;
-    return `✗ Workflow "${workflowName}" failed (run ${details.runId}${failureSite})${origin}${errorText}${outputSuffix}. Inspect: /workflow status ${details.runId}`;
+    return `✗ Workflow "${workflowName}" failed (run ${details.runId}${originText})${errorText}. Inspect: /workflow status ${details.runId}`;
   }
   if (details.kind === "blocked") {
     const errorText = details.error ? `: ${details.error}` : "";
     const stateText = details.active === true ? "is blocked" : "ended blocked";
-    return `! Workflow "${workflowName}" ${stateText} (run ${details.runId})${origin}${errorText}. Inspect: /workflow status ${details.runId}`;
-  }
-  if (details.kind === "paused" || details.kind === "quit") {
-    const stopStage = details.stageName ?? details.stageId;
-    const stageText = stopStage ? `${origin === "" ? "" : ","} at stage ${stopStage}` : "";
-    const scopeText = details.scope === "stage" ? "stage of workflow" : "workflow";
-    const verb = details.kind === "paused" ? "paused" : "quit";
-    const noun = details.kind === "paused" ? "pause" : "stop";
-    const glyph = details.kind === "paused" ? "⏸" : "⏹";
-    return `${glyph} ${actor} ${verb} the ${scopeText} "${workflowName}" (run ${details.runId})${origin}${stageText}. This ${noun} was deliberate and user-requested; do not resume it or take over the work unless asked. Resume: /workflow resume ${details.runId}`;
-  }
-  if (details.kind === "resumed") {
-    const resumedStage = details.stageName ?? details.stageId;
-    const stageText = resumedStage ? `${origin === "" ? "" : ","} at stage ${resumedStage}` : "";
-    const scopeText = details.scope === "stage" ? "stage of workflow" : "workflow";
-    const continues = details.continuedFromRunId === undefined ? "" : `, continuing run ${details.continuedFromRunId}`;
-    return `▶ ${actor} resumed the ${scopeText} "${workflowName}" (run ${details.runId}${continues})${origin}${stageText}. It is running again in the background.`;
+    return `! Workflow "${workflowName}" ${stateText} (run ${details.runId})${errorText}. Inspect: /workflow status ${details.runId}`;
   }
   const prompt = details.promptMessage ? ` Prompt: ${details.promptMessage}` : "";
   if (details.scope === "run") {
@@ -52709,8 +52264,7 @@ function makeTerminalNotice(run, kind) {
   const failedToolNodeId = kind === "failed" && run.failedStageId === undefined ? run.failedToolNodeId : undefined;
   const failedTool = (run.toolNodes ?? []).find((node) => node.id === failedToolNodeId);
   const activeBlocked = kind === "blocked" && isActiveRecoverableBlockedRun(run);
-  const outputs = kind === "failed" && run.exited === true && run.result !== undefined ? run.result : undefined;
-  const error = activeBlocked ? run.failureMessage ?? structuredRecoverableWorkflowFailureText(run) ?? run.error : run.error ?? returnedNoticeError(run, kind) ?? (kind === "blocked" || kind === "failed" ? run.exitReason : undefined);
+  const error = activeBlocked ? run.failureMessage ?? structuredRecoverableWorkflowFailureText(run) ?? run.error : run.error ?? returnedNoticeError(run, kind) ?? (kind === "blocked" ? run.exitReason : undefined);
   return {
     kind,
     scope: "run",
@@ -52718,38 +52272,14 @@ function makeTerminalNotice(run, kind) {
     workflowName: run.name,
     status: effectiveRunStatus(run),
     ...activeBlocked ? { active: true } : {},
-    ...run.exited === true && run.status === "failed" && run.resumable !== undefined ? { resumable: run.resumable } : {},
     ...error ? { error: truncateSnippet(error) } : {},
-    ...outputs !== undefined ? { outputs } : {},
     ...run.failedStageId ? { failedStageId: run.failedStageId } : {},
     ...failedStage ? { stageId: failedStage.id, stageName: failedStage.name } : {},
     ...failedToolNodeId !== undefined ? { toolNodeId: failedToolNodeId } : {},
     ...failedTool !== undefined ? { toolName: failedTool.name } : {},
     ...run.durationMs !== undefined ? { durationMs: run.durationMs } : {},
-    ...run.origin !== undefined ? { origin: run.origin } : {},
     createdAt: lifecycleOccurrenceAt(run, kind) ?? Date.now()
   };
-}
-function makeControlNotice(run, occurrence) {
-  const stage = occurrence.stage ?? restingStage(run);
-  const elapsedMs = run.durationMs ?? (occurrence.at >= run.startedAt ? occurrence.at - run.startedAt : undefined);
-  return {
-    kind: occurrence.kind,
-    scope: occurrence.scope,
-    runId: run.id,
-    workflowName: run.name,
-    status: occurrence.stage !== undefined ? occurrence.stage.status : run.status,
-    ...stage !== undefined ? { stageId: stage.id, stageName: stage.name } : {},
-    ...elapsedMs !== undefined ? { durationMs: elapsedMs } : {},
-    ...occurrence.kind === "quit" && run.resumable !== undefined ? { resumable: run.resumable } : {},
-    ...occurrence.actor !== undefined ? { actor: occurrence.actor } : {},
-    ...occurrence.kind !== "started" && run.origin !== undefined ? { origin: run.origin } : {},
-    ...occurrence.kind === "resumed" && run.resumedFromRunId !== undefined ? { continuedFromRunId: run.resumedFromRunId } : {},
-    createdAt: occurrence.at
-  };
-}
-function restingStage(run) {
-  return run.stages.find((stage) => stage.status === "paused") ?? run.stages.find((stage) => stage.status === "running");
 }
 function warnLifecycleSendFailure(error) {
   if (process.env.ATOMIC_WORKFLOW_DEBUG !== "1")
@@ -52782,8 +52312,6 @@ function lifecycleOccurrenceAt(run, kind) {
   return run.endedAt;
 }
 function returnedNoticeError(run, kind) {
-  if (run.exited === true && (kind === "failed" || kind === "blocked"))
-    return run.exitReason;
   const structuredFailureText = structuredRecoverableWorkflowFailureText(run);
   if (kind === "blocked" && structuredFailureText !== undefined)
     return structuredFailureText;
@@ -52799,54 +52327,6 @@ function returnedNoticeError(run, kind) {
 function terminalRunKey(kind, run) {
   const occurrence = kind === "blocked" ? run.blockedAt ?? lifecycleOccurrenceAt(run, kind) : "";
   return occurrence === undefined ? `${kind}:${run.id}` : `${kind}:${run.id}:${occurrence}`;
-}
-function controlOccurrences(run) {
-  const occurrences = [];
-  const resumedRun = run.resumeSource === "run_control" || run.resumedFromRunId !== undefined;
-  const userResumed = run.resumeSource === "run_control" && run.resumeActor === "user";
-  const continuation = userResumed && run.resumedAt === undefined;
-  if (run.origin === "user" && !resumedRun) {
-    occurrences.push({ kind: "started", scope: "run", at: run.startedAt, actor: "user" });
-  }
-  if (userResumed && run.status === "running") {
-    occurrences.push({
-      kind: "resumed",
-      scope: "run",
-      at: continuation ? run.startedAt : run.resumedAt ?? run.startedAt,
-      actor: "user"
-    });
-  }
-  if (run.endedAt === undefined && run.status === "paused" && run.pauseActor === "user") {
-    if (run.exitReason === "quit") {
-      const quitAt = run.quitAt ?? run.pausedAt;
-      if (quitAt !== undefined)
-        occurrences.push({ kind: "quit", scope: "run", at: quitAt, actor: "user" });
-    } else if (run.pausedAt !== undefined) {
-      occurrences.push({ kind: "paused", scope: "run", at: run.pausedAt, actor: "user" });
-    }
-  }
-  const runScoped = new Set(occurrences.map((occurrence) => occurrence.kind));
-  if (run.endedAt !== undefined)
-    return occurrences;
-  for (const stage of run.stages) {
-    if (stage.status === "paused" && stage.pauseActor === "user" && stage.pausedAt !== undefined) {
-      if (!runScoped.has("paused") && !runScoped.has("quit")) {
-        occurrences.push({ kind: "paused", scope: "stage", at: stage.pausedAt, actor: "user", stage });
-      }
-    }
-    if (stage.status === "running" && stage.resumeActor === "user" && stage.resumedAt !== undefined) {
-      if (!runScoped.has("resumed")) {
-        occurrences.push({ kind: "resumed", scope: "stage", at: stage.resumedAt, actor: "user", stage });
-      }
-    }
-  }
-  return occurrences;
-}
-function controlOccurrenceKey(run, occurrence) {
-  if (occurrence.scope === "stage" && occurrence.stage !== undefined) {
-    return `${occurrence.kind}:${run.id}:stage:${occurrence.stage.id}:${occurrence.at}`;
-  }
-  return `${occurrence.kind}:${run.id}:${occurrence.at}`;
 }
 function awaitingInputKey(runId, stage) {
   const promptId = stage.pendingPrompt?.id ?? stage.inputRequest?.id;
@@ -52866,16 +52346,6 @@ function truncateSnippet(value2) {
     return normalized;
   return `${normalized.slice(0, LIFECYCLE_NOTICE_SNIPPET_LIMIT - 1)}…`;
 }
-function formatLifecycleOutputs(outputs) {
-  if (outputs === undefined)
-    return;
-  try {
-    const serialized = JSON.stringify(outputs);
-    return serialized === undefined ? "available; inspect the run result" : truncateSnippet(serialized);
-  } catch {
-    return "available; inspect the run result";
-  }
-}
 function makeNoticeComponent2(details, theme) {
   const text = formatWorkflowLifecycleNoticeText(details);
   return {
@@ -52886,12 +52356,12 @@ function makeNoticeComponent2(details, theme) {
   };
 }
 function renderLifecycleNoticeCard(details, opts) {
-  const tone = lifecycleNoticeTone(details.kind);
-  const title = lifecycleNoticeTitle(details.kind);
-  const glyph = lifecycleNoticeGlyph(details.kind);
+  const tone = details.kind === "failed" ? "error" : details.kind === "awaiting_input" || details.kind === "blocked" ? "warning" : "success";
+  const title = details.kind === "failed" ? "WORKFLOW FAILED" : details.kind === "awaiting_input" ? "WORKFLOW INPUT" : details.kind === "blocked" ? "WORKFLOW BLOCKED" : "WORKFLOW COMPLETE";
+  const glyph = details.kind === "failed" ? "✗" : details.kind === "awaiting_input" ? "？" : details.kind === "blocked" ? "!" : "✓";
   const stage = details.stageName ?? details.failedStageId ?? details.stageId;
   const tool = stage === undefined ? lifecycleToolOrigin(details) : undefined;
-  const headline = lifecycleNoticeHeadline(details);
+  const headline = details.kind === "failed" ? `Workflow "${details.workflowName}" failed` : details.kind === "awaiting_input" ? `Workflow "${details.workflowName}" needs input` : details.kind === "blocked" ? `Workflow "${details.workflowName}" ${details.active === true ? "is blocked" : "ended blocked"}` : `Workflow "${details.workflowName}" completed`;
   return renderWorkflowNoticeCard({
     title,
     glyph,
@@ -52900,112 +52370,19 @@ function renderLifecycleNoticeCard(details, opts) {
     fields: [
       { label: "workflow", value: details.workflowName },
       { label: "run", value: details.runId },
-      { label: "continues", value: details.continuedFromRunId },
       { label: "stage", value: stage },
       { label: "tool", value: tool },
-      { label: "actor", value: details.actor, tone: "muted" },
-      { label: "launched", value: details.origin, tone: "muted" },
       { label: "prompt", value: details.promptMessage, tone: "muted" },
       { label: "error", value: details.error, tone: "error" },
-      {
-        label: "partial outputs",
-        value: formatLifecycleOutputs(details.outputs),
-        tone: "muted"
-      },
-      { label: "resumable", value: resumableFieldValue(details), tone: "muted" },
       { label: "duration", value: formatDurationMs(details.durationMs), tone: "muted" }
     ],
-    hints: [lifecycleNoticeHint(details)],
+    hints: [
+      details.kind === "awaiting_input" ? `/workflow connect ${details.runId}` : `/workflow status ${details.runId}`
+    ],
     fallbackText: opts.fallbackText,
     width: opts.width,
     ...opts.theme ? { theme: opts.theme } : {}
   });
-}
-function lifecycleNoticeTone(kind) {
-  switch (kind) {
-    case "failed":
-      return "error";
-    case "blocked":
-    case "awaiting_input":
-    case "paused":
-    case "quit":
-      return "warning";
-    default:
-      return "success";
-  }
-}
-function lifecycleNoticeTitle(kind) {
-  switch (kind) {
-    case "started":
-      return "WORKFLOW STARTED";
-    case "failed":
-      return "WORKFLOW FAILED";
-    case "awaiting_input":
-      return "WORKFLOW INPUT";
-    case "blocked":
-      return "WORKFLOW BLOCKED";
-    case "paused":
-      return "WORKFLOW PAUSED";
-    case "quit":
-      return "WORKFLOW QUIT";
-    case "resumed":
-      return "WORKFLOW RESUMED";
-    default:
-      return "WORKFLOW COMPLETE";
-  }
-}
-function lifecycleNoticeGlyph(kind) {
-  switch (kind) {
-    case "failed":
-      return "✗";
-    case "awaiting_input":
-      return "？";
-    case "blocked":
-      return "!";
-    case "paused":
-      return "⏸";
-    case "quit":
-      return "⏹";
-    case "started":
-    case "resumed":
-      return "▶";
-    default:
-      return "✓";
-  }
-}
-function lifecycleNoticeHeadline(details) {
-  const name = details.workflowName;
-  const scope = details.scope === "stage" ? "Stage of workflow" : "Workflow";
-  switch (details.kind) {
-    case "started":
-      return `Workflow "${name}" started`;
-    case "failed":
-      return `Workflow "${name}" failed`;
-    case "awaiting_input":
-      return `Workflow "${name}" needs input`;
-    case "blocked":
-      return `Workflow "${name}" ${details.active === true ? "is blocked" : "ended blocked"}`;
-    case "paused":
-      return `${scope} "${name}" paused`;
-    case "quit":
-      return `Workflow "${name}" quit`;
-    case "resumed":
-      return `${scope} "${name}" resumed`;
-    default:
-      return `Workflow "${name}" completed`;
-  }
-}
-function lifecycleNoticeHint(details) {
-  if (details.kind === "awaiting_input")
-    return `/workflow connect ${details.runId}`;
-  if (details.kind === "paused" || details.kind === "quit")
-    return `/workflow resume ${details.runId}`;
-  return `/workflow status ${details.runId}`;
-}
-function resumableFieldValue(details) {
-  if (details.resumable === undefined)
-    return;
-  return details.resumable ? "yes" : "no";
 }
 function formatDurationMs(durationMs) {
   if (durationMs === undefined)
@@ -53023,10 +52400,10 @@ function themeFromRenderer2(piTheme) {
   return piTheme === undefined ? undefined : deriveGraphThemeFromPiTheme(piTheme);
 }
 
-// dist/builtin/workflows/src/extension/workflow-targets.ts
-import { getEnvValue, WORKFLOW_STAGE_SUBAGENT_GUARD_ENV } from "@bastani/atomic";
+// src/extension/workflow-targets.ts
+import { getEnvValue as getEnvValue2, WORKFLOW_STAGE_SUBAGENT_GUARD_ENV } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/shared/run-id.ts
+// src/shared/run-id.ts
 var RUN_ID_LENGTH = 36;
 var RUN_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function isFullRunId(value2) {
@@ -53036,7 +52413,7 @@ function malformedRunIdMessage(target) {
   return `Run id must be a full ${RUN_ID_LENGTH}-character UUID; got "${target}" (${target.length} chars).`;
 }
 
-// dist/builtin/workflows/src/extension/workflow-targets.ts
+// src/extension/workflow-targets.ts
 function stageFailureMessage(runId, resultReason, action) {
   switch (resultReason) {
     case "not_found":
@@ -53070,7 +52447,7 @@ function reloadFailureMessage(error) {
   return `Reload failed: ${error instanceof Error ? error.message : String(error)}`;
 }
 function hasWorkflowStageSubagentGuardEnv() {
-  return getEnvValue(WORKFLOW_STAGE_SUBAGENT_GUARD_ENV) === "1";
+  return getEnvValue2(WORKFLOW_STAGE_SUBAGENT_GUARD_ENV) === "1";
 }
 function isWorkflowStageToolContext(ctx) {
   return hasWorkflowStageSubagentGuardEnv() || ctx.orchestrationContext?.kind === "workflow-stage";
@@ -53091,33 +52468,33 @@ function isRunStatus(value2) {
       return false;
   }
 }
-function resolveRunId(target, activeStore = store) {
+function resolveRunId(target) {
   if (!isFullRunId(target))
     return { kind: "malformed", message: malformedRunIdMessage(target) };
-  const exact = activeStore.runs().find((r) => r.id === target);
+  const exact = store.runs().find((r) => r.id === target);
   if (exact)
     return { kind: "exact", runId: exact.id };
   return { kind: "not_found" };
 }
-function resolveToolRunTarget(args, emptyMessage, activeStore = store) {
+function resolveToolRunTarget(args, emptyMessage) {
   const rawTarget = args.runId?.trim() ?? "";
   if (args.all === true || rawTarget === "--all")
     return { kind: "all" };
-  const target = rawTarget || activeStore.activeRunId() || "";
+  const target = rawTarget || store.activeRunId() || "";
   if (!target)
     return { kind: "not_found", target: rawTarget, message: emptyMessage };
-  const resolved = resolveRunId(target, activeStore);
+  const resolved = resolveRunId(target);
   if (resolved.kind === "exact")
     return { kind: "run", runId: resolved.runId };
   if (resolved.kind === "malformed")
     return { kind: "malformed", target, message: resolved.message };
   return { kind: "not_found", target, message: `Run not found: ${target}` };
 }
-function resolveStageTarget(runId, stageTarget, activeStore = store) {
+function resolveStageTarget(runId, stageTarget) {
   const target = stageTarget?.trim();
   if (!target)
     return { ok: true, runId };
-  const graph = expandWorkflowGraph(readGraphStoreSnapshot(activeStore), runId);
+  const graph = expandWorkflowGraph(readGraphStoreSnapshot(store), runId);
   const exactVirtualIds = graph.stages.filter((stage) => stage.id === target);
   if (exactVirtualIds.length === 1)
     return resolvedStageTarget(exactVirtualIds[0]);
@@ -53153,8 +52530,8 @@ function ambiguousStageTarget(target, stages) {
     message: `Ambiguous stage identifier "${target}" matches: ${stages.map(expandedStageLabel).join(", ")}`
   };
 }
-function resolveToolStageTarget(runId, stageTarget, activeStore = store) {
-  return resolveStageTarget(runId, stageTarget, activeStore);
+function resolveToolStageTarget(runId, stageTarget) {
+  return resolveStageTarget(runId, stageTarget);
 }
 function resolveControlNodeTarget(runId, stageTarget) {
   const target = stageTarget?.trim();
@@ -53190,7 +52567,7 @@ function overlaySurfaceFromContext(ctx) {
   return typeof ctx?.ui?.custom === "function" ? { ui: ctx.ui } : undefined;
 }
 
-// dist/builtin/workflows/src/extension/workflow-command-surfaces.ts
+// src/extension/workflow-command-surfaces.ts
 function fallbackRunDetailFromResult(workflowName, inputs, result) {
   const now = Date.now();
   const stages = result.stages?.map((stage) => structuredClone(stage)) ?? [];
@@ -53271,7 +52648,7 @@ function deAdvertiseAskUserQuestionWhenHeadless(pi, hasUI) {
   pi.setActiveTools(activeTools.filter((toolName2) => toolName2 !== ASK_USER_QUESTION_TOOL_NAME));
 }
 
-// dist/builtin/workflows/src/extension/extension-lifecycle.ts
+// src/extension/extension-lifecycle.ts
 var processShutdownInstalled = false;
 function shutdownDbosQuietly() {
   return shutdownDbos().catch((error) => {
@@ -53376,17 +52753,11 @@ function registerWorkflowLifecycleHandlers(pi, deps) {
   });
 }
 
-// dist/builtin/workflows/src/extension/config-loader.ts
-import { isAbsolute, join as join3 } from "node:path";
-import { CONFIG_DIR_NAME, CONFIG_DIR_NAMES, getAgentDir, getAgentDirs, getProjectConfigPaths } from "@bastani/atomic";
+// src/extension/config-loader.ts
+import { isAbsolute, join as join4 } from "node:path";
 
-// dist/builtin/workflows/src/extension/config-file-loader.ts
+// src/extension/config-file-loader.ts
 var WORKFLOW_LIFECYCLE_NOTICE_KIND_SET = new Set(WORKFLOW_LIFECYCLE_NOTICE_KINDS);
-var WORKFLOW_LIFECYCLE_NOTICE_KIND_LIST = (() => {
-  const quoted = WORKFLOW_LIFECYCLE_NOTICE_KINDS.map((kind) => JSON.stringify(kind));
-  const last = quoted[quoted.length - 1] ?? "";
-  return quoted.length <= 1 ? last : `${quoted.slice(0, -1).join(", ")}, or ${last}`;
-})();
 async function tryReadFile(filePath) {
   const { readFile } = await import("node:fs/promises");
   try {
@@ -53442,7 +52813,7 @@ function validateConfig(value2) {
       }
       for (const item of notifyOn) {
         if (!isWorkflowLifecycleNoticeKind(item)) {
-          return `"workflowNotifications.notifyOn" entries must be ${WORKFLOW_LIFECYCLE_NOTICE_KIND_LIST}, got ${JSON.stringify(item)}`;
+          return `"workflowNotifications.notifyOn" entries must be "completed", "failed", "blocked", or "awaiting_input", got ${JSON.stringify(item)}`;
         }
       }
     }
@@ -53526,7 +52897,7 @@ async function loadConfigFile(filePath) {
   return { kind: "ok", parsed: value2 };
 }
 
-// dist/builtin/workflows/src/extension/config-loader.ts
+// src/extension/config-loader.ts
 function mergeConfigs(base, override) {
   const workflows = base.workflows || override.workflows ? { ...base.workflows ?? {}, ...override.workflows ?? {} } : undefined;
   return {
@@ -53553,7 +52924,7 @@ var WORKFLOW_CONFIG_DEFAULTS = {
   resumeInFlight: "ask",
   workflowNotifications: {
     enabled: true,
-    notifyOn: ["started", "completed", "failed", "blocked", "awaiting_input", "paused", "quit", "resumed"]
+    notifyOn: ["completed", "failed", "blocked", "awaiting_input"]
   },
   worktree: {
     symlinkDirectories: ["node_modules"]
@@ -53585,7 +52956,7 @@ function resolveWorkflowPaths(workflows, baseDir) {
   }
   return Object.fromEntries(Object.entries(workflows).map(([name, entry]) => [
     name,
-    isAbsolute(entry.path) ? entry.path : join3(baseDir, entry.path)
+    isAbsolute(entry.path) ? entry.path : join4(baseDir, entry.path)
   ]));
 }
 function workflowAgentDirs(opts) {
@@ -53593,12 +52964,12 @@ function workflowAgentDirs(opts) {
     return opts.agentDirs;
   if (opts.homeDir !== undefined) {
     const homeDir = opts.homeDir;
-    return CONFIG_DIR_NAMES.map((name) => join3(homeDir, name, "agent"));
+    return HOST_CONFIG_DIR_NAMES.map((name) => join4(homeDir, name, "agent"));
   }
-  return getAgentDirs();
+  return getHostAgentDirs();
 }
 function toScopedDiscoveryConfig(globalConfig, projectConfig, opts) {
-  const globalBase = opts.agentDir ?? (opts.homeDir === undefined ? getAgentDir() : join3(opts.homeDir, CONFIG_DIR_NAME, "agent"));
+  const globalBase = opts.agentDir ?? (opts.homeDir === undefined ? getHostAgentDir() : join4(opts.homeDir, HOST_CONFIG_DIR_NAME, "agent"));
   const projectBase = opts.projectRoot;
   const result = {};
   const projectWorkflows = resolveWorkflowPaths(projectConfig?.workflows, projectBase);
@@ -53608,7 +52979,7 @@ function toScopedDiscoveryConfig(globalConfig, projectConfig, opts) {
   if (hasWorkflows(globalConfig)) {
     const projectKeys = new Set(Object.keys(projectWorkflows ?? {}));
     const globalEntries = Object.entries(globalConfig.workflows).filter(([name]) => !projectKeys.has(name)).map(([name, entry]) => {
-      return [name, isAbsolute(entry.path) ? entry.path : join3(globalBase, entry.path)];
+      return [name, isAbsolute(entry.path) ? entry.path : join4(globalBase, entry.path)];
     });
     if (globalEntries.length > 0) {
       result.globalWorkflows = Object.fromEntries(globalEntries);
@@ -53619,8 +52990,8 @@ function toScopedDiscoveryConfig(globalConfig, projectConfig, opts) {
 async function loadWorkflowConfig(opts = {}) {
   const projectRoot = opts.projectRoot ?? process.cwd();
   const diagnostics = [];
-  const globalCandidates = workflowAgentDirs(opts).map((agentDir) => join3(agentDir, "extensions", "workflow", "config.json"));
-  const projectCandidates = getProjectConfigPaths(projectRoot, "extensions", "workflow", "config.json");
+  const globalCandidates = workflowAgentDirs(opts).map((agentDir) => join4(agentDir, "extensions", "workflow", "config.json"));
+  const projectCandidates = getHostProjectConfigPaths(projectRoot, "extensions", "workflow", "config.json");
   let globalConfig = null;
   for (let i = globalCandidates.length - 1;i >= 0; i--) {
     const globalPath = globalCandidates[i];
@@ -53659,11 +53030,10 @@ async function loadWorkflowConfig(opts = {}) {
   };
 }
 
-// dist/builtin/workflows/src/extension/discovery.ts
+// src/extension/discovery.ts
 import { join as join29 } from "node:path";
-import { CONFIG_DIR_NAMES as CONFIG_DIR_NAMES2, getAgentDirs as getAgentDirs2, getProjectConfigPaths as getProjectConfigPaths2 } from "@bastani/atomic";
 
-// dist/builtin/workflows/builtin/index.ts
+// builtin/index.ts
 var exports_builtin = {};
 __export(exports_builtin, {
   tournament: () => tournament_default,
@@ -53677,14 +53047,14 @@ __export(exports_builtin, {
   adversarialVerification: () => adversarial_verification_default
 });
 
-// dist/builtin/workflows/builtin/adversarial-verification.ts
+// builtin/adversarial-verification.ts
 import { Type as Type2 } from "typebox";
 
-// dist/builtin/workflows/src/authoring/workflow.ts
+// src/authoring/workflow.ts
 import { basename } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// dist/builtin/workflows/src/workflows/identity.ts
+// src/workflows/identity.ts
 function normalizeWorkflowName(name) {
   if (!name || typeof name !== "string") {
     throw new TypeError("normalizeWorkflowName: name must be a non-empty string");
@@ -53695,7 +53065,7 @@ function workflowNamesEqual(a, b) {
   return normalizeWorkflowName(a) === normalizeWorkflowName(b);
 }
 
-// dist/builtin/workflows/src/authoring/workflow.ts
+// src/authoring/workflow.ts
 var BRANDED_WORKFLOW_DEFINITIONS = new WeakSet;
 function stampWorkflowDefinition(definition) {
   BRANDED_WORKFLOW_DEFINITIONS.add(definition);
@@ -53729,7 +53099,7 @@ function isWorkflowAuthoringImplementationFrame(filePath) {
   const normalized = filePath.replace(/\\/g, "/");
   if (!/\/authoring\/workflow\.[cm]?[jt]sx?$/.test(normalized))
     return false;
-  return normalized.includes("/packages/workflows/") || normalized.includes("/node_modules/@bastani/workflows/") || normalized.includes("/dist/builtin/workflows/") || normalized.includes("/.atomic/agent/extensions/workflows/") || normalized.includes("/.pi/agent/extensions/workflows/");
+  return normalized.includes("/packages/workflows/") || normalized.includes("/node_modules/@bastani/workflows/") || normalized.includes("/dist/builtin/workflows/") || normalized.includes("/.pi/agent/extensions/workflows/") || normalized.includes("/.pi/agent/extensions/workflows/");
 }
 function workflowNameFromCaller() {
   const stack = new Error().stack;
@@ -53799,7 +53169,7 @@ function workflow(spec) {
   return Object.freeze(branded);
 }
 
-// dist/builtin/workflows/src/authoring/keep-context.ts
+// src/authoring/keep-context.ts
 var KEEP_CONTEXT_OPEN_TAG = "<keepContext>";
 var KEEP_CONTEXT_CLOSE_TAG = "</keepContext>";
 function keepContext(text) {
@@ -53811,7 +53181,7 @@ ${trimmed}
 ${KEEP_CONTEXT_CLOSE_TAG}`;
 }
 
-// dist/builtin/workflows/builtin/shared-prompts.ts
+// builtin/shared-prompts.ts
 var STEERING_PROPAGATION_CONTRACT = [
   "Steering propagation contract:",
   "- Mid-run user messages (steering, follow-ups, resume text) are authoritative and may amend this run's objective or acceptance criteria. Adopt an amendment as required behavior from the moment you receive it.",
@@ -53894,13 +53264,10 @@ var CONTRACT_FIDELITY_AUDIT = [
 ].join(`
 `);
 var REVIEWER_INTERCOM_COORDINATION_PROTOCOL = [
-  "Concurrent reviewer coordination (constructive quorum):",
+  "Concurrent reviewer coordination:",
   "- At review start, use Intercom to discover sibling reviewers and share validation plans and check ownership.",
   "- Claim, serialize, announce, and release expensive or conflicting shared-checkout/environment work such as suites, builds, package operations, browser/E2E sessions, migrations, and generated-artifact steps; share reusable command evidence.",
-  "- First, inspect independently and form a preliminary assessment before reading or relying on sibling findings or verdicts. After the exchange, inspect independently and return your own verdict rather than copying or deferring to sibling conclusions.",
-  "- Then run exactly one bounded evidence-exchange round over Intercom: share your preliminary verdict, concise findings, and evidence; challenge blocking findings, surface defects a sibling missed, and correct objective/acceptance-criteria misreadings. Do not start a second round or continue substantive discussion.",
-  "- Verdicts change only through concrete evidence, never through deference to a sibling's approval or rejection; inspect shared evidence yourself before deciding.",
-  "- In `overall_explanation`, record whether deliberation changed your preliminary verdict and, if it did, which concrete evidence caused the change. If it did not, say so; return your own structured decision even when dissent remains."
+  "- Coordination is operational only: inspect independently and return your own verdict rather than copying or deferring to sibling conclusions."
 ].join(`
 `);
 var REVIEWER_INDEPENDENT_VERIFICATION_CONTRACT = [
@@ -53959,7 +53326,7 @@ var REVIEW_CODE_DELTA_CONTRACT = [
 ].join(`
 `);
 
-// dist/builtin/workflows/builtin/steering-context.ts
+// builtin/steering-context.ts
 function withPromptContract(options) {
   return options.prompt === undefined ? options : { ...options, prompt: withSteeringPropagation(options.prompt) };
 }
@@ -53975,12 +53342,12 @@ function withSteeringPropagationContext(ctx) {
   return wrapped;
 }
 
-// dist/builtin/workflows/builtin/adversarial-verification-runner.ts
+// builtin/adversarial-verification-runner.ts
 import { writeFile } from "node:fs/promises";
 import { join as join5 } from "node:path";
 import { Type } from "typebox";
 
-// dist/builtin/workflows/builtin/adversarial-verification-prompts.ts
+// builtin/adversarial-verification-prompts.ts
 var GROUNDED_REPORTING = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
 var READABLE_REPORT = "Lead with the outcome. Keep facts, decisions, caveats, and next steps; drop background and repetition. Use complete, readable sentences rather than compressed fragments.";
 function renderWorkerPrompt(task) {
@@ -54095,18 +53462,17 @@ Repair the candidate for: ${task}
 </objective>`;
 }
 
-// dist/builtin/workflows/builtin/pattern-artifact-root.ts
+// builtin/pattern-artifact-root.ts
 import { randomUUID as randomUUID2 } from "node:crypto";
 import { mkdir } from "node:fs/promises";
-import { join as join4 } from "node:path";
 async function stableArtifactRoot(ctx, workflowName) {
   const cwd = ctx.cwd ?? process.cwd();
-  const artifactDir = await ctx.tool("artifact-root", { workflow: workflowName }, async () => join4(cwd, ".atomic", "workflows", "runs", `${workflowName}-${randomUUID2()}`));
+  const artifactDir = await ctx.tool("artifact-root", { workflow: workflowName }, async () => getHostProjectPath(cwd, "workflows", "runs", `${workflowName}-${randomUUID2()}`));
   await mkdir(artifactDir, { recursive: true });
   return artifactDir;
 }
 
-// dist/builtin/workflows/builtin/adversarial-verification-runner.ts
+// builtin/adversarial-verification-runner.ts
 var verifierSchema = Type.Object({
   verdict: Type.Union([Type.Literal("pass"), Type.Literal("fail")]),
   evidence: Type.Array(Type.String()),
@@ -54180,7 +53546,7 @@ async function runAdversarialVerification(ctx) {
   return { result: decision.rationale, approved, repairs_completed: repairsCompleted, candidate_path: candidatePath, review_report_path: reviewReportPath, verifier_artifact_paths: verifierArtifactPaths, artifact_dir: root, remaining_work: approved ? [] : decision.remaining_work };
 }
 
-// dist/builtin/workflows/builtin/adversarial-verification.ts
+// builtin/adversarial-verification.ts
 var adversarial_verification_default = workflow({
   name: "adversarial-verification",
   description: "Produce a candidate, challenge it with fresh-context rubric-based verifiers, and reduce their evidence through a bounded repair loop.",
@@ -54201,15 +53567,15 @@ var adversarial_verification_default = workflow({
   },
   run: async (ctx) => await runAdversarialVerification(withSteeringPropagationContext(ctx))
 });
-// dist/builtin/workflows/builtin/classify-and-act.ts
+// builtin/classify-and-act.ts
 import { Type as Type4 } from "typebox";
 
-// dist/builtin/workflows/builtin/classify-and-act-runner.ts
+// builtin/classify-and-act-runner.ts
 import { writeFile as writeFile2 } from "node:fs/promises";
 import { join as join6 } from "node:path";
 import { Type as Type3 } from "typebox";
 
-// dist/builtin/workflows/builtin/classify-and-act-prompts.ts
+// builtin/classify-and-act-prompts.ts
 var GROUNDED_REPORTING2 = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
 var READABLE_REPORT2 = "Lead with the outcome. Keep facts, decisions, caveats, and next steps; drop background and repetition. Use complete, readable sentences rather than compressed fragments.";
 function classifierPrompt(prompt, categories) {
@@ -54265,7 +53631,7 @@ ${input.prompt}
 </objective>`;
 }
 
-// dist/builtin/workflows/builtin/classify-and-act-runner.ts
+// builtin/classify-and-act-runner.ts
 var classificationSchema = Type3.Object({
   category: Type3.String({ description: "One category copied verbatim from the supplied list." }),
   confidence: Type3.Number({ minimum: 0, maximum: 1 }),
@@ -54332,7 +53698,7 @@ async function runClassifyAndAct(ctx) {
   return { result, category, confidence, action: action.stageName, classification_path: classificationPath, action_path: actionPath, artifact_dir: artifactDir };
 }
 
-// dist/builtin/workflows/builtin/classify-and-act.ts
+// builtin/classify-and-act.ts
 var DEFAULT_ACTION_CATEGORIES = ["analysis", "implementation", "research"];
 var classify_and_act_default = workflow({
   name: "classify-and-act",
@@ -54363,15 +53729,15 @@ var classify_and_act_default = workflow({
   },
   run: async (ctx) => await runClassifyAndAct(withSteeringPropagationContext(ctx))
 });
-// dist/builtin/workflows/builtin/fan-out-and-synthesize.ts
+// builtin/fan-out-and-synthesize.ts
 import { Type as Type6 } from "typebox";
 
-// dist/builtin/workflows/builtin/fan-out-and-synthesize-runner.ts
+// builtin/fan-out-and-synthesize-runner.ts
 import { writeFile as writeFile3 } from "node:fs/promises";
 import { join as join7 } from "node:path";
 import { Type as Type5 } from "typebox";
 
-// dist/builtin/workflows/builtin/fan-out-and-synthesize-prompts.ts
+// builtin/fan-out-and-synthesize-prompts.ts
 var GROUNDED_REPORTING3 = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
 var READABLE_REPORT3 = "Lead with the outcome. Keep facts, decisions, caveats, and next steps; drop background and repetition. Use complete, readable sentences rather than compressed fragments.";
 function partitionPrompt(prompt, maxBranches) {
@@ -54448,7 +53814,7 @@ Produce the final answer for: ${prompt}
 </objective>`;
 }
 
-// dist/builtin/workflows/builtin/fan-out-and-synthesize-runner.ts
+// builtin/fan-out-and-synthesize-runner.ts
 var partitionSchema = Type5.Object({
   partitions: Type5.Array(Type5.Object({
     label: Type5.String({ minLength: 1 }),
@@ -54520,7 +53886,7 @@ async function runFanOutAndSynthesize(ctx) {
   };
 }
 
-// dist/builtin/workflows/builtin/fan-out-and-synthesize.ts
+// builtin/fan-out-and-synthesize.ts
 var fan_out_and_synthesize_default = workflow({
   name: "fan-out-and-synthesize",
   description: "Partition a task, run bounded independent artifact branches, then synthesize all evidence at an explicit barrier.",
@@ -54549,15 +53915,15 @@ var fan_out_and_synthesize_default = workflow({
   },
   run: async (ctx) => await runFanOutAndSynthesize(withSteeringPropagationContext(ctx))
 });
-// dist/builtin/workflows/builtin/generate-and-filter.ts
+// builtin/generate-and-filter.ts
 import { Type as Type8 } from "typebox";
 
-// dist/builtin/workflows/builtin/generate-and-filter-runner.ts
+// builtin/generate-and-filter-runner.ts
 import { writeFile as writeFile4 } from "node:fs/promises";
 import { join as join8 } from "node:path";
 import { Type as Type7 } from "typebox";
 
-// dist/builtin/workflows/builtin/generate-and-filter-prompts.ts
+// builtin/generate-and-filter-prompts.ts
 var GROUNDED_REPORTING4 = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
 var READABLE_REPORT4 = "Lead with the outcome. Keep facts, decisions, caveats, and next steps; drop background and repetition. Use complete, readable sentences rather than compressed fragments.";
 function renderGeneratorPrompt(task, ordinal) {
@@ -54667,7 +54033,7 @@ Summarize the selected candidates for: ${task}
 </objective>`;
 }
 
-// dist/builtin/workflows/builtin/generate-and-filter-runner.ts
+// builtin/generate-and-filter-runner.ts
 var filterSchema = Type7.Object({
   shortlist: Type7.Array(Type7.String()),
   discarded: Type7.Array(Type7.Object({ path: Type7.String(), reason: Type7.String() }, { additionalProperties: false }))
@@ -54741,7 +54107,7 @@ async function runGenerateAndFilter(ctx) {
   return { result: finalShortlist.text, shortlist, candidate_artifact_paths: candidatePaths, filter_path: filterPath, judge_path: judgePath, final_path: finalPath, artifact_dir: root, manifest_path: manifestPath };
 }
 
-// dist/builtin/workflows/builtin/generate-and-filter.ts
+// builtin/generate-and-filter.ts
 var generate_and_filter_default = workflow({
   name: "generate-and-filter",
   description: "Generate more independent candidates than needed, deduplicate and filter them by rubric, optionally judge them, and return a parent-consumable shortlist.",
@@ -54764,13 +54130,13 @@ var generate_and_filter_default = workflow({
   },
   run: async (ctx) => await runGenerateAndFilter(withSteeringPropagationContext(ctx))
 });
-// dist/builtin/workflows/builtin/goal.ts
+// builtin/goal.ts
 import { Type as Type10 } from "typebox";
 
-// dist/builtin/workflows/builtin/goal-runner.ts
+// builtin/goal-runner.ts
 import { join as join12 } from "node:path";
 
-// dist/builtin/workflows/builtin/goal-schemas.ts
+// builtin/goal-schemas.ts
 import { Type as Type9 } from "typebox";
 var reviewFindingSchema = Type9.Object({
   title: Type9.String(),
@@ -54827,7 +54193,7 @@ var reviewDecisionSchema = Type9.Object({
   reviewer_error: Type9.Optional(Type9.Union([Type9.Null(), reviewerErrorSchema]))
 }, { additionalProperties: false });
 
-// dist/builtin/workflows/builtin/goal-models.ts
+// builtin/goal-models.ts
 var orchestratorModelConfig = {
   model: "anthropic/claude-opus-5:high",
   fallbackModels: [
@@ -54894,17 +54260,17 @@ var reviewerModelConfig = {
   schema: reviewDecisionSchema
 };
 
-// dist/builtin/workflows/builtin/goal-types.ts
+// builtin/goal-types.ts
 var DEFAULT_MAX_TURNS = 10;
 var DEFAULT_REVIEW_QUORUM = 2;
 var DEFAULT_BLOCKER_THRESHOLD = 3;
 var LEDGER_FILENAME = "goal-ledger.json";
 
-// dist/builtin/workflows/builtin/goal-artifacts.ts
+// builtin/goal-artifacts.ts
 import { writeFile as writeFile5 } from "node:fs/promises";
 import { join as join9 } from "node:path";
 
-// dist/builtin/workflows/builtin/review-convergence.ts
+// builtin/review-convergence.ts
 var FINAL_ACTION_PATTERN = /\b(?:pr|pull[- ]request|merge[- ]request|review request|github pr|create pr)\b/iu;
 function isFinalActionTraceability(entry) {
   return FINAL_ACTION_PATTERN.test(`${entry.requirement}
@@ -54990,7 +54356,7 @@ function summarizeReviewConvergence(args) {
   };
 }
 
-// dist/builtin/workflows/builtin/goal-artifacts.ts
+// builtin/goal-artifacts.ts
 function artifactSafeName(value2) {
   const safe = value2.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   return safe.length > 0 ? safe : "artifact";
@@ -55018,31 +54384,22 @@ async function writeReviewRoundArtifact(artifactDir, reviews) {
   return artifactPath;
 }
 
-// dist/builtin/workflows/builtin/goal-ledger.ts
+// builtin/goal-ledger.ts
 import { randomUUID as randomUUID4 } from "node:crypto";
 import { writeFile as writeFile6 } from "node:fs/promises";
 import { join as join11 } from "node:path";
 
-// dist/builtin/workflows/src/shared/workflow-artifacts.ts
+// src/shared/workflow-artifacts.ts
 import { randomUUID as randomUUID3 } from "node:crypto";
 import { existsSync as existsSync3 } from "node:fs";
 import { mkdir as mkdir2, readdir, rm, stat } from "node:fs/promises";
-import { dirname as dirname3, join as join10 } from "node:path";
-import { getAgentDir as getAgentDir2, getEnvValue as getEnvValue2 } from "@bastani/atomic";
-
-// dist/builtin/workflows/src/shared/workflow-artifact-env.ts
+import { join as join10 } from "node:path";
 var WORKFLOW_ARTIFACT_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
-var ENV_WORKFLOW_ARTIFACT_DIR = "ATOMIC_WORKFLOW_ARTIFACT_DIR";
-
-// dist/builtin/workflows/src/shared/workflow-artifacts.ts
 var ARTIFACT_PRUNE_RECHECK_MS = 60 * 60 * 1000;
 var lastArtifactPruneAt = new Map;
 var pendingArtifactPrunes = new Map;
 function workflowArtifactRoot() {
-  const override = getEnvValue2(ENV_WORKFLOW_ARTIFACT_DIR);
-  if (override !== undefined && override.length > 0)
-    return override;
-  return join10(dirname3(getAgentDir2()), "workflows");
+  return getHostWorkflowArtifactRoot();
 }
 function workflowArtifactRunsRoot() {
   return join10(workflowArtifactRoot(), "runs");
@@ -55207,7 +54564,7 @@ async function createWorkflowArtifactDirectory(runId) {
   return artifactDirectory;
 }
 
-// dist/builtin/workflows/builtin/goal-ledger.ts
+// builtin/goal-ledger.ts
 function withoutTurn2(value2) {
   const copy = { ...value2 };
   delete copy.turn;
@@ -55268,7 +54625,7 @@ async function writeGoalLedger(ledgerPath, ledger) {
   });
 }
 
-// dist/builtin/workflows/builtin/goal-reducer.ts
+// builtin/goal-reducer.ts
 function reducerSummary(reviews, approved, nextAction) {
   return summarizeReviewConvergence({
     parsed: reviews.every((review) => review.parsed),
@@ -55386,7 +54743,7 @@ function reduceGoalDecision(ledger, turnReviews, options) {
   };
 }
 
-// dist/builtin/workflows/builtin/goal-reports.ts
+// builtin/goal-reports.ts
 function formatReviewReport(reviews) {
   if (reviews.length === 0)
     return "No reviewer decisions were recorded.";
@@ -55450,7 +54807,7 @@ function renderFinalReport(ledger, ledgerPath, remainingWork) {
 `);
 }
 
-// dist/builtin/workflows/builtin/goal-review.ts
+// builtin/goal-review.ts
 function reviewDecisionFromResult(result) {
   return result.structured;
 }
@@ -55537,7 +54894,7 @@ function reviewDecisionToRecord(args) {
   };
 }
 
-// dist/builtin/workflows/builtin/goal-prompts.ts
+// builtin/goal-prompts.ts
 var GOAL_CONTINUATION_REFERENCE = [
   "Continuation and completion:",
   "- The full goal persists across orchestrator sessions. Continue required implementation, validation, documentation, and cleanup until the requested end state is true; a session ending does not shrink success.",
@@ -55678,7 +55035,7 @@ function renderReviewerPrompt(args) {
   ]);
 }
 
-// dist/builtin/workflows/builtin/goal-orchestrator-prompts.ts
+// builtin/goal-orchestrator-prompts.ts
 var GOAL_ORCHESTRATOR_RECEIPT_CONTRACT = [
   "Complete the objective before claiming readiness. Leave work only at a true blocker or impossibility; do not redefine success around a partial state.",
   "Map every explicit requirement, artifact, command, test, gate, invariant, and deliverable to authoritative current evidence whose scope matches the claim.",
@@ -55687,8 +55044,8 @@ var GOAL_ORCHESTRATOR_RECEIPT_CONTRACT = [
 ].join(`
 `);
 var GOAL_ORCHESTRATION_GUIDANCE = [
-  "You supervise implementation, investigation, edits, and validation through the `subagent` tool rather than implementing directly.",
-  "Delegate only work that is genuinely independent and too large to finish in a handful of tool calls. Do not assign subagents as a check on work you already own. Prefer one subagent over several.",
+  "You supervise implementation, investigation, edits, and validation through the `task` tool rather than implementing directly.",
+  "Delegate only work that is genuinely independent and too large to finish in a handful of tool calls. Do not assign tasks as a check on work you already own. Prefer one task over several.",
   "Delegate implementation with its relevant objective, cwd, files, constraints, findings, and validation. Use focused locator/analyzer/pattern or shell-heavy delegation when that work meets the delegation threshold.",
   "Keep overlapping work with one owner; parallelize only independent tasks. While an agent runs, prepare dependent follow-up work rather than duplicating its assignment.",
   "Coordinate follow-ups for all required implementation, tests, docs, validation, and cleanup before reporting readiness."
@@ -55696,11 +55053,11 @@ var GOAL_ORCHESTRATION_GUIDANCE = [
 `);
 var GOAL_ORCHESTRATOR_BEST_PRACTICES = [
   "The output is an orchestrator receipt produced after reading current goal/review artifacts and incorporating delegated results.",
-  "Distinguish completed, evidenced changes from recommendations and blockers. If goal context or required subagent capability is unavailable, report the blocker rather than success.",
+  "Distinguish completed, evidenced changes from recommendations and blockers. If goal context or required task capability is unavailable, report the blocker rather than success.",
   "If the final paragraph would be a plan, a question, or a promise to act next, make the appropriate tool calls instead of ending the turn."
 ].join(`
 `);
-var GOAL_SUBAGENT_TRACKING_GUIDANCE = [
+var GOAL_TASK_TRACKING_GUIDANCE = [
   "Use `todo` as the active delegation ledger when work is meaningfully multi-step: record owner, purpose, and expected output; mark starts, append results, and close only after incorporation or explicit rejection.",
   "Before the receipt, resolve each pending/in_progress item as completed, blocked, or deferred with a reason so parallel work and follow-ups remain visible."
 ].join(`
@@ -55713,17 +55070,17 @@ function renderGoalOrchestratorPrompt(args) {
 `)],
       ["project_setup", WORKER_PREFLIGHT_CONTRACT],
       ["orchestration_guidance", GOAL_ORCHESTRATION_GUIDANCE],
-      ["subagent_tracking", GOAL_SUBAGENT_TRACKING_GUIDANCE],
+      ["task_tracking", GOAL_TASK_TRACKING_GUIDANCE],
       ["receipt_contract", [GOAL_ORCHESTRATOR_RECEIPT_CONTRACT, RECEIPT_EXPECTATIONS].join(`
 `)],
       ["constraints", [
         "Do not submit a PR; a later authorized PR/MR/review action handles that external write after approval.",
-        "For the requested change/build/fix, make in-scope local edits and non-destructive validation through subagents without asking. Confirm destructive actions, other external writes, and scope expansion first.",
+        "For the requested change/build/fix, make in-scope local edits and non-destructive validation through the `task` tool without asking. Confirm destructive actions, other external writes, and scope expansion first.",
         "Preserve repository architecture and conventions unless the literal contract and repository evidence justify changing them; add no features or abstractions beyond the task."
       ].join(`
 `)],
       ["output", "Return readable Markdown headed: Delegations performed, Progress made, Files changed, Commands run, Evidence, Blockers, Ready for review, Remaining work."],
-      ["role", "You are the sub-agent orchestrator; supervise the complete objective through the `subagent` tool rather than implementing directly."],
+      ["role", "You are the sub-agent orchestrator; supervise the complete objective through the `task` tool rather than implementing directly."],
       ["objective", [
         `Read the goal ledger at ${args.ledgerPath} and latest review artifacts from the workflow read hint.`,
         "Perform the initialization preflight, then delegate the smallest coherent work that satisfies the literal objective, acceptance criteria, current state, and consolidated findings.",
@@ -55742,19 +55099,19 @@ function renderForkedGoalOrchestratorPrompt(ledger, ledgerPath, latestReviewArti
 
 `)],
     ["orchestration_guidance", GOAL_ORCHESTRATION_GUIDANCE],
-    ["subagent_tracking", GOAL_SUBAGENT_TRACKING_GUIDANCE],
+    ["task_tracking", GOAL_TASK_TRACKING_GUIDANCE],
     ["receipt_contract", [GOAL_ORCHESTRATOR_RECEIPT_CONTRACT, RECEIPT_EXPECTATIONS].join(`
 `)],
     ["constraints", "The established literal contract, acceptance matrix, contract-fidelity audit, findings batch, regression evidence, closure, worktree, PR handoff, setup, E2E, and blocked-threshold rules remain in force. Do not shrink the ledger objective."],
     ["objective", [
-      "Continue the same goal-runner orchestrator thread as supervisor, using the `subagent` tool for implementation and validation through completion.",
+      "Continue the same goal-runner orchestrator thread as supervisor, using the `task` tool for implementation and validation through completion.",
       "Read the current ledger and latest artifacts, coordinate the smallest coherent remaining delegation, incorporate results, and return the established readable receipt. If the ending would only promise or plan more work, make the tool calls instead."
     ].join(`
 `)]
   ]);
 }
 
-// dist/builtin/workflows/builtin/goal-runner.ts
+// builtin/goal-runner.ts
 function positiveInteger(value2, fallback) {
   if (typeof value2 !== "number" || !Number.isFinite(value2) || value2 <= 0) {
     return fallback;
@@ -56035,7 +55392,7 @@ async function runGoalWorkflow(ctx, options) {
   };
 }
 
-// dist/builtin/workflows/builtin/goal.ts
+// builtin/goal.ts
 var goal_default = workflow({
   name: "goal",
   description: "Goal Runner workflow with bounded sub-agent orchestration turns, immutable acceptance criteria, ledger artifacts, parallel reviewers, and reducer-gated completion. When launching follow-up goal runs from review findings, pass the ORIGINAL task text as acceptance_criteria so deltas cannot drift from the literal contract. If the task includes submitting a pull request (or MR/review), remove that final action from the objective text and set create_pr=true instead when preparing the workflow inputs.",
@@ -56091,16 +55448,15 @@ var goal_default = workflow({
     return await runGoalWorkflow(workflowCtx, { createPr, workflowStartCwd });
   }
 });
-// dist/builtin/workflows/builtin/open-claude-design.ts
+// builtin/open-claude-design.ts
 import { Type as Type12 } from "typebox";
 
-// dist/builtin/workflows/builtin/open-claude-design-utils.ts
+// builtin/open-claude-design-utils.ts
 import { spawnSync } from "node:child_process";
 import { mkdirSync as mkdirSync2 } from "node:fs";
 import { tmpdir as tmpdir2, userInfo } from "node:os";
 import { join as join13 } from "node:path";
 import { Type as Type11 } from "typebox";
-import { createChildProcessEnvironment as createChildProcessEnvironment2 } from "@bastani/atomic";
 var OUTPUT_TYPES = [
   "prototype",
   "wireframe",
@@ -56210,8 +55566,7 @@ function ensurePlaywrightCli() {
       const probe = spawnSync(isWindows ? "where" : "which", ["playwright-cli"], {
         stdio: "ignore",
         timeout: 15000,
-        shell: isWindows,
-        env: createChildProcessEnvironment2()
+        shell: isWindows
       });
       return probe.status === 0;
     } catch {
@@ -56231,8 +55586,7 @@ function ensurePlaywrightCli() {
     const install = spawnSync("npm", ["install", "-g", "@playwright/cli@latest"], {
       stdio: "ignore",
       timeout: 180000,
-      shell: isWindows,
-      env: createChildProcessEnvironment2()
+      shell: isWindows
     });
     if (install.status === 0) {
       return {
@@ -56272,9 +55626,9 @@ function buildPlaywrightCliBootstrapRules(status) {
 `);
 }
 
-// dist/builtin/workflows/builtin/open-claude-design-feedback.ts
+// builtin/open-claude-design-feedback.ts
 import { copyFileSync as copyFileSync2, existsSync as existsSync4, mkdirSync as mkdirSync3, statSync as statSync2, writeFileSync as writeFileSync2 } from "node:fs";
-import { isAbsolute as isAbsolute2, dirname as dirname4, join as join14, resolve as resolve2, sep } from "node:path";
+import { isAbsolute as isAbsolute2, dirname as dirname3, join as join14, resolve as resolve2, sep } from "node:path";
 var FIELD_LABELS = new Set([
   "displaymethod",
   "previewpath",
@@ -56456,7 +55810,7 @@ function copyAnnotationArtifacts(feedbackDir, slug, feedback, workflowCwd) {
   if (raw.length === 0)
     return;
   const source = isAbsolute2(raw) ? raw : resolve2(workflowCwd, raw);
-  const artifactDir = dirname4(feedbackDir);
+  const artifactDir = dirname3(feedbackDir);
   if (!isWithin(source, workflowCwd) && !isWithin(source, artifactDir))
     return;
   try {
@@ -56501,7 +55855,7 @@ function persistPreviewFeedback(input) {
   } catch {}
 }
 
-// dist/builtin/workflows/builtin/open-claude-design-setup.ts
+// builtin/open-claude-design-setup.ts
 import { mkdirSync as mkdirSync4, writeFileSync as writeFileSync3 } from "node:fs";
 import { join as join15 } from "node:path";
 var GROUNDED_REPORTING5 = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
@@ -56722,7 +56076,7 @@ function isUiUnavailableRejection(error) {
   return error instanceof Error && /ctx\.ui\.\w+ (?:prompt node )?is unavailable/.test(error.message);
 }
 
-// dist/builtin/workflows/builtin/open-claude-design-phases.ts
+// builtin/open-claude-design-phases.ts
 var GROUNDED_REPORTING6 = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
 function forkContinuationOptions2(sessionFile) {
   return sessionFile === undefined || sessionFile.length === 0 ? {} : { context: "fork", forkFromSessionFile: sessionFile };
@@ -56990,9 +56344,9 @@ async function exportOpenClaudeDesign(options) {
   return { latestDesign, handoff };
 }
 
-// dist/builtin/workflows/builtin/open-claude-design-runner.ts
+// builtin/open-claude-design-runner.ts
 var GROUNDED_REPORTING7 = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
-var DELEGATION_RULE = "Delegate further only work genuinely independent and too large for a handful of tool calls; do not delegate self-verification, and prefer one subagent over several.";
+var DELEGATION_RULE = "Delegate further only work genuinely independent and too large for a handful of tool calls; do not delegate self-verification, and prefer one task over several.";
 async function runOpenClaudeDesignWorkflow(ctx) {
   const designContext = ctx;
   const playwrightCli = ensurePlaywrightCli();
@@ -57265,7 +56619,7 @@ async function runOpenClaudeDesignWorkflow(ctx) {
   };
 }
 
-// dist/builtin/workflows/builtin/open-claude-design.ts
+// builtin/open-claude-design.ts
 var open_claude_design_default = workflow({
   name: "open-claude-design",
   description: "AI-powered design workflow: combined discovery/init → design-system/reference research → curated reference discovery → HTML generation → live-driven refinement → rich HTML handoff. The discovery stage asks what to build, the output type, and which references to emulate, then runs impeccable init for PRODUCT.md/DESIGN.md (references take precedence over project context). The user iteratively reviews the generated HTML.",
@@ -57300,15 +56654,15 @@ var open_claude_design_default = workflow({
   },
   run: async (ctx) => await runOpenClaudeDesignWorkflow(withSteeringPropagationContext(ctx))
 });
-// dist/builtin/workflows/builtin/loop-until-done.ts
+// builtin/loop-until-done.ts
 import { Type as Type14 } from "typebox";
 
-// dist/builtin/workflows/builtin/loop-until-done-runner.ts
+// builtin/loop-until-done-runner.ts
 import { mkdir as mkdir3, writeFile as writeFile7 } from "node:fs/promises";
 import { join as join16 } from "node:path";
 import { Type as Type13 } from "typebox";
 
-// dist/builtin/workflows/builtin/loop-until-done-prompts.ts
+// builtin/loop-until-done-prompts.ts
 var GROUNDED_REPORTING8 = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
 var READABLE_REPORT5 = "Lead with the outcome. Keep facts, decisions, caveats, and next steps; drop background and repetition. Use complete, readable sentences rather than compressed fragments.";
 function taggedPrompt3(sections) {
@@ -57384,7 +56738,7 @@ function renderCompletionPrompt(options) {
   ]);
 }
 
-// dist/builtin/workflows/builtin/loop-until-done-runner.ts
+// builtin/loop-until-done-runner.ts
 var evaluationSchema = Type13.Object({
   done: Type13.Boolean(),
   summary: Type13.String(),
@@ -57518,7 +56872,7 @@ async function runLoopUntilDone(ctx) {
   };
 }
 
-// dist/builtin/workflows/builtin/loop-until-done.ts
+// builtin/loop-until-done.ts
 var loop_until_done_default = workflow({
   name: "loop-until-done",
   description: "Repeat evidence-producing work and independent completion evaluation against a durable ledger until done or an inspectable iteration-limit failure.",
@@ -57546,19 +56900,19 @@ var loop_until_done_default = workflow({
   },
   run: async (ctx) => await runLoopUntilDone(withSteeringPropagationContext(ctx))
 });
-// dist/builtin/workflows/builtin/ralph.ts
+// builtin/ralph.ts
 import { Type as Type16 } from "typebox";
 
-// dist/builtin/workflows/builtin/ralph-core.ts
+// builtin/ralph-core.ts
 import { mkdir as mkdir4, writeFile as writeFile8 } from "node:fs/promises";
-import { dirname as dirname5, join as join17 } from "node:path";
+import { dirname as dirname4, join as join17 } from "node:path";
 import { Type as Type15 } from "typebox";
-// dist/builtin/workflows/builtin/ralph-review-gate.ts
+// builtin/ralph-review-gate.ts
 function reviewDecisionApproved(decision) {
   return decision.stop_review_loop === true && decision.reviewer_error == null;
 }
 
-// dist/builtin/workflows/builtin/ralph-core.ts
+// builtin/ralph-core.ts
 var DEFAULT_MAX_LOOPS = 10;
 var DEFAULT_RESEARCH_DIR = "research";
 var IMPLEMENTATION_NOTES_FILENAME = "implementation-notes.md";
@@ -57633,7 +56987,7 @@ function workflowCwdContextSection(workflowCwd) {
       `Current working directory: ${workflowCwd}`,
       "Use this as the starting directory for repository work in this stage.",
       "Shell commands and relative file paths should be relative to this directory unless you intentionally pass an explicit cwd override.",
-      "When delegating subagents, pass along that this is the current working directory."
+      "When delegating via the `task` tool, pass along that this is the current working directory."
     ].join(`
 `)
   ];
@@ -57745,7 +57099,7 @@ function artifactSafeName2(value2) {
   return safe.length > 0 ? safe : "artifact";
 }
 async function writeJsonArtifact(path, content) {
-  await mkdir4(dirname5(path), { recursive: true });
+  await mkdir4(dirname4(path), { recursive: true });
   await writeFile8(path, `${JSON.stringify(content, null, 2)}
 `, {
     encoding: "utf8"
@@ -57813,11 +57167,11 @@ function renderResearchPrompt(args) {
   ]);
 }
 
-// dist/builtin/workflows/builtin/ralph-runner.ts
+// builtin/ralph-runner.ts
 import { existsSync as existsSync5 } from "node:fs";
 import { join as join18, resolve as resolve3 } from "node:path";
 
-// dist/builtin/workflows/builtin/ralph-reviewer-prompt.ts
+// builtin/ralph-reviewer-prompt.ts
 function renderRalphReviewerPrompt(args) {
   return taggedPrompt4([
     ["acceptance_criteria", keepContext(args.acceptanceCriteria)],
@@ -57893,7 +57247,7 @@ function renderRalphReviewerPrompt(args) {
   ]);
 }
 
-// dist/builtin/workflows/builtin/ralph-forked-prompts.ts
+// builtin/ralph-forked-prompts.ts
 function renderForkedResearchPromptRefinementPrompt(args) {
   return taggedPrompt4([
     [
@@ -57983,7 +57337,7 @@ function renderForkedOrchestratorPrompt(args) {
   ]);
 }
 
-// dist/builtin/workflows/builtin/ralph-models.ts
+// builtin/ralph-models.ts
 var promptEngineerModelConfig = {
   model: "anthropic/claude-opus-5:high",
   fallbackModels: [
@@ -58017,34 +57371,29 @@ var promptEngineerModelConfig = {
   excludedTools: ["ask_user_question"]
 };
 var researchModelConfig = {
-  model: "anthropic/claude-opus-5:high",
+  model: "openai-codex/gpt-5.6-luna:max",
   fallbackModels: [
-    "github-copilot/claude-opus-5:high",
-    "openai-codex/gpt-5.6-sol:xhigh",
-    "github-copilot/gpt-5.6-sol:xhigh",
-    "openai/gpt-5.6-sol:xhigh",
-    "anthropic/claude-fable-5:high",
-    "github-copilot/claude-fable-5:high",
-    "kimi-coding/k3:max",
-    "moonshotai/kimi-k3:max",
-    "moonshotai-cn/kimi-k3:max",
-    "openai-codex/gpt-5.5:xhigh",
-    "github-copilot/gpt-5.5:xhigh",
-    "openai/gpt-5.5:xhigh",
-    "anthropic/claude-opus-4-8:high",
-    "github-copilot/claude-opus-4.8:high",
+    "github-copilot/gpt-5.6-luna:max",
+    "openai/gpt-5.6-luna:max",
+    "anthropic/claude-opus-5:low",
+    "github-copilot/claude-opus-5:low",
+    "anthropic/claude-fable-5:low",
+    "github-copilot/claude-fable-5:low",
+    "openai-codex/gpt-5.5:medium",
+    "github-copilot/gpt-5.5:medium",
+    "openai/gpt-5.5:medium",
+    "anthropic/claude-opus-4-8:medium",
+    "github-copilot/claude-opus-4.8:medium",
     "xai/grok-4.5:high",
-    "zai/glm-5.2:xhigh",
-    "zai-coding-cn/glm-5.2:xhigh",
-    "openrouter/anthropic/claude-opus-5:high",
-    "openrouter/openai/gpt-5.6-sol:xhigh",
-    "openrouter/anthropic/claude-fable-5:high",
-    "openrouter/moonshotai/kimi-k3:max",
-    "openrouter/sakana/fugu-ultra:high",
-    "openrouter/openai/gpt-5.5:xhigh",
-    "openrouter/anthropic/claude-opus-4-8:high",
+    "zai/glm-5.2:high",
+    "zai-coding-cn/glm-5.2:high",
+    "openrouter/openai/gpt-5.6-luna:max",
+    "openrouter/anthropic/claude-opus-5:low",
+    "openrouter/openai/gpt-5.5:medium",
+    "openrouter/anthropic/claude-fable-5:low",
+    "openrouter/anthropic/claude-opus-4-8:medium",
     "openrouter/x-ai/grok-4.5",
-    "openrouter/z-ai/glm-5.2:xhigh"
+    "openrouter/z-ai/glm-5.2:high"
   ],
   excludedTools: ["ask_user_question"]
 };
@@ -58147,7 +57496,7 @@ var reviewerBModelConfig = {
   schema: reviewDecisionSchema2
 };
 
-// dist/builtin/workflows/builtin/ralph-runner.ts
+// builtin/ralph-runner.ts
 async function runRalphWorkflow(ctx, options) {
   const { prompt, acceptanceCriteria, maxLoops, comparisonBaseBranch, workflowStartCwd, createPr, runId } = options;
   let latestReviewReportPath;
@@ -58237,7 +57586,7 @@ Read it before implementation or delegation because it is the primary current im
       [
         "delegation",
         [
-          "Delegate only work that is genuinely independent and too large to finish in a handful of tool calls. Do not use subagents to audit your own work. Prefer one subagent over several.",
+          "Delegate only work that is genuinely independent and too large to finish in a handful of tool calls. Do not use task agents to audit your own work. Prefer one task over several.",
           "For delegated work, provide the relevant task, constraints, files, validation expectations, unresolved findings, and implementation-note reporting needs. Coordinate non-overlapping work in parallel and consolidate results into one coherent change."
         ].join(`
 `)
@@ -58473,7 +57822,7 @@ Read it before implementation or delegation because it is the primary current im
   };
 }
 
-// dist/builtin/workflows/builtin/ralph.ts
+// builtin/ralph.ts
 var ralph_default = workflow({
   name: "ralph",
   description: "Raw prompt → research-prompt-refinement → research → orchestrate → multi-model parallel review loop with bounded iteration and immutable acceptance criteria. When launching follow-up ralph runs from review findings, pass the ORIGINAL task text as acceptance_criteria so deltas cannot drift from the literal contract. If the task includes submitting a pull request (or MR/review), remove that final action from the prompt text and set create_pr=true instead when preparing the workflow inputs.",
@@ -58535,15 +57884,15 @@ var ralph_default = workflow({
     });
   }
 });
-// dist/builtin/workflows/builtin/tournament.ts
+// builtin/tournament.ts
 import { Type as Type18 } from "typebox";
 
-// dist/builtin/workflows/builtin/tournament-runner.ts
+// builtin/tournament-runner.ts
 import { mkdir as mkdir5, writeFile as writeFile9 } from "node:fs/promises";
 import { join as join19 } from "node:path";
 import { Type as Type17 } from "typebox";
 
-// dist/builtin/workflows/builtin/tournament-prompts.ts
+// builtin/tournament-prompts.ts
 var GROUNDED_REPORTING9 = "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
 var READABLE_REPORT6 = "Lead with the outcome. Keep facts, decisions, caveats, and next steps; drop background and repetition. Use complete, readable sentences rather than compressed fragments.";
 function taggedPrompt5(sections) {
@@ -58624,7 +57973,7 @@ function renderBracketReducerPrompt(options) {
   ]);
 }
 
-// dist/builtin/workflows/builtin/tournament-runner.ts
+// builtin/tournament-runner.ts
 var judgeDecisionSchema = Type17.Object({
   winner: Type17.Union([Type17.Literal("first"), Type17.Literal("second")]),
   rationale: Type17.String(),
@@ -58765,7 +58114,7 @@ async function runTournament(ctx) {
   };
 }
 
-// dist/builtin/workflows/builtin/tournament.ts
+// builtin/tournament.ts
 var tournament_default = workflow({
   name: "tournament",
   description: "Run several independent whole-task attempts through a balanced pairwise judging bracket and return an auditable winner.",
@@ -58796,7 +58145,7 @@ var tournament_default = workflow({
   },
   run: async (ctx) => await runTournament(withSteeringPropagationContext(ctx))
 });
-// dist/builtin/workflows/src/workflows/registry.ts
+// src/workflows/registry.ts
 function makeRegistry(store2) {
   return {
     register(definition) {
@@ -58838,11 +58187,11 @@ function createRegistry(initial = []) {
   return makeRegistry(store2);
 }
 
-// dist/builtin/workflows/src/extension/discovery-loaders.ts
+// src/extension/discovery-loaders.ts
 import { readdir as readdir2, stat as stat2 } from "node:fs/promises";
 import { extname, isAbsolute as isAbsolute11, join as join28, resolve as resolve13 } from "node:path";
 
-// ../../node_modules/jiti/lib/jiti-static.mjs
+// node_modules/jiti/lib/jiti-static.mjs
 var import_jiti = __toESM(require_jiti(), 1);
 var import_babel = __toESM(require_babel(), 1);
 import { createRequire as createRequire2 } from "node:module";
@@ -58861,10 +58210,10 @@ function createJiti(id, opts = {}) {
   });
 }
 
-// dist/builtin/workflows/src/extension/workflow-module-loader.ts
+// src/extension/workflow-module-loader.ts
 import * as typeboxModule from "typebox";
 
-// dist/builtin/workflows/src/sdk-surface.ts
+// src/sdk-surface.ts
 var exports_sdk_surface = {};
 __export(exports_sdk_surface, {
   workflowNamesEqual: () => workflowNamesEqual,
@@ -58887,7 +58236,7 @@ __export(exports_sdk_surface, {
   GraphFrontierTracker: () => GraphFrontierTracker
 });
 
-// dist/builtin/workflows/src/engine/graph-inference.ts
+// src/engine/graph-inference.ts
 class GraphFrontierTracker {
   frontier = new Set;
   stageParents = new Map;
@@ -58935,7 +58284,7 @@ class GraphFrontierTracker {
     this.nodes.clear();
   }
 }
-// dist/builtin/workflows/src/shared/serializable.ts
+// src/shared/serializable.ts
 import { Refine, Type as Type19 } from "typebox";
 import { Value } from "typebox/value";
 function isPlainObjectValue(value2) {
@@ -59014,14 +58363,13 @@ function assertWorkflowSerializableObject(value2, label) {
     throw new Error(`atomic-workflows: ${error}`);
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-abort.ts
+// src/runs/foreground/executor-abort.ts
 var WORKFLOW_EXIT_SIGNAL = Symbol("atomic-workflows.workflow-exit-signal");
 var WORKFLOW_EXIT_STATUSES = new Set([
   "completed",
   "skipped",
   "cancelled",
-  "blocked",
-  "failed"
+  "blocked"
 ]);
 function makeWorkflowExitSignal(input) {
   return {
@@ -59029,7 +58377,6 @@ function makeWorkflowExitSignal(input) {
     scope: input.scope,
     status: input.status,
     ...input.reason !== undefined ? { reason: input.reason } : {},
-    ...input.resumable !== undefined ? { resumable: input.resumable } : {},
     ...input.outputSnapshot !== undefined ? { outputSnapshot: input.outputSnapshot } : {},
     ...input.validationError !== undefined ? { validationError: input.validationError } : {}
   };
@@ -59266,9 +58613,6 @@ function readWorkflowExitSignalCandidate(value2, scope) {
   const reason = safeGetProperty(value2, "reason");
   if (!reason.ok || reason.value !== undefined && typeof reason.value !== "string")
     return;
-  const resumable = safeGetProperty(value2, "resumable");
-  if (!resumable.ok || resumable.value !== undefined && typeof resumable.value !== "boolean")
-    return;
   const outputSnapshotValue = safeGetProperty(value2, "outputSnapshot");
   if (!outputSnapshotValue.ok)
     return;
@@ -59283,7 +58627,6 @@ function readWorkflowExitSignalCandidate(value2, scope) {
     scope,
     status: status.value,
     ...reason.value !== undefined ? { reason: reason.value } : {},
-    ...resumable.value !== undefined ? { resumable: resumable.value } : {},
     ...outputSnapshot !== undefined ? { outputSnapshot } : {},
     ...validationError.value !== undefined ? { validationError: safeErrorValue(validationError.value) } : {}
   };
@@ -59353,11 +58696,11 @@ function raceAbort(promise, signal) {
     });
   });
 }
-// dist/builtin/workflows/src/runs/foreground/executor-hil.ts
+// src/runs/foreground/executor-hil.ts
 import { createHash as createHash2 } from "node:crypto";
 import { createAskUserQuestionToolDefinition } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/shared/prompt-callsite-context.ts
+// src/shared/prompt-callsite-context.ts
 import { AsyncLocalStorage } from "node:async_hooks";
 var promptCallerStacks = new AsyncLocalStorage;
 function withPromptCallerStack(stack, delegate) {
@@ -59369,7 +58712,7 @@ function currentPromptCallerStack() {
   return promptCallerStacks.getStore();
 }
 
-// dist/builtin/workflows/src/shared/stage-prompt.ts
+// src/shared/stage-prompt.ts
 function normalizeLabel(value2) {
   return value2.trim().toLowerCase();
 }
@@ -59550,7 +58893,7 @@ function buildStagePromptAdapter(id, kind, args, createdAt) {
   };
 }
 
-// dist/builtin/workflows/src/runs/shared/prompt-callsite.ts
+// src/runs/shared/prompt-callsite.ts
 import { fileURLToPath as fileURLToPath2 } from "node:url";
 var PACKAGED_WORKFLOW_RUNTIME_ROOTS = [
   "/dist/builtin/workflows/src/",
@@ -59622,10 +58965,10 @@ function selectPromptCallsiteFrame(stack) {
 `).slice(1).map(normalizedPromptCallsiteFrame).find((candidate) => candidate !== undefined);
 }
 
-// dist/builtin/workflows/src/shared/resume-continuation.ts
+// src/shared/resume-continuation.ts
 var RESUME_CONTINUATION_PROMPT = "Continue where you left off. If you believe you are finished with your original task (or a redefined task if the user told you), stop.";
 
-// dist/builtin/workflows/src/runs/foreground/executor-hil.ts
+// src/runs/foreground/executor-hil.ts
 function isCustomPromptDescriptor(descriptor) {
   return descriptor.kind === "custom";
 }
@@ -59888,11 +59231,11 @@ async function askReadinessViaStageBroker(runId, stageId, signal) {
     stageUiBroker.clearStagePrompt(runId, stageId);
   }
 }
-// dist/builtin/workflows/src/runs/foreground/executor-inputs.ts
+// src/runs/foreground/executor-inputs.ts
 import { Type as Type20 } from "typebox";
 import { Value as Value3 } from "typebox/value";
 
-// dist/builtin/workflows/src/shared/schema-introspection.ts
+// src/shared/schema-introspection.ts
 import {
   IsAny,
   IsArray,
@@ -59971,7 +59314,7 @@ function deriveInputFields(schema) {
   return Object.entries(schema).map(([name, s]) => deriveInputField(name, s));
 }
 
-// dist/builtin/workflows/src/runs/shared/validate-inputs.ts
+// src/runs/shared/validate-inputs.ts
 import { Value as Value2 } from "typebox/value";
 function validateInputs(schema, inputs) {
   const errors = [];
@@ -60042,7 +59385,7 @@ function validateInputs(schema, inputs) {
   return errors;
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-inputs.ts
+// src/runs/foreground/executor-inputs.ts
 function resolveInputs(schema, provided) {
   const resolved = {};
   for (const [key2, value2] of Object.entries(provided)) {
@@ -60098,7 +59441,7 @@ ${formatValidationErrors(errors)}`);
   }
   return resolved;
 }
-// dist/builtin/workflows/src/runs/foreground/executor-child-helpers.ts
+// src/runs/foreground/executor-child-helpers.ts
 function cloneWorkflowChildValue(value2) {
   return structuredClone(value2);
 }
@@ -60151,7 +59494,7 @@ function workflowChildReplaySnapshot(alias, childResult) {
   };
 }
 
-// dist/builtin/workflows/src/durable/child-invocation.ts
+// src/durable/child-invocation.ts
 function durableChildInvocationFingerprint(child, inputs) {
   return durableHash({
     definition: { name: child.name, normalizedName: child.normalizedName },
@@ -60159,7 +59502,7 @@ function durableChildInvocationFingerprint(child, inputs) {
   });
 }
 
-// dist/builtin/workflows/src/durable/stage-topology.ts
+// src/durable/stage-topology.ts
 function activeStageTopology(backend, workflowId, replayKey) {
   const checkpoints = backend.listCheckpoints(workflowId);
   for (let index = checkpoints.length - 1;index >= 0; index -= 1) {
@@ -60197,44 +59540,10 @@ function durableStageCheckpointMetadata(stage, run, sourceOrder) {
   };
 }
 
-// dist/builtin/workflows/src/durable/tool-primitive.ts
+// src/durable/tool-primitive.ts
 import { runCallback } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/runs/shared/retry.ts
-import { nextRetryDecision } from "@bastani/atomic";
-function abortReason(signal) {
-  const reason = signal?.reason;
-  if (reason instanceof Error || reason instanceof DOMException || typeof reason === "string")
-    return reason;
-  return new Error("atomic-workflows: workflow cancelled");
-}
-function sleepOrAbort(ms, signal) {
-  if (signal?.aborted)
-    return Promise.reject(abortReason(signal));
-  return new Promise((resolve4, reject) => {
-    let settled = false;
-    const cleanup = () => signal?.removeEventListener("abort", onAbort);
-    const finish = () => {
-      if (settled)
-        return;
-      settled = true;
-      cleanup();
-      resolve4();
-    };
-    const fail = (error) => {
-      if (settled)
-        return;
-      settled = true;
-      clearTimeout(timer);
-      cleanup();
-      reject(error);
-    };
-    const timer = setTimeout(finish, Math.max(0, ms));
-    const onAbort = () => fail(abortReason(signal));
-    signal?.addEventListener("abort", onAbort, { once: true });
-  });
-}
-// dist/builtin/workflows/src/durable/tool-failure-checkpoint.ts
+// src/durable/tool-failure-checkpoint.ts
 async function recordThrowingToolFailure(input, node, identity, error, attempts) {
   const message = workflowToolFailure(error, attempts, false).error.message;
   const failedAt = Date.now();
@@ -60261,7 +59570,7 @@ async function recordThrowingToolFailure(input, node, identity, error, attempts)
   return { message, failedAt };
 }
 
-// dist/builtin/workflows/src/durable/tool-primitive.ts
+// src/durable/tool-primitive.ts
 function createToolPrimitive(input) {
   const ordinals = new Map;
   return (name, args, fn, options) => {
@@ -60661,12 +59970,38 @@ async function executeWithRetries(fn, options, throwIfCancelled, signal) {
   }
   throw lastError ?? new Error("ctx.tool: retries exhausted");
 }
+function sleepOrAbort(ms, signal) {
+  if (signal?.aborted)
+    return Promise.reject(signal.reason instanceof Error ? signal.reason : new Error("atomic-workflows: workflow cancelled"));
+  return new Promise((resolve4, reject) => {
+    let settled = false;
+    const cleanup = () => signal?.removeEventListener("abort", onAbort);
+    const finish = () => {
+      if (settled)
+        return;
+      settled = true;
+      cleanup();
+      resolve4();
+    };
+    const fail = (err) => {
+      if (settled)
+        return;
+      settled = true;
+      clearTimeout(timer);
+      cleanup();
+      reject(err);
+    };
+    const timer = setTimeout(finish, ms);
+    const onAbort = () => fail(signal?.reason instanceof Error ? signal.reason : new Error("atomic-workflows: workflow cancelled"));
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
+}
 function createCheckpointIdGenerator() {
   let counter = 0;
   return () => `cp-${++counter}`;
 }
 
-// dist/builtin/workflows/src/durable/stage-primitive.ts
+// src/durable/stage-primitive.ts
 async function recordStageCheckpoint(deps, stage, options) {
   if (stage.status !== "completed" && stage.status !== "failed" && stage.status !== "skipped")
     return false;
@@ -61040,7 +60375,7 @@ function workflowChildSnapshotFromResult(result) {
   };
 }
 
-// dist/builtin/workflows/src/durable/child-primitive.ts
+// src/durable/child-primitive.ts
 function createDurableChildWorkflowPrimitive(input) {
   const legacyReplayCounts = new Map;
   const nextLegacyReplayKey = (name) => {
@@ -61096,7 +60431,7 @@ function hasInvocationData(checkpoints, replayKey) {
   return checkpoints.some((checkpoint) => checkpoint.kind === "stage" ? checkpoint.replayKey === replayKey || checkpoint.replayKey.startsWith(prefix) : checkpoint.checkpointId.startsWith(prefix));
 }
 
-// dist/builtin/workflows/src/durable/prompt-reservations.ts
+// src/durable/prompt-reservations.ts
 function durablePromptScope(backend, workflowId) {
   return backend.promptReservationScope(workflowId);
 }
@@ -61110,7 +60445,7 @@ function releaseDurablePrompt(backend, workflowId, reservationId, token) {
   backend.releasePendingPrompt(workflowId, reservationId, token);
 }
 
-// dist/builtin/workflows/src/durable/scoped-backend.ts
+// src/durable/scoped-backend.ts
 class ScopedDurableBackend {
   persistent;
   inner;
@@ -61200,9 +60535,6 @@ class ScopedDurableBackend {
   hydrateWorkflow(_workflowId) {
     return Promise.resolve();
   }
-  hydrateWorkflowForInspection(_workflowId) {
-    return Promise.resolve({ kind: "absent" });
-  }
   hydrateResumableWorkflows() {
     return Promise.resolve();
   }
@@ -61288,11 +60620,11 @@ function stripOnePrefix(value2, prefix) {
   return value2.slice(prefix.length);
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-direct-helpers.ts
+// src/runs/foreground/executor-direct-helpers.ts
 import { isAbsolute as isAbsolute9, join as join26, resolve as resolve11 } from "node:path";
-import { CONFIG_DIR_NAME as CONFIG_DIR_NAME2, isCodexFastModeCandidateModelId } from "@bastani/atomic";
+import { isCodexFastModeCandidateModelId } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/runs/shared/model-fallback-candidates.ts
+// src/runs/shared/model-fallback-candidates.ts
 function makeCandidate(id, value2, level) {
   return {
     id,
@@ -61485,19 +60817,461 @@ async function buildModelCandidatesFromCatalog(input) {
     return buildModelCandidates({ currentModel: input.catalog.currentModel });
   }
 }
-// dist/builtin/workflows/src/runs/shared/model-fallback-failures.ts
-import {
-  errorMessage as errorMessage3,
-  isRetryableModelFailure,
-  isRetryableSameModelFailure,
-  modelFailureMessage,
-  normalizeModelFailureSignal
-} from "@bastani/atomic";
-// dist/builtin/workflows/src/runs/shared/worktree-git.ts
+// src/runs/shared/model-fallback-failures.ts
+var RETRYABLE_MODEL_FAILURE_PATTERNS = [
+  /rate\s*limit/i,
+  /too\s*many\s*requests/i,
+  /\b429\b/,
+  /quota/i,
+  /usage[\s_-]*limit/i,
+  /billing/i,
+  /credit/i,
+  /auth(?:entication|orization)?/i,
+  /unauthori[sz]ed/i,
+  /\b40[13]\b/,
+  /api\s*key/i,
+  /token\s*expired/i,
+  /forbidden/i,
+  /invalid\s*key/i,
+  /model.*(?:unavailable|disabled|not\s*found|unknown)/i,
+  /(?:unavailable|disabled|not\s*found|unknown).*model/i,
+  /overloaded/i,
+  /temporarily\s*unavailable/i,
+  /service\s*unavailable/i,
+  /network/i,
+  /fetch/i,
+  /socket/i,
+  /connection\s*refused/i,
+  /upstream/i,
+  /timeout/i,
+  /timed\s*out/i,
+  /\b50[0-4]\b/
+];
+var NON_RETRYABLE_FAILURE_PATTERNS = [
+  /command failed/i,
+  /tests? failed/i,
+  /shell/i,
+  /missing file/i,
+  /no such file/i,
+  /cancel/i,
+  /abort/i,
+  /interrupted/i
+];
+var CANCELLED_FAILURE_PATTERNS = [/cancel/i, /abort/i, /interrupted/i];
+var FALLBACKABLE_FAILURE_KINDS = new Set([
+  "auth_on_candidate_provider",
+  "rate_limit",
+  "provider_unavailable",
+  "network_timeout",
+  "transport_error",
+  "model_unavailable",
+  "request_incompatible"
+]);
+function asRecord2(value2) {
+  return value2 !== null && typeof value2 === "object" ? value2 : undefined;
+}
+function field2(value2, key2) {
+  return asRecord2(value2)?.[key2];
+}
+function stringField3(value2, key2) {
+  const raw = field2(value2, key2);
+  return typeof raw === "string" && raw.trim().length > 0 ? raw : undefined;
+}
+function errorName2(value2) {
+  return value2 instanceof Error ? value2.name : stringField3(value2, "name");
+}
+function directMessageFrom(value2) {
+  return stringField3(value2, "errorMessage") ?? stringField3(value2, "message") ?? stringField3(value2, "statusText");
+}
+function integerFrom2(value2) {
+  if (typeof value2 === "number" && Number.isInteger(value2))
+    return value2;
+  if (typeof value2 !== "string" || value2.trim().length === 0)
+    return;
+  const parsed = Number(value2.trim());
+  return Number.isInteger(parsed) ? parsed : undefined;
+}
+function statusFrom(value2) {
+  return integerFrom2(field2(value2, "status")) ?? integerFrom2(field2(value2, "statusCode")) ?? integerFrom2(field2(value2, "httpStatus"));
+}
+function codeFrom(value2) {
+  const rawCode = field2(value2, "code");
+  return typeof rawCode === "string" || typeof rawCode === "number" ? rawCode : undefined;
+}
+function stopReasonFrom(value2) {
+  return stringField3(value2, "stopReason");
+}
+function finishReasonFrom(value2) {
+  return stringField3(value2, "finish_reason") ?? stringField3(value2, "finishReason");
+}
+function causeOf2(value2) {
+  return value2 instanceof Error ? value2.cause : field2(value2, "cause");
+}
+function diagnosticErrors2(value2) {
+  const diagnostics = field2(value2, "diagnostics");
+  if (!Array.isArray(diagnostics))
+    return [];
+  const errors = [];
+  for (const diagnostic of diagnostics) {
+    const diagnosticError = field2(diagnostic, "error");
+    errors.push(diagnosticError ?? diagnostic);
+  }
+  return errors;
+}
+function normalizeCode2(value2) {
+  if (value2 === undefined)
+    return;
+  const normalized = String(value2).trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  return normalized.length > 0 ? normalized : undefined;
+}
+function kindFromStatus(status) {
+  switch (status) {
+    case 400:
+    case 413:
+    case 422:
+      return "request_incompatible";
+    case 401:
+    case 403:
+      return "auth_on_candidate_provider";
+    case 408:
+      return "network_timeout";
+    case 404:
+      return "model_unavailable";
+    case 429:
+      return "rate_limit";
+    default:
+      if (status !== undefined && status >= 500 && status <= 599)
+        return "provider_unavailable";
+      return;
+  }
+}
+function refusalKindFromCode(code) {
+  const normalizedCode = normalizeCode2(code);
+  if (normalizedCode === undefined)
+    return;
+  if (normalizedCode.includes("content_filter") || normalizedCode.includes("contentfilter"))
+    return "task_failure";
+  if (normalizedCode.includes("safety") || normalizedCode.includes("policy"))
+    return "task_failure";
+  switch (normalizedCode) {
+    case "blocked":
+    case "blocked_by_provider":
+    case "blocked_by_safety":
+    case "blocked_by_policy":
+    case "provider_refusal":
+    case "refusal":
+    case "tool_refusal":
+    case "tool_call_refusal":
+    case "tool_use_refusal":
+      return "task_failure";
+    default:
+      return;
+  }
+}
+var REQUEST_INCOMPATIBLE_CODES = new Set([
+  "invalid_request",
+  "invalid_request_error",
+  "bad_request",
+  "context_length_exceeded",
+  "request_too_large",
+  "too_large",
+  "request_entity_too_large",
+  "max_tokens",
+  "max_context_length",
+  "context_window_exceeded"
+]);
+function requestIncompatibleKindFromCode(code) {
+  const normalizedCode = normalizeCode2(code);
+  return normalizedCode !== undefined && REQUEST_INCOMPATIBLE_CODES.has(normalizedCode) ? "request_incompatible" : undefined;
+}
+function kindFromCode(code) {
+  const normalizedCode = normalizeCode2(code);
+  if (normalizedCode === undefined)
+    return;
+  const refusalKind = refusalKindFromCode(code);
+  if (refusalKind !== undefined)
+    return refusalKind;
+  const httpStatusKind = kindFromStatus(integerFrom2(code));
+  if (httpStatusKind !== undefined)
+    return httpStatusKind;
+  const requestIncompatibleKind = requestIncompatibleKindFromCode(code);
+  if (requestIncompatibleKind !== undefined)
+    return requestIncompatibleKind;
+  switch (normalizedCode) {
+    case "auth":
+    case "auth_required":
+    case "authentication_required":
+    case "unauthorized":
+    case "forbidden":
+    case "invalid_api_key":
+    case "missing_api_key":
+    case "invalid_key":
+      return "auth_on_candidate_provider";
+    case "etimedout":
+    case "econnreset":
+    case "econnrefused":
+    case "enotfound":
+    case "eai_again":
+    case "fetch_failed":
+    case "network_error":
+    case "timeout":
+    case "timeout_error":
+    case "und_err_connect_timeout":
+      return "network_timeout";
+    case "rate_limit":
+    case "rate_limit_exceeded":
+    case "too_many_requests":
+    case "quota_exceeded":
+    case "insufficient_quota":
+    case "usage_limit":
+    case "usage_limit_reached":
+    case "usage_limit_exceeded":
+      return "rate_limit";
+    case "aborterror":
+    case "aborted":
+    case "cancelled":
+    case "canceled":
+      return "cancelled";
+    case "model_not_found":
+    case "model_unavailable":
+    case "model_disabled":
+    case "unknown_model":
+      return "model_unavailable";
+    case "provider_error":
+    case "api_error":
+    case "service_unavailable":
+    case "temporarily_unavailable":
+    case "overloaded":
+      return "provider_unavailable";
+    default:
+      return;
+  }
+}
+var REQUEST_INCOMPATIBLE_FAILURE_PATTERNS = [
+  /\bcontext[_\s-]?length(?:[_\s-]?exceeded)?\b/i,
+  /\bcontext[_\s-]?window(?:[_\s-]?exceeded)?\b/i,
+  /\bmax[_\s-]?context\b/i,
+  /\bmax[_\s-]?tokens?\b/i,
+  /\brequest(?:[_\s-]?entity)?[_\s-]?too[_\s-]?large\b/i,
+  /\btoo[_\s-]?large\b/i,
+  /\b(?:unsupported|unknown|invalid)\s+(?:tool|parameter|function)\b/i,
+  /\b(?:tool|parameter|function)\s+(?:not\s+(?:supported|found|allowed)|unknown|invalid)\b/i,
+  /\binvalid[_\s-]?request(?:[_\s-]?error)?\b/i,
+  /\bbad[_\s-]?request\b/i
+];
+var PROVIDER_REFUSAL_FAILURE_PATTERNS = [
+  /\bfinish[_\s-]?reason\b[^\n]*\bcontent[_\s-]?filter\b/i,
+  /\bcontent[_\s-]?filter(?:ed|ing)?\b/i,
+  /\b(?:safety|policy)\b[^\n]*\b(?:refus(?:e|al|ed|es|ing)?|block(?:ed|ing)?|filter(?:ed|ing)?|violat(?:e|ion|ed|ing)?|disallow(?:ed|ing)?|reject(?:ed|ion|ing)?)\b/i,
+  /\b(?:refus(?:e|al|ed|es|ing)?|block(?:ed|ing)?|filter(?:ed|ing)?|violat(?:e|ion|ed|ing)?|disallow(?:ed|ing)?|reject(?:ed|ion|ing)?)\b[^\n]*\b(?:safety|policy)\b/i,
+  /\btool[_\s-]?(?:call|use)?[_\s-]?refus(?:e|al|ed|es|ing)?\b/i,
+  /\btool(?:\s+call|\s+use)?\b[^\n]*\brefus(?:e|al|ed|es|ing)?\b/i,
+  /\brefus(?:e|al|ed|es|ing)?\b[^\n]*\btool(?:\s+call|\s+use)?\b/i,
+  /\bprovider[_\s-]?refus(?:e|al|ed|es|ing)?\b/i,
+  /\bprovider\b[^\n]*\brefus(?:e|al|ed|es|ing)?\b[^\n]*\b(?:prompt|request|content|policy|safety)\b/i
+];
+var TRANSPORT_OUTAGE_FAILURE_PATTERNS = [/^connection\s+error\.?$/i, /^fetch\s+failed\.?$/i];
+function transportOutageKindFromMessage(message) {
+  return TRANSPORT_OUTAGE_FAILURE_PATTERNS.some((pattern) => pattern.test(message.trim())) ? "transport_error" : undefined;
+}
+function refusalKindFromMessage(message) {
+  if (CANCELLED_FAILURE_PATTERNS.some((pattern) => pattern.test(message)))
+    return "cancelled";
+  if (NON_RETRYABLE_FAILURE_PATTERNS.some((pattern) => pattern.test(message)))
+    return "task_failure";
+  if (PROVIDER_REFUSAL_FAILURE_PATTERNS.some((pattern) => pattern.test(message)))
+    return "task_failure";
+  return;
+}
+function fallbackKindFromMessage(message, name) {
+  const refusalKind = refusalKindFromMessage(message);
+  if (refusalKind !== undefined)
+    return refusalKind;
+  const transportOutageKind = transportOutageKindFromMessage(message);
+  if (transportOutageKind !== undefined)
+    return transportOutageKind;
+  if (REQUEST_INCOMPATIBLE_FAILURE_PATTERNS.some((pattern) => pattern.test(message)))
+    return "request_incompatible";
+  const nameKind = kindFromCode(name);
+  if (nameKind !== undefined)
+    return nameKind;
+  if (!RETRYABLE_MODEL_FAILURE_PATTERNS.some((pattern) => pattern.test(message)))
+    return;
+  if (/rate\s*limit|too\s*many\s*requests|\b429\b|quota|usage[\s_-]*limit|billing|credit/i.test(message))
+    return "rate_limit";
+  if (/auth|unauthori[sz]ed|\b40[13]\b|api\s*key|token\s*expired|forbidden|invalid\s*key/i.test(message))
+    return "auth_on_candidate_provider";
+  if (/model.*(?:unavailable|disabled|not\s*found|unknown)|(?:unavailable|disabled|not\s*found|unknown).*model/i.test(message))
+    return "model_unavailable";
+  if (/network|fetch|socket|connection\s*refused|timeout|timed\s*out/i.test(message))
+    return "network_timeout";
+  return "provider_unavailable";
+}
+function signalSource(value2, fallback) {
+  if (fallback !== undefined)
+    return fallback;
+  if (stopReasonFrom(value2) !== undefined || diagnosticErrors2(value2).length > 0)
+    return "assistant_message";
+  if (value2 instanceof Error)
+    return "throw";
+  return "structured";
+}
+function makeSignal(kind, value2, source) {
+  const status = statusFrom(value2);
+  const code = codeFrom(value2);
+  const name = errorName2(value2);
+  const stopReason = stopReasonFrom(value2);
+  return {
+    kind,
+    message: errorMessage3(value2),
+    source: signalSource(value2, source),
+    ...stopReason !== undefined ? { stopReason } : {},
+    ...status !== undefined ? { status } : {},
+    ...code !== undefined ? { code } : {},
+    ...name !== undefined ? { name } : {}
+  };
+}
+function fallbackSignalFromDirectMessage(value2, source) {
+  const message = directMessageFrom(value2);
+  if (message === undefined)
+    return;
+  const kind = fallbackKindFromMessage(message, errorName2(value2));
+  return kind === undefined ? undefined : makeSignal(kind, value2, source);
+}
+function fallbackSignalFromMessage(value2, source) {
+  const message = errorMessage3(value2);
+  if (!message.trim())
+    return;
+  const kind = fallbackKindFromMessage(message, errorName2(value2));
+  return kind === undefined ? undefined : makeSignal(kind, value2, source);
+}
+function classifyAssistantRefusalSignal(value2, source) {
+  const codeRefusalKind = refusalKindFromCode(codeFrom(value2)) ?? refusalKindFromCode(errorName2(value2)) ?? refusalKindFromCode(finishReasonFrom(value2));
+  if (codeRefusalKind !== undefined)
+    return makeSignal(codeRefusalKind, value2, source);
+  const messageRefusalKind = refusalKindFromMessage(directMessageFrom(value2) ?? "");
+  return messageRefusalKind === undefined ? undefined : makeSignal(messageRefusalKind, value2, source);
+}
+function isRefusalSignal(signal) {
+  return signal.kind === "cancelled" || signal.kind === "task_failure";
+}
+function structuredSignal2(value2, seen, source) {
+  if (value2 === undefined || value2 === null || seen.has(value2))
+    return;
+  if (typeof value2 === "object")
+    seen.add(value2);
+  const stopReason = stopReasonFrom(value2)?.toLowerCase();
+  if (stopReason === "aborted")
+    return makeSignal("cancelled", value2, source);
+  const directRefusalSignal = classifyAssistantRefusalSignal(value2, source);
+  if (directRefusalSignal !== undefined)
+    return directRefusalSignal;
+  const codeKind = kindFromCode(codeFrom(value2));
+  const nameKind = kindFromCode(errorName2(value2));
+  if (codeKind === "cancelled" || nameKind === "cancelled")
+    return makeSignal("cancelled", value2, source);
+  let firstNestedFallbackSignal;
+  const nestedSeen = new Set(seen);
+  for (const diagnosticError of diagnosticErrors2(value2)) {
+    const diagnosticSignal = structuredSignal2(diagnosticError, nestedSeen, "diagnostic") ?? fallbackSignalFromMessage(diagnosticError, "diagnostic");
+    if (diagnosticSignal === undefined)
+      continue;
+    if (isRefusalSignal(diagnosticSignal))
+      return diagnosticSignal;
+    firstNestedFallbackSignal ??= diagnosticSignal;
+  }
+  const cause = causeOf2(value2);
+  const causeSignal = structuredSignal2(cause, nestedSeen, source) ?? fallbackSignalFromMessage(cause, source);
+  if (causeSignal !== undefined) {
+    if (isRefusalSignal(causeSignal))
+      return causeSignal;
+    firstNestedFallbackSignal ??= causeSignal;
+  }
+  const directMessageSignal = fallbackSignalFromDirectMessage(value2, source);
+  if (directMessageSignal !== undefined)
+    return directMessageSignal;
+  const statusKind = kindFromStatus(statusFrom(value2));
+  if (statusKind !== undefined)
+    return makeSignal(statusKind, value2, source);
+  if (codeKind !== undefined)
+    return makeSignal(codeKind, value2, source);
+  if (nameKind !== undefined)
+    return makeSignal(nameKind, value2, source);
+  if (firstNestedFallbackSignal !== undefined)
+    return firstNestedFallbackSignal;
+  if (stopReason === "error")
+    return makeSignal("provider_unavailable", value2, source);
+  return;
+}
+function messageFromUnknown(value2, seen) {
+  if (value2 === undefined || value2 === null || seen.has(value2))
+    return;
+  if (typeof value2 === "string")
+    return value2.trim().length > 0 ? value2 : undefined;
+  if (typeof value2 === "number" || typeof value2 === "boolean" || typeof value2 === "bigint")
+    return String(value2);
+  if (typeof value2 === "symbol" || typeof value2 === "function")
+    return;
+  seen.add(value2);
+  if (value2 instanceof Error && value2.message.trim().length > 0)
+    return value2.message;
+  const directMessage = directMessageFrom(value2);
+  if (directMessage !== undefined)
+    return directMessage;
+  for (const diagnosticError of diagnosticErrors2(value2)) {
+    const diagnosticMessage = messageFromUnknown(diagnosticError, seen);
+    if (diagnosticMessage !== undefined)
+      return diagnosticMessage;
+  }
+  const causeMessage = messageFromUnknown(causeOf2(value2), seen);
+  if (causeMessage !== undefined)
+    return causeMessage;
+  const stopReason = stopReasonFrom(value2);
+  if (stopReason !== undefined)
+    return `Assistant message ended with stopReason:${stopReason}`;
+  const finishReason = finishReasonFrom(value2);
+  if (finishReason !== undefined)
+    return `Model request finished with finish_reason:${finishReason}`;
+  const status = statusFrom(value2);
+  if (status !== undefined)
+    return `Model request failed with status ${status}`;
+  const code = codeFrom(value2);
+  if (code !== undefined)
+    return `Model request failed with code ${String(code)}`;
+  return;
+}
+function errorMessage3(error) {
+  const structuredMessage = messageFromUnknown(error, new Set);
+  if (structuredMessage !== undefined)
+    return structuredMessage;
+  const rendered = String(error);
+  return rendered === "[object Object]" ? "Model request failed" : rendered;
+}
+function normalizeModelFailureSignal(error) {
+  const structured2 = structuredSignal2(error, new Set);
+  if (structured2 !== undefined)
+    return structured2;
+  const message = errorMessage3(error);
+  const name = errorName2(error);
+  const fallbackKind = message.trim().length > 0 ? fallbackKindFromMessage(message, name) : undefined;
+  return {
+    kind: fallbackKind ?? "unknown",
+    message,
+    source: "string_fallback",
+    ...name !== undefined ? { name } : {}
+  };
+}
+function isRetryableModelFailure(error) {
+  if (error === undefined)
+    return false;
+  const signal = normalizeModelFailureSignal(error);
+  return FALLBACKABLE_FAILURE_KINDS.has(signal.kind);
+}
+// src/runs/shared/worktree-git.ts
 import * as fs3 from "node:fs";
 import * as path3 from "node:path";
 
-// dist/builtin/workflows/src/runs/shared/worktree-generation.ts
+// src/runs/shared/worktree-generation.ts
 import * as fs from "node:fs";
 import * as path from "node:path";
 function sameFileIdentity(left, right) {
@@ -61550,9 +61324,9 @@ function openGitWorktreeGenerationAnchor(worktreeRoot) {
   }
 }
 
-// dist/builtin/workflows/src/runs/shared/worktree-git-runner.ts
+// src/runs/shared/worktree-git-runner.ts
 import { spawnSync as spawnSync2 } from "node:child_process";
-import { createChildProcessEnvironment as createChildProcessEnvironment3, createGitEnvironment } from "@bastani/atomic";
+import { createGitEnvironment } from "@bastani/atomic";
 var DISABLED_GIT_HOOKS_PATH = process.platform === "win32" ? "NUL" : "/dev/null";
 var GIT_COMMAND_TIMEOUT_MS = 60000;
 var GIT_READ_ONLY_PROBE_TIMEOUT_ATTEMPTS = 2;
@@ -61576,7 +61350,7 @@ function spawnGit(cwd, args, plain) {
   const result = spawnSync2("git", plain ? args : gitCommandArgs(args), {
     cwd,
     encoding: "utf-8",
-    env: createGitEnvironment({ GIT_OPTIONAL_LOCKS: "0", GIT_TERMINAL_PROMPT: "0", GCM_INTERACTIVE: "never" }, createChildProcessEnvironment3()),
+    env: createGitEnvironment({ GIT_OPTIONAL_LOCKS: "0", GIT_TERMINAL_PROMPT: "0", GCM_INTERACTIVE: "never" }),
     timeout: GIT_COMMAND_TIMEOUT_MS
   });
   return {
@@ -61650,7 +61424,7 @@ function runGitReadOnlyProbe(cwd, args) {
   return attempts > 1 ? { ...result, attempts } : result;
 }
 
-// dist/builtin/workflows/src/runs/shared/worktree-root.ts
+// src/runs/shared/worktree-root.ts
 import * as fs2 from "node:fs";
 import * as path2 from "node:path";
 function pathFromPointer(contents, prefix, base) {
@@ -61735,7 +61509,7 @@ function findCanonicalGitRoot(cwd) {
   return repoRoot === undefined ? undefined : resolveMainRepoRoot(repoRoot);
 }
 
-// dist/builtin/workflows/src/runs/shared/worktree-git.ts
+// src/runs/shared/worktree-git.ts
 function gitWorktreeSetupCacheKey(options) {
   const repoRoot = repositoryRootForGitWorktree(options.cwd);
   const { logicalRepoRoot } = cwdWithinGitRepository(options.cwd, repoRoot);
@@ -62050,7 +61824,7 @@ function setupGitWorktree(options) {
   };
 }
 
-// dist/builtin/workflows/src/runs/shared/worktree-cache-lifecycle.ts
+// src/runs/shared/worktree-cache-lifecycle.ts
 function createGitWorktreeSetupCacheOwner(suppliedCache) {
   const cache = suppliedCache ?? createGitWorktreeSetupCache();
   const ownsCache = suppliedCache === undefined;
@@ -62068,7 +61842,7 @@ function createGitWorktreeSetupCacheOwner(suppliedCache) {
     }
   };
 }
-// dist/builtin/workflows/src/runs/shared/worktree-diff.ts
+// src/runs/shared/worktree-diff.ts
 import * as fs4 from "node:fs";
 import * as path4 from "node:path";
 function safePatchAgentName(agent) {
@@ -62207,14 +61981,13 @@ function formatWorktreeDiffSummary(diffs) {
   return lines.join(`
 `).trimEnd();
 }
-// dist/builtin/workflows/src/runs/shared/worktree-setup.ts
+// src/runs/shared/worktree-setup.ts
 import { spawnSync as spawnSync3 } from "node:child_process";
 import * as fs6 from "node:fs";
 import * as os from "node:os";
 import * as path6 from "node:path";
-import { createChildProcessEnvironment as createChildProcessEnvironment4 } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/runs/shared/worktree-post-create.ts
+// src/runs/shared/worktree-post-create.ts
 import * as fs5 from "node:fs";
 import * as path5 from "node:path";
 function tracked(repo, relativePath) {
@@ -62246,10 +62019,11 @@ function copyUntrackedFile(mainRoot, worktreeRoot, relativePath) {
 }
 function propagateLocalSettings(mainRoot, worktreeRoot) {
   const copied = [];
-  if (copyUntrackedFile(mainRoot, worktreeRoot, ".atomic/settings.local.json"))
-    copied.push(".atomic/settings.local.json");
-  if (!tracked(mainRoot, ".atomic/settings.json") && copyUntrackedFile(mainRoot, worktreeRoot, ".atomic/settings.json")) {
-    copied.push(".atomic/settings.json");
+  for (const rel of [".pi/settings.local.json", ".pi/settings.json", ".atomic/settings.local.json", ".atomic/settings.json"]) {
+    if (tracked(mainRoot, rel))
+      continue;
+    if (copyUntrackedFile(mainRoot, worktreeRoot, rel))
+      copied.push(rel);
   }
   return copied;
 }
@@ -62335,7 +62109,7 @@ function performPostCreationSetup(mainRoot, worktreeRoot, symlinkDirectories) {
   return syntheticPaths;
 }
 
-// dist/builtin/workflows/src/runs/shared/worktree-setup.ts
+// src/runs/shared/worktree-setup.ts
 var DEFAULT_WORKTREE_SETUP_HOOK_TIMEOUT_MS = 30000;
 function originDefaultBranch(mainRoot) {
   const symbolic = runGit(mainRoot, ["symbolic-ref", "--short", "refs/remotes/origin/HEAD"]);
@@ -62398,10 +62172,10 @@ function buildWorktreeBranch(runId, index) {
   return `worktree-${flattenedWorktreeName(runId, index)}`;
 }
 function buildWorktreePath(mainRoot, runId, index) {
-  return path6.join(mainRoot, ".atomic", "worktrees", flattenedWorktreeName(runId, index));
+  return path6.join(mainRoot, HOST_CONFIG_DIR_NAME, "worktrees", flattenedWorktreeName(runId, index));
 }
 function ensureWorktreeIgnore(mainRoot) {
-  const worktreesRoot = path6.join(mainRoot, ".atomic", "worktrees");
+  const worktreesRoot = path6.join(mainRoot, HOST_CONFIG_DIR_NAME, "worktrees");
   fs6.mkdirSync(worktreesRoot, { recursive: true });
   fs6.writeFileSync(path6.join(worktreesRoot, ".gitignore"), `*
 `, "utf8");
@@ -62495,7 +62269,6 @@ function runWorktreeSetupHook(hook, input) {
     cwd: input.worktreePath,
     encoding: "utf-8",
     input: JSON.stringify(input),
-    env: createChildProcessEnvironment4(),
     timeout: hook.timeoutMs,
     shell: false
   });
@@ -62603,9 +62376,9 @@ function cleanupWorktrees(setup) {
     cleanupSingleWorktree(setup.cwd, setup.worktrees[index]);
   }
 }
-// dist/builtin/workflows/src/runs/shared/worktree-cwd.ts
+// src/runs/shared/worktree-cwd.ts
 import { lstatSync as lstatSync4, realpathSync as realpathSync4 } from "node:fs";
-import { dirname as dirname10, isAbsolute as isAbsolute7, relative as relative5, resolve as resolve9, sep as sep6 } from "node:path";
+import { dirname as dirname9, isAbsolute as isAbsolute7, relative as relative5, resolve as resolve9, sep as sep6 } from "node:path";
 function relativePathWithin(root, candidate) {
   const path7 = relative5(root, candidate);
   return path7 === ".." || path7.startsWith(`..${sep6}`) || isAbsolute7(path7) ? undefined : path7;
@@ -62650,7 +62423,7 @@ function resolveWorktreeStageCwd(cwd, setup) {
   return mappedCwd;
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-task-prompts.ts
+// src/runs/foreground/executor-task-prompts.ts
 import { existsSync as existsSync8 } from "node:fs";
 import { isAbsolute as isAbsolute8, resolve as resolve10 } from "node:path";
 function normalizeTaskContexts(previous) {
@@ -62834,7 +62607,7 @@ function truncateTaskOutput(text, maxOutput) {
 [workflow output truncated; limits: ${limits.bytes} bytes, ${limits.lines} lines]`;
 }
 function withoutUndefinedProperties(value2) {
-  return Object.fromEntries(Object.entries(value2).filter(([, field2]) => field2 !== undefined));
+  return Object.fromEntries(Object.entries(value2).filter(([, field3]) => field3 !== undefined));
 }
 function sharedTaskDefaultsFromOptions(options) {
   const {
@@ -62852,7 +62625,7 @@ function taskWithSharedDefaults(taskOptions, options) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-direct-helpers.ts
+// src/runs/foreground/executor-direct-helpers.ts
 function positiveConcurrency(value2) {
   if (typeof value2 !== "number" || !Number.isFinite(value2) || value2 < 1)
     return;
@@ -62973,12 +62746,11 @@ function setupWorkflowInputGitWorktree(inputDefaults, workflowInvocationCwd, cac
 function workflowCwdWithInputWorktree(inputDefaults, workflowInvocationCwd, cache) {
   return setupWorkflowInputGitWorktree(inputDefaults, workflowInvocationCwd, cache)?.cwd ?? workflowInvocationCwd;
 }
-function workflowInvocationMetadata(inputDefaults, workflowInvocationCwd, cache, origin) {
+function workflowInvocationMetadata(inputDefaults, workflowInvocationCwd, cache) {
   const setup = setupWorkflowInputGitWorktree(inputDefaults, workflowInvocationCwd, cache);
   return {
     invocationCwd: workflowInvocationCwd,
-    ...setup !== undefined ? { workflowCwd: setup.cwd, repositoryRoot: setup.repositoryRoot, gitWorktreeRoot: setup.worktreeRoot } : {},
-    ...origin !== undefined ? { origin } : {}
+    ...setup !== undefined ? { workflowCwd: setup.cwd, repositoryRoot: setup.repositoryRoot, gitWorktreeRoot: setup.worktreeRoot } : {}
   };
 }
 function resolvedTaskCwd(cwd, workflowInvocationCwd) {
@@ -63012,7 +62784,7 @@ function prepareTaskWorktrees(tasks, options, runId, scope, workflowInvocationCw
     tasks: tasks.map((task, index) => ({ ...task, cwd: setup.worktrees[index].agentCwd })),
     setup,
     agents,
-    diffsDir: join26(setup.cwd, CONFIG_DIR_NAME2, "workflows", "worktree-diffs", runId, scope),
+    diffsDir: join26(setup.cwd, HOST_CONFIG_DIR_NAME, "workflows", "worktree-diffs", runId, scope),
     outputIsolations: tasks.map((_, index) => ({
       baseDir: join26(trustedRoot, runId, scope, String(index)),
       trustedRoot
@@ -63059,7 +62831,7 @@ function isCodexFastModeCandidate(model) {
   return isCodexFastModeCandidateModelId(workflowModelId(model));
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-lifecycle.ts
+// src/runs/foreground/executor-lifecycle.ts
 var EMPTY_WORKFLOW_GRAPH_ERROR_MESSAGE = "Workflow run completed without creating any workflow stages or durable tool nodes. Create tracked execution with ctx.stage(), ctx.task(), ctx.chain(), ctx.parallel(), ctx.workflow(), or ctx.tool().";
 function assertWorkflowCreatedExecution(runSnapshot) {
   if (runSnapshot.stages.length > 0 || (runSnapshot.toolNodes?.length ?? 0) > 0)
@@ -63347,7 +63119,7 @@ function recordActiveBlockedFailure(runId, runSnapshot, activeStore, persistence
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-outputs.ts
+// src/runs/foreground/executor-outputs.ts
 import { Value as Value4 } from "typebox/value";
 function hasOwnWorkflowOutput(record, key2) {
   return Object.hasOwn(record, key2);
@@ -63444,7 +63216,7 @@ function selectWorkflowOutputs(child, rawOutput) {
   return selected;
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-continuation.ts
+// src/runs/foreground/executor-continuation.ts
 function getPromptAnswerState(hasReplayAnswer, replaySourceId, answerReplay) {
   if (replaySourceId === undefined)
     return;
@@ -63576,7 +63348,7 @@ function createContinuationReplayIndex(continuation) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-prompt-nodes.ts
+// src/runs/foreground/executor-prompt-nodes.ts
 function buildPromptNodeUiAdapter(input) {
   const ask = async (descriptor, durableReplay) => {
     input.throwIfWorkflowExitSelected();
@@ -63703,7 +63475,7 @@ function buildPromptNodeUiAdapter(input) {
       },
       async resume() {
         input.activeStore.recordStageResumed(input.runId, stageId);
-        input.activeStore.recordRunResumed(input.runId, undefined, { source: "prompt_answer" });
+        input.activeStore.recordRunResumed(input.runId);
         const currentPauseGate = pauseGate;
         pauseGate = undefined;
         currentPauseGate?.resolve();
@@ -63871,7 +63643,7 @@ function buildPromptNodeUiAdapter(input) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-run-finalizers.ts
+// src/runs/foreground/executor-run-finalizers.ts
 function createRunFinalizers(input) {
   const finalizeWorkflowExitValidationFailure = (err, exitReason) => {
     const failure3 = input.classifyExecutorFailure(err);
@@ -63915,9 +63687,8 @@ function createRunFinalizers(input) {
     } catch (err) {
       return finalizeWorkflowExitValidationFailure(err, signal.reason);
     }
-    const resumable = signal.status === "failed" && signal.resumable === true;
     const metadata = {
-      resumable,
+      resumable: false,
       exited: true,
       ...signal.reason !== undefined ? { exitReason: signal.reason } : {}
     };
@@ -63928,7 +63699,7 @@ function createRunFinalizers(input) {
       result: outputs,
       exited: true,
       ...signal.reason !== undefined ? { exitReason: signal.reason } : {},
-      resumable,
+      resumable: false,
       ts: Date.now()
     });
     return reconcileTerminalRunResult(input.runId, input.runSnapshot, input.activeStore, {
@@ -63938,8 +63709,8 @@ function createRunFinalizers(input) {
       ...signal.reason !== undefined ? { exitReason: signal.reason } : {}
     }, input.opts.onRunEnd);
   };
-  const finalizeParentWorkflowExitCancellation = async (abortReason2) => {
-    const parentReason = abortReason2.workflowExitReason;
+  const finalizeParentWorkflowExitCancellation = async (abortReason) => {
+    const parentReason = abortReason.workflowExitReason;
     await input.drainWorkflowExitCleanups(parentReason);
     const exitReason = parentWorkflowExitRunReason(parentReason);
     const metadata = { resumable: false, exited: true, exitReason };
@@ -63961,7 +63732,7 @@ function createRunFinalizers(input) {
   return { finalizeWorkflowExit, finalizeParentWorkflowExitCancellation };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-scheduler.ts
+// src/runs/foreground/executor-scheduler.ts
 function isTerminalStage(stage) {
   return stage.status === "completed" || stage.status === "failed" || stage.status === "skipped";
 }
@@ -64129,7 +63900,7 @@ function createStageScheduler(input) {
   };
 }
 
-// dist/builtin/workflows/src/runs/shared/concurrency.ts
+// src/runs/shared/concurrency.ts
 class ConcurrencyLimiter {
   limit;
   _running = 0;
@@ -64176,7 +63947,7 @@ function createRunLimiter(defaultConcurrency) {
   return new ConcurrencyLimiter(defaultConcurrency ?? 4);
 }
 
-// dist/builtin/workflows/src/engine/primitives/chain.ts
+// src/engine/primitives/chain.ts
 function createChainPrimitive(input) {
   return async (steps, options = {}) => {
     input.runtime.exit.throwIfWorkflowExitSelected();
@@ -64193,7 +63964,7 @@ function createChainPrimitive(input) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-exit-manager.ts
+// src/runs/foreground/executor-exit-manager.ts
 function createWorkflowExitManager(input) {
   let selectedExit;
   const exitCleanups = new Map;
@@ -64296,7 +64067,7 @@ function createWorkflowExitManager(input) {
     if (!statusRead.ok) {
       captureValidationError(statusRead.error);
     } else if (!isWorkflowExitStatus2(rawStatus)) {
-      captureValidationError(new TypeError(`atomic-workflows: ctx.exit() status must be one of completed, skipped, cancelled, blocked, failed; got ${describeWorkflowExitOptionValue(rawStatus)}`));
+      captureValidationError(new TypeError(`atomic-workflows: ctx.exit() status must be one of completed, skipped, cancelled, blocked; got ${describeWorkflowExitOptionValue(rawStatus)}`));
     }
     const status = isWorkflowExitStatus2(rawStatus) ? rawStatus : "completed";
     const reasonRead = readWorkflowExitOption(rawOptions, "reason");
@@ -64308,17 +64079,6 @@ function createWorkflowExitManager(input) {
       captureValidationError(new TypeError(`atomic-workflows: ctx.exit() reason must be a string when provided; got ${workflowSerializableTypeName(rawReason)}`));
     }
     const reason = typeof rawReason === "string" ? rawReason : undefined;
-    const resumableRead = readWorkflowExitOption(rawOptions, "resumable");
-    throwNestedSelectedExit();
-    const rawResumable = resumableRead.ok ? resumableRead.value : undefined;
-    if (!resumableRead.ok) {
-      captureValidationError(resumableRead.error);
-    } else if (rawResumable !== undefined && typeof rawResumable !== "boolean") {
-      captureValidationError(new TypeError(`atomic-workflows: ctx.exit() resumable must be a boolean when provided; got ${workflowSerializableTypeName(rawResumable)}`));
-    } else if (rawResumable !== undefined && rawStatus !== "failed") {
-      captureValidationError(new TypeError(`atomic-workflows: ctx.exit() resumable is only valid with status failed; got ${describeWorkflowExitOptionValue(rawStatus)}`));
-    }
-    const resumable = status === "failed" && rawResumable === true;
     const outputsRead = readWorkflowExitOption(rawOptions, "outputs");
     throwNestedSelectedExit();
     const outputSnapshot = !outputsRead.ok ? freezeWorkflowExitOutputSnapshot({ ok: false, error: outputsRead.error }) : outputsRead.value !== undefined ? captureWorkflowExitOutputSnapshot(outputsRead.value) : undefined;
@@ -64327,7 +64087,6 @@ function createWorkflowExitManager(input) {
       scope: input.exitScope,
       status,
       ...reason !== undefined ? { reason } : {},
-      ...status === "failed" ? { resumable } : {},
       ...outputSnapshot !== undefined ? { outputSnapshot } : {},
       ...validationError !== undefined ? { validationError } : {}
     }));
@@ -64349,10 +64108,10 @@ function createWorkflowExitManager(input) {
     exit
   };
 }
-// dist/builtin/workflows/src/engine/primitives/parallel.ts
+// src/engine/primitives/parallel.ts
 import { randomUUID as randomUUID6 } from "node:crypto";
 
-// dist/builtin/workflows/src/shared/intercom-group.ts
+// src/shared/intercom-group.ts
 import { randomUUID as randomUUID5 } from "node:crypto";
 function workflowInvocationIntercomGroup(rootRunId) {
   return `workflow:${rootRunId}`;
@@ -64388,7 +64147,7 @@ function stageHasIntercomAccess(stageOptions) {
   return true;
 }
 
-// dist/builtin/workflows/src/engine/primitives/parallel.ts
+// src/engine/primitives/parallel.ts
 function createParallelPrimitive(input) {
   return async (steps, options = {}) => {
     input.runtime.exit.throwIfWorkflowExitSelected();
@@ -64425,7 +64184,7 @@ function createParallelPrimitive(input) {
   };
 }
 
-// dist/builtin/workflows/src/engine/primitives/task.ts
+// src/engine/primitives/task.ts
 function createTaskPrimitive(runtime) {
   return async (name, options, stageFailFastScope) => {
     runtime.exit.throwIfWorkflowExitSelected();
@@ -64487,7 +64246,7 @@ function createWorkflowTaskRunners(input) {
   };
 }
 
-// dist/builtin/workflows/src/durable/ui-primitive.ts
+// src/durable/ui-primitive.ts
 function wrapUiWithDurable(base, deps) {
   const ordinals = new Map;
   const scope = durablePromptScope(deps.backend, deps.workflowId);
@@ -64657,7 +64416,7 @@ function wrapUiWithDurable(base, deps) {
   };
 }
 
-// dist/builtin/workflows/src/engine/primitives/ui.ts
+// src/engine/primitives/ui.ts
 function buildExitGatedUiContext(input) {
   const base = input.opts.usePromptNodesForUi === true ? input.baseFromPromptNodes() : input.opts.executionMode === "non_interactive" && input.opts.ui === undefined ? makeHeadlessUnavailableUIContext() : normalizeUIContext(input.opts.ui);
   const promptNodeReplay = input.opts.usePromptNodesForUi === true && input.opts.continuation !== undefined;
@@ -64686,7 +64445,7 @@ function buildExitGatedUiContext(input) {
   };
 }
 
-// dist/builtin/workflows/src/engine/primitives/workflow.ts
+// src/engine/primitives/workflow.ts
 function createChildWorkflowRunner(input) {
   return async (child, ...args) => {
     const options = args[0] ?? {};
@@ -64758,7 +64517,7 @@ function createChildWorkflowRunner(input) {
       if (childRun.status === "paused" && childRun.exitReason === WORKFLOW_GRACEFUL_QUIT_EXIT_REASON && childRunId !== undefined) {
         throw new WorkflowGracefulQuitError(childRunId, `child workflow "${childName}" (${child.name})`);
       }
-      if (!isWorkflowExitStatus2(childRun.status) || childRun.status === "failed" && childRun.exited !== true) {
+      if (!isWorkflowExitStatus2(childRun.status)) {
         const failedChildStage = childRun.stages.find((stage) => stage.failureKind !== undefined);
         throw new Error(`atomic-workflows: child workflow "${childName}" (${child.name}) failed with status ${childRun.status}${childRun.error !== undefined ? `: ${childRun.error}` : ""}`, {
           cause: {
@@ -64807,7 +64566,7 @@ function createChildWorkflowRunner(input) {
     }
   };
 }
-// dist/builtin/workflows/src/engine/run-durable-admission.ts
+// src/engine/run-durable-admission.ts
 function durableRootRegistrationForRun(args) {
   const shouldRegister = !args.isChildRun && (args.continuationSourceId === undefined || args.continuationSourceId !== args.runId);
   if (!shouldRegister)
@@ -64833,7 +64592,7 @@ async function admitDurableRootRun(args) {
     await args.backend.flush();
 }
 
-// dist/builtin/workflows/src/engine/run-durable-finalize.ts
+// src/engine/run-durable-finalize.ts
 async function finalizeDurableTerminalStatus(input) {
   if (!input.isRoot)
     return;
@@ -64847,12 +64606,8 @@ async function finalizeDurableTerminalStatus(input) {
     if (durableStatus === "failed" || durableStatus === "blocked") {
       recordRunTimingCheckpoint(input.durableBackend, input.runSnapshot);
     }
-    const failure3 = durableStatus === "failed" ? {
-      ...input.runSnapshot.error !== undefined ? { error: input.runSnapshot.error } : {},
-      ...input.runSnapshot.exited === true ? {
-        exited: true,
-        ...input.runSnapshot.exitReason !== undefined ? { exitReason: input.runSnapshot.exitReason } : {}
-      } : {},
+    const failure3 = durableStatus === "failed" && input.runSnapshot.error !== undefined ? {
+      error: input.runSnapshot.error,
       ...input.runSnapshot.failureKind !== undefined ? { failureKind: input.runSnapshot.failureKind } : {},
       ...input.runSnapshot.failureCode !== undefined ? { failureCode: input.runSnapshot.failureCode } : {},
       ...input.runSnapshot.failureRecoverability !== undefined ? { failureRecoverability: input.runSnapshot.failureRecoverability } : {},
@@ -64880,13 +64635,13 @@ function toDurableStatus(status) {
   }
 }
 
-// dist/builtin/workflows/src/engine/run-durable-stage-session.ts
+// src/engine/run-durable-stage-session.ts
 function createDurableStageSessionRecorder(input) {
   return async (stageRunId, snapshot, options) => {
     if (stageRunId === input.runId) {
       await recordStageSessionCheckpoint(input.deps, snapshot, { force: options?.forceDurable === true });
       if (input.runSnapshot !== undefined) {
-        await recordRunTimingCheckpointAsync(input.deps.backend, input.runSnapshot, {
+        recordRunTimingCheckpoint(input.deps.backend, input.runSnapshot, {
           debounce: options?.forceDurable !== true
         });
       }
@@ -64895,7 +64650,7 @@ function createDurableStageSessionRecorder(input) {
   };
 }
 
-// dist/builtin/workflows/src/shared/session-transcript.ts
+// src/shared/session-transcript.ts
 import { readFileSync as readFileSync3, statSync as statSync7 } from "node:fs";
 function isReopenableSessionTranscript(path7) {
   try {
@@ -64934,8 +64689,8 @@ function hasUsableContentBlock(block) {
   return [contentBlock.text, contentBlock.thinking, contentBlock.data, contentBlock.name].some((value2) => typeof value2 === "string" && value2.trim().length > 0);
 }
 
-// dist/builtin/workflows/src/durable/completed-catalog-stage-groups.ts
-function validBoundaryRecordSet(checkpoints, strict, requireActiveFingerprint = false) {
+// src/durable/completed-catalog-stage-groups.ts
+function validBoundaryRecordSet(checkpoints, strict) {
   const stages = checkpoints.filter((item) => item.kind === "stage");
   const boundaries = stages.filter((item) => item.topology?.boundary !== undefined);
   const startsByReplay = new Map;
@@ -64950,59 +64705,42 @@ function validBoundaryRecordSet(checkpoints, strict, requireActiveFingerprint = 
     return false;
   if (boundaries.some((checkpoint) => checkpoint.topology.boundary.event === "terminal" && startsByReplay.get(checkpoint.replayKey)?.length !== 1))
     return false;
-  return [...startsByReplay.values()].every((starts) => {
-    const start = starts[0];
-    if (boundaryTransitionError(start, stages, strict) !== undefined)
-      return false;
-    if (!requireActiveFingerprint || start.topology.boundary.invocationFingerprint !== undefined)
-      return true;
-    return stages.some((stage) => stage.replayKey === start.replayKey && stage.topology?.boundary?.event === "terminal" && stage.topology.boundary.status === "completed") && boundaryTransitionError(start, stages, true) === undefined;
-  });
+  return [...startsByReplay.values()].every((starts) => boundaryTransitionError(starts[0], stages, strict) === undefined);
 }
-function validStageGroup(drafts, runId, rootRunId, tools = []) {
+function validStageGroup(drafts, runId, allowedNodeIds = new Set) {
   if (drafts.some((draft) => draft.topology.stageId.length === 0))
     return false;
-  if (tools.some((tool) => tool.topology !== undefined && (tool.topology.version !== DURABLE_TOOL_TOPOLOGY_VERSION || tool.topology.nodeId.length === 0)))
+  const stageIds = new Set(drafts.map((draft) => draft.topology.stageId));
+  if (stageIds.size !== drafts.length)
     return false;
-  const stageIds = drafts.map((draft) => draft.topology.stageId);
-  const toolIds = tools.map((tool) => tool.topology?.nodeId ?? tool.checkpointId);
-  const ids = new Set([...stageIds, ...toolIds]);
-  if (ids.size !== stageIds.length + toolIds.length)
+  const ids = new Set([...allowedNodeIds, ...stageIds]);
+  if (ids.size !== allowedNodeIds.size + stageIds.size)
     return false;
   const orders = drafts.flatMap((draft) => draft.topology.sourceOrder === undefined ? [] : [draft.topology.sourceOrder]);
   if (new Set(orders).size !== orders.length)
     return false;
-  const parentEntries = [
-    ...drafts.map((draft) => [draft.topology.stageId, draft.topology.parentIds]),
-    ...tools.map((tool) => [tool.topology?.nodeId ?? tool.checkpointId, tool.topology?.parentIds ?? []])
-  ];
-  if (parentEntries.some(([, parentIds]) => parentIds.some((parentId) => !ids.has(parentId))))
+  if (drafts.some((draft) => draft.topology.parentIds.some((parentId) => !ids.has(parentId))))
     return false;
-  const runs = [
-    ...drafts.flatMap((draft) => draft.topology?.run === undefined ? [] : [draft.topology.run]),
-    ...tools.flatMap((tool) => tool.topology?.run === undefined ? [] : [tool.topology.run])
-  ];
+  const runs = drafts.flatMap((draft) => draft.topology?.run === undefined ? [] : [draft.topology.run]);
   const first = runs[0];
   if (runs.some((run) => run.runId !== runId || first !== undefined && (run.runName !== first.runName || run.parentRunId !== first.parentRunId || run.parentStageId !== first.parentStageId || run.rootRunId !== first.rootRunId)))
     return false;
-  if (runId === rootRunId && runs.some((run) => run.parentRunId !== undefined || run.parentStageId !== undefined || run.rootRunId !== undefined))
-    return false;
-  const parents = new Map(parentEntries);
+  const parents = new Map(drafts.map((draft) => [draft.topology.stageId, draft.topology.parentIds]));
   const visiting = new Set;
   const visited = new Set;
-  const cyclic = (nodeId) => {
-    if (visiting.has(nodeId))
+  const cyclic = (stageId) => {
+    if (visiting.has(stageId))
       return true;
-    if (visited.has(nodeId))
+    if (visited.has(stageId))
       return false;
-    visiting.add(nodeId);
-    if ((parents.get(nodeId) ?? []).some(cyclic))
+    visiting.add(stageId);
+    if ((parents.get(stageId) ?? []).some(cyclic))
       return true;
-    visiting.delete(nodeId);
-    visited.add(nodeId);
+    visiting.delete(stageId);
+    visited.add(stageId);
     return false;
   };
-  return ![...ids].some(cyclic);
+  return ![...stageIds].some(cyclic);
 }
 function compareDraftSourceOrder(left, right) {
   const leftOrder = left.topology?.sourceOrder;
@@ -65018,24 +64756,16 @@ function compareDraftSourceOrder(left, right) {
 function runTopologyFor(drafts, tools) {
   return drafts.find((draft) => draft.topology?.run !== undefined)?.topology?.run ?? tools.find((checkpoint) => checkpoint.topology?.run !== undefined)?.topology?.run;
 }
-function validateRunGroups(grouped, rootRunId, tools, checkpoints) {
+function validateRunGroups(grouped, rootRunId, tools) {
   const toolsFor = (runId) => tools.filter((checkpoint) => (checkpoint.topology?.run?.runId ?? rootRunId) === runId);
   const owners = new Map;
-  const syntheticChildIds = new Set;
   for (const [parentRunId, drafts] of grouped) {
     for (const draft of drafts) {
       const childRunId = childRunIdFromDraft(draft);
       if (childRunId === undefined)
         continue;
-      if (childRunId === parentRunId || owners.has(childRunId))
+      if (!grouped.has(childRunId) || childRunId === parentRunId || owners.has(childRunId))
         return false;
-      if (!grouped.has(childRunId)) {
-        if (!isSyntheticExitedChild(draft, parentRunId, childRunId, rootRunId) || childScopedEvidenceExists(checkpoints, draft.replayKey, childRunId))
-          return false;
-        syntheticChildIds.add(childRunId);
-        owners.set(childRunId, draft);
-        continue;
-      }
       const childRun = runTopologyFor(grouped.get(childRunId), toolsFor(childRunId));
       if (childRun?.parentRunId !== parentRunId || childRun.parentStageId !== draft.topology?.stageId || childRun.rootRunId !== undefined && childRun.rootRunId !== rootRunId)
         return false;
@@ -65047,8 +64777,6 @@ function validateRunGroups(grouped, rootRunId, tools, checkpoints) {
       return false;
   }
   for (const runId of owners.keys()) {
-    if (syntheticChildIds.has(runId))
-      continue;
     const seen = new Set;
     let current = runId;
     while (current !== undefined && current !== rootRunId) {
@@ -65061,18 +64789,6 @@ function validateRunGroups(grouped, rootRunId, tools, checkpoints) {
       return false;
   }
   return true;
-}
-function isSyntheticExitedChild(draft, parentRunId, childRunId, rootRunId) {
-  const child = workflowChildFromDraft(draft);
-  const boundary = draft.topology?.boundary;
-  return child?.runId === childRunId && child.exited === true && boundary?.event === "terminal" && boundary.status === "completed" && boundary.child.runId === childRunId && boundary.child.parentRunId === parentRunId && boundary.child.parentStageId === draft.topology?.stageId && boundary.child.rootRunId === rootRunId;
-}
-function childScopedEvidenceExists(checkpoints, boundaryReplayKey, childRunId) {
-  const prefix = `${boundaryReplayKey}:`;
-  return checkpoints.some((checkpoint) => {
-    const lookupIdentity = checkpoint.kind === "tool" ? checkpoint.argsHash : checkpoint.kind === "ui" ? checkpoint.promptHash : checkpoint.replayKey;
-    return checkpoint.checkpointId.startsWith(prefix) || lookupIdentity.startsWith(prefix) || checkpoint.kind !== "ui" && checkpoint.topology?.run?.runId === childRunId;
-  });
 }
 function retainReachableRunGroups(grouped, rootRunId) {
   const reachable = new Set([rootRunId]);
@@ -65171,17 +64887,15 @@ function valueOrExisting(key2, checkpoint, existing) {
 }
 function workflowChildFromDraft(draft) {
   const strict = parseWorkflowChildResult(draft.output);
-  const legacy = hasCurrentStageIdentity(draft) ? undefined : parseLegacyWorkflowChildResult(draft.output);
-  const child = strict ?? legacy;
+  const child = strict ?? (hasCurrentStageIdentity(draft) ? undefined : parseLegacyWorkflowChildResult(draft.output));
   if (child === undefined)
     return;
-  const exited = strict?.exited ?? false;
   return {
     alias: child.workflow,
     workflow: child.workflow,
     runId: child.runId,
     status: child.status,
-    exited,
+    ...child.exited !== undefined ? { exited: child.exited } : {},
     outputs: child.outputs,
     ...typeof child.exitReason === "string" ? { exitReason: child.exitReason } : {}
   };
@@ -65190,7 +64904,7 @@ function hasCurrentStageIdentity(draft) {
   return draft.topology?.sourceOrder !== undefined || draft.topology?.status !== undefined || draft.topology?.occurrenceKey !== undefined || draft.topology?.boundary !== undefined;
 }
 
-// dist/builtin/workflows/src/runs/background/runner.ts
+// src/runs/background/runner.ts
 function workflowConnectGuidance(runId) {
   return `Run /workflow connect ${runId} to see agents working and chat with and steer each stage.`;
 }
@@ -65261,7 +64975,7 @@ function runDetached(def, inputs, opts = {}) {
   return buildDetachedAccepted(def.name, runId);
 }
 
-// dist/builtin/workflows/src/runs/background/startup-admission.ts
+// src/runs/background/startup-admission.ts
 function createWorkflowStartupObserver(beforeReady) {
   const startup = Promise.withResolvers();
   return {
@@ -65296,7 +65010,7 @@ function workflowStartupFailureMessage(admission, snapshotError, fallback) {
   return admission.resultError ?? snapshotError ?? (admission.error instanceof Error ? admission.error.message : admission.error === undefined ? undefined : String(admission.error)) ?? fallback;
 }
 
-// dist/builtin/workflows/src/durable/resume-runtime.ts
+// src/durable/resume-runtime.ts
 function resolveDurableEntry(workflowId, catalog) {
   if (!isFullRunId(workflowId))
     return { kind: "malformed", message: malformedRunIdMessage(workflowId) };
@@ -65395,7 +65109,6 @@ async function resumeDurableWorkflow(workflowId, deps, catalog) {
   const resumeRunOpts = {
     ...deps.baseRunOpts,
     ...handle.invocationCwd !== undefined ? { cwd: handle.invocationCwd } : {},
-    ...handle.origin !== undefined ? { origin: handle.origin } : {},
     runId: resolved.workflowId,
     durableBackend: backend
   };
@@ -65508,7 +65221,7 @@ async function prepareRuntimeDurableResumable(getBackend, workflowId) {
   return backend.listResumableWorkflows();
 }
 
-// dist/builtin/workflows/src/durable/completed-catalog.ts
+// src/durable/completed-catalog.ts
 function listCompletedFromBackend(backend) {
   return backend.listCompletedWorkflows();
 }
@@ -65544,7 +65257,7 @@ function completedWorkflowRunSnapshots(backend, entry) {
   const checkpoints = backend.listCheckpoints(entry.workflowId);
   if (checkpoints.length === 0)
     return [];
-  const runs = runSnapshotsFromCheckpoints(checkpoints, handle.workflowId, handle.name, handle.updatedAt, COMPLETED_RECONSTRUCTION).map((run2) => ({ ...run2, stages: run2.stages.map(validatedStageTranscript) }));
+  const runs = runSnapshotsFromCheckpoints(checkpoints, handle.workflowId, handle.name, handle.updatedAt).map((run2) => ({ ...run2, stages: run2.stages.map(validatedStageTranscript) }));
   const rootIndex = runs.findIndex((run2) => run2.id === handle.workflowId);
   if (rootIndex < 0)
     return [];
@@ -65557,8 +65270,6 @@ function completedWorkflowRunSnapshots(backend, entry) {
     endedAt: handle.updatedAt,
     durationMs: rootDuration,
     ...handle.error !== undefined ? { error: handle.error } : {},
-    ...handle.exited !== undefined ? { exited: handle.exited } : {},
-    ...handle.exitReason !== undefined ? { exitReason: handle.exitReason } : {},
     ...handle.failureKind !== undefined ? { failureKind: handle.failureKind } : {},
     ...handle.failureCode !== undefined ? { failureCode: handle.failureCode } : {},
     ...handle.failureRecoverability !== undefined ? { failureRecoverability: handle.failureRecoverability } : {},
@@ -65568,45 +65279,11 @@ function completedWorkflowRunSnapshots(backend, entry) {
   };
   return [root, ...runs.filter((_, index) => index !== rootIndex)];
 }
-function durableWorkflowRunSnapshots(backend, handle) {
-  const checkpoints = backend.listCheckpoints(handle.workflowId);
-  if (checkpoints.length === 0) {
-    return [rootSnapshot(backend, handle, { stages: [], toolNodes: [] })];
-  }
-  const requiresTerminalTopology = handle.status === "completed" || handle.status === "failed";
-  const runs = runSnapshotsFromCheckpoints(checkpoints, handle.workflowId, handle.name, handle.updatedAt, requiresTerminalTopology ? COMPLETED_RECONSTRUCTION : ACTIVE_INSPECTION_RECONSTRUCTION);
-  const rootIndex = runs.findIndex((run2) => run2.id === handle.workflowId);
-  if (rootIndex < 0)
-    return [];
-  return [rootSnapshot(backend, handle, runs[rootIndex]), ...runs.filter((_, index) => index !== rootIndex)];
-}
-function rootSnapshot(backend, handle, graph) {
-  const terminal = handle.status === "completed" || handle.status === "failed" || handle.status === "cancelled";
-  const priorDurationMs = priorRunElapsedMs(backend, handle.workflowId);
-  const terminalDurationMs = priorDurationMs ?? Math.max(0, handle.updatedAt - handle.createdAt);
-  return {
-    id: handle.workflowId,
-    name: handle.name,
-    inputs: { ...handle.inputs },
-    status: handle.status,
-    stages: graph.stages,
-    toolNodes: graph.toolNodes,
-    startedAt: handle.createdAt,
-    ...terminal ? { endedAt: handle.updatedAt, durationMs: terminalDurationMs } : priorDurationMs === undefined ? {} : { accumulatedDurationMs: priorDurationMs },
-    ...handle.error !== undefined ? { error: handle.error } : {},
-    ...handle.failureKind !== undefined ? { failureKind: handle.failureKind } : {},
-    ...handle.failureCode !== undefined ? { failureCode: handle.failureCode } : {},
-    ...handle.failureRecoverability !== undefined ? { failureRecoverability: handle.failureRecoverability } : {},
-    ...handle.failureDisposition !== undefined ? { failureDisposition: handle.failureDisposition } : {},
-    ...handle.failedToolNodeId !== undefined ? { failedToolNodeId: handle.failedToolNodeId } : {},
-    resumable: isDurableWorkflowResumable(handle)
-  };
-}
 function durableNestedRunSnapshots(backend, rootWorkflowId) {
   const handle = backend.getWorkflow(rootWorkflowId);
   if (handle === undefined)
     return [];
-  return runSnapshotsFromCheckpoints(backend.listCheckpoints(rootWorkflowId), rootWorkflowId, handle.name, handle.updatedAt, LEGACY_ACTIVE_RECONSTRUCTION).filter((run2) => run2.id !== rootWorkflowId);
+  return runSnapshotsFromCheckpoints(backend.listCheckpoints(rootWorkflowId), rootWorkflowId, handle.name, handle.updatedAt, false).filter((run2) => run2.id !== rootWorkflowId);
 }
 function validatedStageTranscript(stage) {
   if (stage.sessionFile === undefined || isReopenableSessionTranscript(stage.sessionFile))
@@ -65676,36 +65353,15 @@ function summarizeCompletedToolResult(value2) {
     return flattenTruncatedString(String(value2).slice(0, 240));
   return serialized.length <= 240 ? serialized : `${flattenTruncatedString(serialized.slice(0, 237))}...`;
 }
-var COMPLETED_RECONSTRUCTION = {
-  requireTerminal: true,
-  failClosed: true,
-  retainActive: false,
-  failOnUnreachable: false,
-  requireActiveBoundaryFingerprint: false
-};
-var ACTIVE_INSPECTION_RECONSTRUCTION = {
-  requireTerminal: false,
-  failClosed: true,
-  retainActive: true,
-  failOnUnreachable: true,
-  requireActiveBoundaryFingerprint: true
-};
-var LEGACY_ACTIVE_RECONSTRUCTION = {
-  requireTerminal: false,
-  failClosed: false,
-  retainActive: true,
-  failOnUnreachable: false,
-  requireActiveBoundaryFingerprint: false
-};
-function runSnapshotsFromCheckpoints(checkpoints, rootRunId, rootRunName, fallbackCompletedAt, policy = COMPLETED_RECONSTRUCTION) {
-  if (!validBoundaryRecordSet(checkpoints, policy.requireTerminal, policy.requireActiveBoundaryFingerprint))
+function runSnapshotsFromCheckpoints(checkpoints, rootRunId, rootRunName, fallbackCompletedAt, strict = true) {
+  if (!validBoundaryRecordSet(checkpoints, strict))
     return [];
   const stageRecords = checkpoints.filter((checkpoint) => checkpoint.kind === "stage");
   const identityRecords = stageRecords.filter((stage) => stage.topology?.sourceOrder !== undefined || stage.topology?.status !== undefined || stage.topology?.occurrenceKey !== undefined || stage.topology?.boundary !== undefined);
   if (immutableStageGroupError(identityRecords) !== undefined)
     return [];
   const recordsByGroup = groupByDurableStageKey(stageRecords);
-  const candidates = [...recordsByGroup.values()].map((records) => mergeStageGroup(records, stageRecords, checkpoints)).filter((draft) => policy.retainActive || draft.topology?.run === undefined || draft.endedAt !== undefined || draft.output !== undefined).map((draft) => draft.topology !== undefined ? draft : {
+  const candidates = [...recordsByGroup.values()].map((records) => mergeStageGroup(records, stageRecords, checkpoints)).filter((draft) => !strict || draft.topology?.run === undefined || draft.endedAt !== undefined || draft.output !== undefined).map((draft) => draft.topology !== undefined ? draft : {
     ...draft,
     topology: {
       version: DURABLE_STAGE_TOPOLOGY_VERSION,
@@ -65716,36 +65372,13 @@ function runSnapshotsFromCheckpoints(checkpoints, rootRunId, rootRunName, fallba
   }).sort(compareDraftSourceOrder);
   const drafts = checkpointDrafts(checkpoints);
   const toolCheckpoints = drafts.tools;
-  if (policy.failClosed) {
-    for (const draft of candidates) {
-      const boundary = draft.topology?.boundary;
-      if (boundary === undefined || childRunIdFromDraft(draft) === undefined)
-        continue;
-      if (boundary.replayScope !== draft.replayKey)
-        return [];
-      const expectedChildRun = {
-        runId: boundary.child.runId,
-        runName: boundary.child.runName,
-        parentRunId: boundary.child.parentRunId,
-        parentStageId: boundary.child.parentStageId,
-        rootRunId: boundary.child.rootRunId
-      };
-      const childToolIds = new Set(toolCheckpoints.flatMap((checkpoint) => checkpoint.topology?.run?.runId === expectedChildRun.runId ? [checkpoint.topology.nodeId] : []));
-      if (directChildTopologyError(stageRecords, boundary.replayScope, expectedChildRun, true, childToolIds) !== undefined)
-        return [];
-    }
-  }
   if (candidates.length === 0 && toolCheckpoints.length === 0) {
-    const supportedNonGraphState = checkpoints.every((checkpoint) => checkpoint.kind === "ui" || checkpoint.kind === "tool" && checkpoint.argsHash === RUN_TIMING_CHECKPOINT_NAME);
-    if (policy.failClosed && supportedNonGraphState) {
-      return [emptyGraphRun(rootRunId, rootRunName, fallbackCompletedAt)];
-    }
-    return policy.failClosed ? [] : [syntheticRun(rootRunId, rootRunName, checkpoints.length, fallbackCompletedAt)];
+    return strict ? [] : [syntheticRun(rootRunId, rootRunName, checkpoints.length, fallbackCompletedAt)];
   }
   const grouped = new Map;
   for (const draft of candidates) {
     if (draft.topology?.version !== DURABLE_STAGE_TOPOLOGY_VERSION) {
-      if (policy.failClosed)
+      if (strict)
         return [];
       continue;
     }
@@ -65761,30 +65394,13 @@ function runSnapshotsFromCheckpoints(checkpoints, rootRunId, rootRunName, fallba
   }
   for (const group of grouped.values())
     group.sort(compareDraftSourceOrder);
-  const groupedCount = grouped.size;
   retainReachableRunGroups(grouped, rootRunId);
-  if (policy.failOnUnreachable && grouped.size !== groupedCount)
+  if (!validateRunGroups(grouped, rootRunId, toolCheckpoints))
     return [];
-  if (!validateRunGroups(grouped, rootRunId, toolCheckpoints, checkpoints))
-    return [];
-  const syntheticChildren = [];
-  for (const [parentRunId, runDrafts] of grouped) {
-    for (const draft of runDrafts) {
-      const child = workflowChildFromDraft(draft);
-      if (child?.exited !== true || grouped.has(child.runId))
-        continue;
-      if (!isSyntheticExitedChild(draft, parentRunId, child.runId, rootRunId) || childScopedEvidenceExists(checkpoints, draft.replayKey, child.runId)) {
-        if (policy.failClosed)
-          return [];
-        continue;
-      }
-      syntheticChildren.push({ parentRunId, owner: draft, child });
-    }
-  }
   const idMaps = new Map;
   for (const [runId, runDrafts] of grouped) {
-    const ownedTools = toolCheckpoints.filter((checkpoint) => (checkpoint.topology?.run?.runId ?? rootRunId) === runId);
-    if (!validStageGroup(runDrafts, runId, rootRunId, ownedTools))
+    const ownedToolIds = new Set(toolCheckpoints.flatMap((checkpoint) => (checkpoint.topology?.run?.runId ?? rootRunId) === runId ? [checkpoint.topology?.nodeId ?? checkpoint.checkpointId] : []));
+    if (!validStageGroup(runDrafts, runId, ownedToolIds))
       return [];
     const ids = new Map;
     let hasIdentityConflict = false;
@@ -65800,7 +65416,7 @@ function runSnapshotsFromCheckpoints(checkpoints, rootRunId, rootRunName, fallba
       }
     });
     if (hasIdentityConflict) {
-      if (policy.failClosed)
+      if (strict)
         return [];
       grouped.delete(runId);
       continue;
@@ -65814,13 +65430,12 @@ function runSnapshotsFromCheckpoints(checkpoints, rootRunId, rootRunName, fallba
     idMaps.set(runId, ids);
   }
   const runs = [];
-  const emittedRunIds = new Set;
   for (const [runId, runDrafts] of grouped) {
     const ids = idMaps.get(runId);
     const ownedTools = toolCheckpoints.filter((checkpoint) => (checkpoint.topology?.run?.runId ?? rootRunId) === runId);
     const hasUnknownParents = runDrafts.some((draft) => draft.topology.parentIds.some((parentId) => !ids.has(parentId))) || ownedTools.some((checkpoint) => checkpoint.topology?.parentIds.some((parentId) => !ids.has(parentId)) === true);
     if (hasUnknownParents) {
-      if (policy.failClosed)
+      if (strict)
         return [];
       continue;
     }
@@ -65830,66 +65445,23 @@ function runSnapshotsFromCheckpoints(checkpoints, rootRunId, rootRunName, fallba
     const startedAt = Math.min(...stages.map((stage) => stage.startedAt ?? fallbackCompletedAt), ...toolNodes.map((tool) => tool.startedAt ?? tool.endedAt ?? fallbackCompletedAt));
     const endedAt = Math.max(...stages.map((stage) => stage.endedAt ?? fallbackCompletedAt), ...toolNodes.map((tool) => tool.endedAt ?? fallbackCompletedAt));
     const owner = runId === rootRunId ? undefined : boundaryOwner(grouped, runId);
-    const status = owner === undefined ? "completed" : childRunStatus(owner);
-    const terminal = status !== "running" && status !== "pending" && status !== "paused" && status !== "blocked";
     const parentRunId = run2?.parentRunId ?? rootRunId;
     const boundarySourceId = grouped.get(parentRunId)?.find((draft) => childRunIdFromDraft(draft) === runId)?.topology?.stageId;
     const declaredParentStageId = run2?.parentStageId === undefined ? undefined : idMaps.get(parentRunId)?.get(run2.parentStageId);
     const parentStageId = declaredParentStageId ?? (boundarySourceId === undefined ? undefined : idMaps.get(parentRunId)?.get(boundarySourceId));
-    const ownerChild = owner === undefined ? undefined : workflowChildFromDraft(owner);
     runs.push({
       id: runId,
       name: run2?.runName ?? rootRunName,
       inputs: {},
-      status,
+      status: owner === undefined ? "completed" : childRunStatus(owner),
       stages,
       toolNodes,
       startedAt,
-      ...terminal ? { endedAt, durationMs: Math.max(0, endedAt - startedAt) } : {},
+      endedAt,
+      durationMs: Math.max(0, endedAt - startedAt),
       ...run2?.parentRunId !== undefined ? { parentRunId: run2.parentRunId } : {},
       ...parentStageId !== undefined ? { parentStageId } : {},
       ...run2?.rootRunId !== undefined ? { rootRunId: run2.rootRunId } : {},
-      ...ownerChild?.exited === true ? {
-        result: ownerChild.outputs,
-        exited: true,
-        ...ownerChild.exitReason !== undefined ? { exitReason: ownerChild.exitReason } : {}
-      } : {},
-      resumable: false
-    });
-    emittedRunIds.add(runId);
-  }
-  for (const { parentRunId, owner, child } of syntheticChildren) {
-    if (!emittedRunIds.has(parentRunId)) {
-      if (policy.failClosed)
-        return [];
-      continue;
-    }
-    const topology = owner.topology;
-    const boundary = topology.boundary;
-    const parentStageId = idMaps.get(parentRunId)?.get(topology.stageId);
-    if (parentStageId === undefined) {
-      if (policy.failClosed)
-        return [];
-      continue;
-    }
-    const startedAt = owner.startedAt ?? owner.firstCompletedAt;
-    const endedAt = owner.endedAt ?? owner.firstCompletedAt;
-    runs.push({
-      id: child.runId,
-      name: boundary.child.runName,
-      inputs: {},
-      status: child.status,
-      stages: [],
-      toolNodes: [],
-      startedAt,
-      endedAt,
-      durationMs: Math.max(0, endedAt - startedAt),
-      parentRunId,
-      parentStageId,
-      rootRunId: boundary.child.rootRunId,
-      result: child.outputs,
-      exited: true,
-      ...child.exitReason !== undefined ? { exitReason: child.exitReason } : {},
       resumable: false
     });
   }
@@ -65937,20 +65509,6 @@ function stageResult(draft) {
     return;
   return typeof draft.output === "string" ? draft.output : JSON.stringify(draft.output);
 }
-function emptyGraphRun(runId, runName, completedAt) {
-  return {
-    id: runId,
-    name: runName,
-    inputs: {},
-    status: "completed",
-    stages: [],
-    toolNodes: [],
-    startedAt: completedAt,
-    endedAt: completedAt,
-    durationMs: 0,
-    resumable: false
-  };
-}
 function syntheticRun(runId, runName, checkpointCount, completedAt) {
   return {
     id: runId,
@@ -65979,19 +65537,11 @@ function syntheticCheckpointStage(checkpointCount, completedAt) {
   };
 }
 
-// dist/builtin/workflows/src/durable/completed-subtree.ts
+// src/durable/completed-subtree.ts
 function durableCompletedNestedRunSubtree(backend, rootWorkflowId, childRunId) {
   const nested = durableNestedRunSnapshots(backend, rootWorkflowId);
   if (!nested.some((run2) => run2.id === childRunId))
     return;
-  const intentionalExitStatuses = new Map;
-  for (const checkpoint of backend.listCheckpoints(rootWorkflowId)) {
-    if (checkpoint.kind !== "stage")
-      continue;
-    const child = parseWorkflowChildResult(checkpoint.output);
-    if (child?.exited === true)
-      intentionalExitStatuses.set(child.runId, child.status);
-  }
   const included = new Set([childRunId]);
   let priorSize = -1;
   while (priorSize !== included.size) {
@@ -66002,22 +65552,14 @@ function durableCompletedNestedRunSubtree(backend, rootWorkflowId, childRunId) {
     }
   }
   const subtree = nested.filter((run2) => included.has(run2.id));
-  const complete = subtree.length === included.size && subtree.every((run2) => isCompleteCachedRun(run2, intentionalExitStatuses));
+  const complete = subtree.length === included.size && subtree.every((run2) => run2.status === "completed" && run2.endedAt !== undefined && run2.stages.every((stage) => isTerminalStage2(stage.status) && stage.endedAt !== undefined));
   return complete ? subtree : undefined;
-}
-function isCompleteCachedRun(run2, intentionalExitStatuses) {
-  if (run2.endedAt === undefined || !run2.stages.every((stage) => isTerminalStage2(stage.status) && stage.endedAt !== undefined)) {
-    return false;
-  }
-  if (run2.status === "completed" || run2.exited === true)
-    return true;
-  return intentionalExitStatuses.get(run2.id) === run2.status;
 }
 function isTerminalStage2(status) {
   return status === "completed" || status === "failed" || status === "skipped";
 }
 
-// dist/builtin/workflows/src/engine/run-durable-topology.ts
+// src/engine/run-durable-topology.ts
 function durableRunTopology(run2) {
   return {
     runId: run2.id,
@@ -66154,8 +65696,6 @@ function createDurableCachedStageRecorder(input) {
 }
 function reconcileCachedDirectChildParentStage(input) {
   const existingRun = input.store.runs().find((run2) => run2.id === input.checkpointChildRunId);
-  if (existingRun === undefined)
-    return false;
   const runById = new Map(input.store.runs().map((run2) => [run2.id, run2]));
   const storedParentRun = runById.get(input.parentRun.id);
   if (storedParentRun !== undefined && (storedParentRun.parentRunId !== input.parentRun.parentRunId || storedParentRun.parentStageId !== input.parentRun.parentStageId))
@@ -66166,8 +65706,7 @@ function reconcileCachedDirectChildParentStage(input) {
   if (expectedRootRunId === undefined)
     return false;
   const storedBoundary = storedParentRun?.stages.find((stage) => stage.id === input.boundary.id);
-  const cachedChildStatusMatches = existingRun?.status === "completed" && input.catalogRun.status === "completed" || input.boundary.workflowChild?.exited === true && input.boundary.workflowChild.runId === input.checkpointChildRunId && existingRun?.status === input.catalogRun.status && input.boundary.workflowChild.status === input.catalogRun.status;
-  if (!rootMatches(input.parentRun.rootRunId, expectedRootRunId) || !rootMatches(storedParentRun?.rootRunId, expectedRootRunId) || authoritativeWorkflowChildRunId(input.boundary) !== input.checkpointChildRunId || storedParentRun !== undefined && authoritativeWorkflowChildRunId(storedBoundary) !== input.checkpointChildRunId || input.catalogRun.id !== input.checkpointChildRunId || !cachedChildStatusMatches || existingRun.parentRunId !== input.parentRun.id || input.catalogRun.parentRunId !== input.parentRun.id || input.catalogRun.parentStageId === undefined || existingRun.parentStageId !== input.catalogRun.parentStageId || !rootMatches(existingRun.rootRunId, expectedRootRunId) || !rootMatches(input.catalogRun.rootRunId, expectedRootRunId))
+  if (!rootMatches(input.parentRun.rootRunId, expectedRootRunId) || !rootMatches(storedParentRun?.rootRunId, expectedRootRunId) || authoritativeWorkflowChildRunId(input.boundary) !== input.checkpointChildRunId || storedParentRun !== undefined && authoritativeWorkflowChildRunId(storedBoundary) !== input.checkpointChildRunId || input.catalogRun.id !== input.checkpointChildRunId || existingRun?.status !== "completed" || input.catalogRun.status !== "completed" || existingRun.parentRunId !== input.parentRun.id || input.catalogRun.parentRunId !== input.parentRun.id || input.catalogRun.parentStageId === undefined || existingRun.parentStageId !== input.catalogRun.parentStageId || !rootMatches(existingRun.rootRunId, expectedRootRunId) || !rootMatches(input.catalogRun.rootRunId, expectedRootRunId))
     return false;
   return input.store.reconcileRunParentStage(existingRun.id, input.catalogRun.parentStageId, input.boundary.id);
 }
@@ -66180,7 +65719,7 @@ function workflowChildRunId(checkpoint) {
   return (parseWorkflowChildResult(checkpoint.output) ?? (hasCurrentIdentity ? undefined : parseLegacyWorkflowChildResult(checkpoint.output)))?.runId;
 }
 
-// dist/builtin/workflows/src/engine/run-returned-status.ts
+// src/engine/run-returned-status.ts
 function classifyReturnedRunStatus(result, runSnapshot) {
   const structuredFailure = runSnapshot !== undefined ? structuredRecoverableWorkflowFailure(runSnapshot) : undefined;
   if (structuredFailure !== undefined) {
@@ -66233,7 +65772,7 @@ function returnedRecoverableBlockedMetadata(error) {
   };
 }
 
-// dist/builtin/workflows/src/engine/run-terminal-failure.ts
+// src/engine/run-terminal-failure.ts
 function finalizeTerminalFailure(input) {
   const { runId, runSnapshot, store: store2, persistence, metadata, onRunEnd } = input;
   const failedToolNode = metadata.failedToolNodeId === undefined ? undefined : runSnapshot.toolNodes?.find((node) => node.id === metadata.failedToolNodeId);
@@ -66259,7 +65798,7 @@ function finalizeTerminalFailure(input) {
   return reconcileTerminalRunResult(runId, runSnapshot, store2, { status: "failed", error: metadata.errorMessage }, onRunEnd);
 }
 
-// dist/builtin/workflows/src/engine/run-tool-admission-boundary.ts
+// src/engine/run-tool-admission-boundary.ts
 function createToolAdmissionBoundary() {
   let closedReason;
   let openSections = 0;
@@ -66306,7 +65845,7 @@ function createToolAdmissionBoundary() {
   };
 }
 
-// dist/builtin/workflows/src/engine/run-tool-execution-tracker.ts
+// src/engine/run-tool-execution-tracker.ts
 function createAdmittedToolExecutionTracker(options = {}) {
   const inFlight = new Set;
   const admissions = [];
@@ -66426,7 +65965,7 @@ function createAdmittedToolExecutionTracker(options = {}) {
   };
 }
 
-// dist/builtin/workflows/src/engine/run-tool-node-lifecycle.ts
+// src/engine/run-tool-node-lifecycle.ts
 function createToolNodeLifecycle(input) {
   const { store: store2, tracker, run: run2, sourceToReplayedNodeIds } = input;
   const ownsCurrentRun = () => store2.runs().some((candidate) => candidate === run2);
@@ -66519,14 +66058,13 @@ function createTrackedToolPrimitive(input) {
   return { tool, admittedTools, abandonInFlightAsCancelled, observedQuitCancellation: () => observedQuit };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-child-boundary.ts
+// src/runs/foreground/executor-child-boundary.ts
 function workflowChildResultFromReplay(snapshot) {
-  const exited = snapshot.exited ?? (snapshot.status === "completed" ? false : undefined);
   const candidate = {
     workflow: snapshot.workflow,
     runId: snapshot.runId,
     status: snapshot.status,
-    exited,
+    exited: snapshot.exited,
     outputs: cloneWorkflowChildValue(snapshot.outputs),
     ...snapshot.exitReason !== undefined ? { exitReason: snapshot.exitReason } : {}
   };
@@ -66710,10 +66248,10 @@ function createWorkflowBoundaryFactory(input) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-stage-factory.ts
+// src/runs/foreground/executor-stage-factory.ts
 import { runCallback as runCallback3, runSynchronousCallback } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/runs/foreground/executor-queued-user-message.ts
+// src/runs/foreground/executor-queued-user-message.ts
 function removedMessages(before, after) {
   const remaining = [...after];
   const removed = [];
@@ -66766,7 +66304,7 @@ function createQueuedUserMessageConsumptionWatcher(armContinuation) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-stage-call.ts
+// src/runs/foreground/executor-stage-call.ts
 function normalizeTrackedStageCallOptions(input) {
   if (typeof input === "boolean")
     return { eagerSession: input, allowFinalized: false };
@@ -66834,7 +66372,7 @@ function createTrackedStageCaller(input) {
       if (suppressQueuedContinuation)
         runtime.state.suppressQueuedUserMessageContinuation = true;
       try {
-        result = await runtime.raceStageSessionHeartbeat(raceAbort(runtime.innerCtx.prompt(RESUME_CONTINUATION_PROMPT), runtime.signal));
+        result = await raceAbort(runtime.innerCtx.prompt(RESUME_CONTINUATION_PROMPT), runtime.signal);
       } finally {
         if (suppressQueuedContinuation)
           runtime.state.suppressQueuedUserMessageContinuation = false;
@@ -66861,51 +66399,46 @@ function createTrackedStageCaller(input) {
       throw err;
     }
     const trackStageLifecycle = !runtime.state.stageFinalized;
+    let refreshedParentIds;
+    if (trackStageLifecycle && !input.hasContinuation && runtime.stageSnapshot.startedAt === undefined && !input.hasScopedParents) {
+      const actualParentIds = runtime.scheduler.tracker.currentParents();
+      const sameParents = actualParentIds.length === runtime.stageSnapshot.parentIds.length && actualParentIds.every((value2) => runtime.stageSnapshot.parentIds.includes(value2));
+      if (!sameParents) {
+        runtime.scheduler.tracker.replaceParents(runtime.stageId, actualParentIds);
+        refreshedParentIds = actualParentIds;
+      }
+    }
+    if (trackStageLifecycle) {
+      const now = Date.now();
+      const hasNoExplicitModelConfig = input.options?.model === undefined && input.options?.fallbackModels === undefined;
+      const promptAdapterHandlesInitialPrompt = input.adapters.prompt !== undefined;
+      if (callOptions.eagerSession && !promptAdapterHandlesInitialPrompt && (hasNoExplicitModelConfig || await hasExplicitFastModeCandidate({
+        model: input.options?.model,
+        fallbackModels: input.options?.fallbackModels,
+        models: runtime.opts.models
+      }))) {
+        try {
+          await runtime.innerCtx.__ensureSession();
+          runtime.captureStageSessionMeta();
+        } catch (err) {
+          if (!(err instanceof Error && err.message.includes("prompt adapter not configured")))
+            throw err;
+        }
+      }
+      if (refreshedParentIds !== undefined) {
+        runtime.scheduler.setStageParentIds(runtime.stageSnapshot, refreshedParentIds);
+      }
+      runtime.stageSnapshot.status = "running";
+      runtime.stageSnapshot.startedAt ??= rebasedStageStartedAt(input.options?.durableAccumulatedDurationMs, now);
+      runtime.applyModelFallbackMeta(runtime.innerCtx.__modelFallbackMeta());
+      runtime.activeStore.recordStageStart(runtime.runId, runtime.stageSnapshot);
+      runtime.appendStageStartOnce();
+    } else {
+      runtime.applyModelFallbackMeta(runtime.innerCtx.__modelFallbackMeta());
+    }
+    runtime.mcpScope.apply();
     let applyTerminalStageState;
-    let terminalStateIsSuccess = false;
     try {
-      let refreshedParentIds;
-      if (trackStageLifecycle && !input.hasContinuation && runtime.stageSnapshot.startedAt === undefined && !input.hasScopedParents) {
-        const actualParentIds = runtime.scheduler.tracker.currentParents();
-        const sameParents = actualParentIds.length === runtime.stageSnapshot.parentIds.length && actualParentIds.every((value2) => runtime.stageSnapshot.parentIds.includes(value2));
-        if (!sameParents) {
-          runtime.scheduler.tracker.replaceParents(runtime.stageId, actualParentIds);
-          refreshedParentIds = actualParentIds;
-        }
-      }
-      if (trackStageLifecycle) {
-        const now = Date.now();
-        const hasNoExplicitModelConfig = input.options?.model === undefined && input.options?.fallbackModels === undefined;
-        const promptAdapterHandlesInitialPrompt = input.adapters.prompt !== undefined;
-        if (callOptions.eagerSession && !promptAdapterHandlesInitialPrompt && (hasNoExplicitModelConfig || await hasExplicitFastModeCandidate({
-          model: input.options?.model,
-          fallbackModels: input.options?.fallbackModels,
-          models: runtime.opts.models
-        }))) {
-          try {
-            await runtime.innerCtx.__ensureSession();
-          } catch (err) {
-            if (!(err instanceof Error && err.message.includes("prompt adapter not configured")))
-              throw err;
-          }
-        }
-        if (refreshedParentIds !== undefined) {
-          runtime.scheduler.setStageParentIds(runtime.stageSnapshot, refreshedParentIds);
-        }
-        runtime.stageSnapshot.status = "running";
-        runtime.stageSnapshot.startedAt ??= rebasedStageStartedAt(input.options?.durableAccumulatedDurationMs, now);
-        runtime.applyModelFallbackMeta(runtime.innerCtx.__modelFallbackMeta());
-        runtime.activeStore.recordStageStart(runtime.runId, runtime.stageSnapshot);
-        runtime.appendStageStartOnce();
-        const sessionMeta = runtime.innerCtx.__sessionMeta();
-        if (sessionMeta.sessionId !== undefined || sessionMeta.sessionFile !== undefined) {
-          await runtime.captureStageSessionMeta({ awaitDurable: true });
-        }
-        runtime.startStageSessionHeartbeat();
-      } else {
-        runtime.applyModelFallbackMeta(runtime.innerCtx.__modelFallbackMeta());
-      }
-      runtime.mcpScope.apply();
       const abortSession = () => {
         runtime.innerCtx.abort().catch(() => {});
       };
@@ -66917,7 +66450,7 @@ function createTrackedStageCaller(input) {
       try {
         runtime.state.askUserQuestionObservedThisTurn = false;
         runtime.state.chatAnswerObservedThisTurn = false;
-        result = await runtime.raceStageSessionHeartbeat(raceAbort(call(), runtime.signal));
+        result = await raceAbort(call(), runtime.signal);
         const initialDrain = await drainResumeContinuations(result);
         result = initialDrain.result;
         let repeatReadinessAfterChatTurn = initialDrain.chatAnswerObserved;
@@ -66941,10 +66474,10 @@ function createTrackedStageCaller(input) {
               runtime.state.chatAnswerObservedThisTurn = false;
               runtime.state.waitingForStageChatTurn = true;
               try {
-                await runtime.raceStageSessionHeartbeat(raceAbort(new Promise((resolve12) => {
+                await raceAbort(new Promise((resolve12) => {
                   resolveNextTurnEnd = resolve12;
                   runtime.state.wakeWaitingForStageChatTurn = resolve12;
-                }), runtime.signal));
+                }), runtime.signal);
               } finally {
                 runtime.state.wakeWaitingForStageChatTurn = undefined;
                 runtime.state.waitingForStageChatTurn = false;
@@ -66968,7 +66501,7 @@ function createTrackedStageCaller(input) {
         runtime.signal.removeEventListener("abort", abortSession);
       }
       await runtime.innerCtx.__closeGeneration();
-      await runtime.captureStageSessionMeta({ awaitDurable: true });
+      runtime.captureStageSessionMeta();
       runtime.applyModelFallbackMeta(runtime.innerCtx.__modelFallbackMeta());
       if (trackStageLifecycle && runtime.stageFailFastScope?.failed === true && runtime.stageFailFastScope.activeStages.has(runtime.stageId)) {
         runtime.markSkippedForParallelFailFast();
@@ -66978,7 +66511,6 @@ function createTrackedStageCaller(input) {
         throw runtime.parallelFailFastError();
       if (trackStageLifecycle) {
         const assistantText = runtime.innerCtx.__getLastAssistantText();
-        terminalStateIsSuccess = true;
         applyTerminalStageState = () => {
           runtime.stageSnapshot.status = "completed";
           if (assistantText !== undefined)
@@ -67003,30 +66535,15 @@ function createTrackedStageCaller(input) {
       }
       throw err;
     } finally {
+      runtime.mcpScope.clear();
       let finalizationError;
-      let durableCheckpointError;
       try {
-        runtime.mcpScope.clear();
+        await runtime.innerCtx.__closeGeneration();
+        runtime.captureStageSessionMeta();
       } catch (err) {
         finalizationError = { thrown: true, error: err };
       }
-      try {
-        await runtime.drainStageSessionHeartbeat();
-      } catch (err) {
-        durableCheckpointError = { thrown: true, error: err };
-      }
-      try {
-        await runtime.innerCtx.__closeGeneration();
-        await runtime.captureStageSessionMeta({ awaitDurable: true });
-      } catch (err) {
-        durableCheckpointError ??= { thrown: true, error: err };
-      }
-      finalizationError ??= durableCheckpointError;
       if (trackStageLifecycle) {
-        if (durableCheckpointError !== undefined && terminalStateIsSuccess) {
-          const failure3 = runtime.classifyExecutorFailure(durableCheckpointError.error);
-          applyTerminalStageState = () => applyFailureToStage(runtime.stageSnapshot, failure3);
-        }
         if (!runtime.state.stageFinalized)
           applyTerminalStageState?.();
         try {
@@ -67051,7 +66568,7 @@ function createTrackedStageCaller(input) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-stage-context.ts
+// src/runs/foreground/executor-stage-context.ts
 function noticeValue(value2) {
   if (typeof value2 === "string")
     return value2;
@@ -67199,7 +66716,7 @@ function createStageContext(input) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-tool-execution-buffer.ts
+// src/runs/foreground/stage-tool-execution-buffer.ts
 function eventType(event) {
   return String(event.type ?? "");
 }
@@ -67240,7 +66757,7 @@ class StageToolExecutionBuffer {
   }
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-stage-control.ts
+// src/runs/foreground/executor-stage-control.ts
 function createStageControlHandle(runtime) {
   const messagePreparation = () => {
     const meta2 = runtime.innerCtx.__sessionMeta();
@@ -67263,7 +66780,7 @@ function createStageControlHandle(runtime) {
     if (sessionFile === undefined)
       return;
     await runtime.innerCtx.__ensureSessionFromFile(sessionFile);
-    await runtime.captureStageSessionMeta({ awaitDurable: true });
+    runtime.captureStageSessionMeta();
   };
   const toolExecutions = new StageToolExecutionBuffer;
   const queuedUserMessages = new StageQueuedUserMessageBuffer;
@@ -67307,7 +66824,7 @@ function createStageControlHandle(runtime) {
       await ensureMessagingSession();
       await runtime.innerCtx.__ensureSession();
       runtime.throwIfStageMutationBlocked();
-      await runtime.captureStageSessionMeta({ awaitDurable: true });
+      runtime.captureStageSessionMeta();
     },
     async sendUserMessage(text, options, beforeDelivery) {
       runtime.throwIfStageMutationBlocked();
@@ -67407,7 +66924,7 @@ function createStageControlHandle(runtime) {
         if (changed) {
           runtime.scheduler.releaseStageBarrier(runtime.stageId);
           await runtime.scheduler.cascadeResumeFrom(runtime.stageId);
-          runtime.activeStore.recordRunResumed(runtime.runId, undefined, { source: "stage_control" });
+          runtime.activeStore.recordRunResumed(runtime.runId);
         }
         if (wakeReleasedIdleStageChat)
           runtime.state.wakeWaitingForStageChatTurn?.();
@@ -67439,7 +66956,7 @@ function createStageControlHandle(runtime) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/executor-stage-replay.ts
+// src/runs/foreground/executor-stage-replay.ts
 function createReplayStageContext(input) {
   const { runId, name, stageId, stageSnapshot, replaySource } = input;
   let replayFinalized = false;
@@ -67572,16 +67089,15 @@ function createReplayStageContext(input) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-context.ts
+// src/runs/foreground/stage-runner-context.ts
 import { createStructuredOutputCapture, runCallback as runCallback2 } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-controller.ts
+// src/runs/foreground/stage-runner-controller.ts
 import {
-  convertToLlm,
   shouldApplyCodexFastModeForScope
 } from "@bastani/atomic";
 
-// dist/builtin/workflows/src/runs/foreground/stage-delivery-activity.ts
+// src/runs/foreground/stage-delivery-activity.ts
 class StageDeliveryActivity {
   listeners = new Set;
   active = new Set;
@@ -67627,7 +67143,7 @@ class StageDeliveryActivity {
   }
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-candidate.ts
+// src/runs/foreground/stage-runner-candidate.ts
 function effectiveCandidateReasoning(candidate, fallback) {
   return candidate.reasoningLevel ?? fallback;
 }
@@ -67639,7 +67155,7 @@ function candidateLabel(candidate) {
   return candidate.reasoningLevel !== undefined ? `${candidate.id}:${candidate.reasoningLevel}` : candidate.id;
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-message-admission.ts
+// src/runs/foreground/stage-runner-message-admission.ts
 class StageMessageAdmission {
   tail;
   session;
@@ -67822,7 +67338,7 @@ class StageMessageAdmission {
   }
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-messages.ts
+// src/runs/foreground/stage-runner-messages.ts
 function extractMessageText2(message) {
   const { content } = message;
   if (typeof content === "string")
@@ -67925,7 +67441,7 @@ function assistantMessage(text) {
   ];
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-options.ts
+// src/runs/foreground/stage-runner-options.ts
 import { SessionManager } from "@bastani/atomic";
 function workflowSessionOptions(meta2) {
   return {
@@ -67994,7 +67510,7 @@ function unavailableSync(property) {
   throw new Error(`atomic-workflows: stage AgentSession property "${property}" is unavailable until the SDK session has been created`);
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-pause.ts
+// src/runs/foreground/stage-runner-pause.ts
 function nativeQueuePauseControl(session) {
   if (typeof session?.pauseQueuedMessages !== "function" || typeof session.resumeQueuedMessages !== "function")
     return;
@@ -68150,7 +67666,7 @@ class StageSessionPause {
   }
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-session.ts
+// src/runs/foreground/stage-runner-session.ts
 function stageSessionExtensionRunner(current) {
   const runner = current.extensionRunner;
   if (runner && typeof runner.hasHandlers === "function" && typeof runner.emit === "function") {
@@ -68196,7 +67712,7 @@ async function rejectDisposedCreatedSession(result, stageName) {
   throw new Error(`atomic-workflows: stage "${stageName}" session has been disposed`);
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-replacement.ts
+// src/runs/foreground/stage-runner-replacement.ts
 class StageSessionReplacement {
   previous;
   cleanups = new Set;
@@ -68229,7 +67745,7 @@ class StageSessionReplacement {
   }
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-send-user-message.ts
+// src/runs/foreground/stage-runner-send-user-message.ts
 function createLocalPromptOwnershipObserver(session, promptStarted) {
   let armed = false;
   let observed = false;
@@ -68333,7 +67849,7 @@ async function sendStageUserMessage(activeSession, content, options, beforeDeliv
   }
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-session-options.ts
+// src/runs/foreground/stage-runner-session-options.ts
 import { SessionManager as SessionManager2 } from "@bastani/atomic";
 function buildStageSessionOptions(input) {
   const options = input.candidate === undefined ? { ...input.effectiveStageOptions ?? {} } : {
@@ -68357,7 +67873,7 @@ function buildStageSessionOptions(input) {
   return Object.keys(options).length === 0 ? undefined : options;
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-structured-output.ts
+// src/runs/foreground/stage-runner-structured-output.ts
 import { createStructuredOutputTool } from "@bastani/atomic";
 var STRUCTURED_OUTPUT_MAX_CORRECTIVE_PROMPTS = 3;
 var STRUCTURED_OUTPUT_MISSING_ERROR = "atomic-workflows: stage configured with schema must finish by calling structured_output.";
@@ -68424,7 +67940,7 @@ function stageOptionsWithStructuredOutput(options, capture) {
   };
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-unresolved-overflow.ts
+// src/runs/foreground/stage-runner-unresolved-overflow.ts
 function unresolvedContextOverflowMessage(event) {
   if (event === null || typeof event !== "object")
     return;
@@ -68464,77 +67980,7 @@ function terminatingToolCallId(event) {
   return typeof callId === "string" && callId.length > 0 ? callId : undefined;
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-controller.ts
-function hasMeaningfulUsage(usage) {
-  if (usage === undefined)
-    return false;
-  const values = [usage.input, usage.output, usage.cacheRead, usage.cacheWrite, usage.totalTokens, usage.cost.total];
-  return values.every((value2) => Number.isFinite(value2) && value2 >= 0) && values.some((value2) => value2 > 0);
-}
-function usageForAttempt(messages, start, discarded) {
-  const totals = { ...discarded };
-  let meaningful = totals.turns > 0;
-  for (const message of messages.slice(start)) {
-    if (message.role !== "assistant" || !hasMeaningfulUsage(message.usage))
-      continue;
-    totals.input += message.usage.input;
-    totals.output += message.usage.output;
-    totals.cacheRead += message.usage.cacheRead;
-    totals.cacheWrite += message.usage.cacheWrite;
-    totals.cost += message.usage.cost.total;
-    totals.turns += 1;
-    meaningful = true;
-  }
-  return meaningful ? totals : undefined;
-}
-function isSessionCreationPauseResult(value2) {
-  return "kind" in value2 && value2.kind === "paused";
-}
-
-class StageSessionCreationCancelled extends Error {
-  constructor() {
-    super("atomic-workflows: stage session creation was cancelled while paused");
-    this.name = "StageSessionCreationCancelled";
-  }
-}
-function stageUserMessageText(message) {
-  if (message.role !== "user")
-    return;
-  if (typeof message.content === "string")
-    return message.content;
-  return message.content.filter((part) => part.type === "text").map((part) => part.text).join("");
-}
-function retrySettingsManagerFromError(error) {
-  if (error === null || typeof error !== "object")
-    return;
-  const manager = error.settingsManager;
-  if (manager === null || typeof manager !== "object")
-    return;
-  const candidate = manager;
-  return typeof candidate.getCodexFastModeSettings === "function" ? candidate : undefined;
-}
-function retryableAgentSession(activeSession) {
-  const session = asAgentSession(activeSession);
-  if (session === undefined)
-    return;
-  const candidate = session;
-  return typeof candidate._runAgentContinue === "function" ? session : undefined;
-}
-function canContinueFromTranscript(activeSession) {
-  const converted = convertToLlm([...activeSession.messages]);
-  const last = converted[converted.length - 1];
-  return last !== undefined && (last.role === "user" || last.role === "toolResult");
-}
-
-class ThrownErrorRetryPaused extends Error {
-  resume;
-  constructor(resume) {
-    super("atomic-workflows: thrown-error retry paused");
-    this.resume = resume;
-    this.name = "ThrownErrorRetryPaused";
-  }
-}
-
+// src/runs/foreground/stage-runner-controller.ts
 class StageSessionController {
   opts;
   meta;
@@ -68542,22 +67988,9 @@ class StageSessionController {
   structuredOutputCapture;
   session;
   activeCreation;
-  ownedCreationPromise;
-  abortGeneration = 0;
-  abortReason;
-  abortReasonGeneration = 0;
   sessionPromise;
   reattachSessionFile;
   lastPromptStartIndex;
-  attemptUsageStartIndex;
-  discardedAttemptUsage = {
-    input: 0,
-    output: 0,
-    cacheRead: 0,
-    cacheWrite: 0,
-    cost: 0,
-    turns: 0
-  };
   terminatingToolCallIds = new Set;
   latestStructuredOutputToolErrorValue;
   unsubscribeTerminateWatcher;
@@ -68580,10 +68013,7 @@ class StageSessionController {
   pendingFallbackWarnings = [];
   modelCatalog;
   sessionSettingsManager;
-  thrownErrorRetryStates = new Set;
-  creationPauseObservers = new Set;
   replacement = new StageSessionReplacement;
-  pendingCreationResumeMessage;
   messageAdmission = new StageMessageAdmission;
   deliveryActivity = new StageDeliveryActivity;
   constructor(opts, meta2, effectiveStageOptions, structuredOutputCapture) {
@@ -68641,20 +68071,8 @@ class StageSessionController {
       throw new Error(`atomic-workflows: stage "${this.opts.stageName}" session has been disposed`);
     if (this.session !== undefined)
       return this.session;
-    if (!this.sessionPromise) {
-      const pending = this.createInitialSession(consumer);
-      this.sessionPromise = pending;
-      this.ownedCreationPromise = pending;
-      const release = () => {
-        if (this.ownedCreationPromise === pending)
-          this.ownedCreationPromise = undefined;
-      };
-      pending.then(release, () => {
-        release();
-        if (this.sessionPromise === pending)
-          this.sessionPromise = undefined;
-      });
-    }
+    if (!this.sessionPromise)
+      this.sessionPromise = this.createInitialSession(consumer);
     return this.sessionPromise;
   }
   async ensureSessionFromFile(sessionFile, consumer = "prompt") {
@@ -68673,15 +68091,7 @@ class StageSessionController {
       }
       preparation?.beforePreparation?.();
       const sessionFile = preparation?.sessionFile;
-      const deliver = async (activity) => {
-        const activeSession = sessionFile === undefined ? await this.ensureSession("prompt") : await this.ensureSessionFromFile(sessionFile, "prompt");
-        const pausedDelivery2 = this.pauseControl.deferRunnerOwnedDelivery(() => sendStageUserMessage(activeSession, content, options, beforeDelivery, release, this.messageAdmission, activity));
-        if (pausedDelivery2 !== undefined) {
-          release();
-          return pausedDelivery2;
-        }
-        return sendStageUserMessage(activeSession, content, options, beforeDelivery, release, this.messageAdmission, activity);
-      };
+      const deliver = async (activity) => sendStageUserMessage(sessionFile === undefined ? await this.ensureSession("prompt") : await this.ensureSessionFromFile(sessionFile, "prompt"), content, options, beforeDelivery, release, this.messageAdmission, activity);
       if (this.session === undefined || sessionFile !== undefined)
         return this.deliveryActivity.runWithLease(() => deliver());
       return deliver(this.deliveryActivity);
@@ -68703,62 +68113,25 @@ class StageSessionController {
   }
   async promptWithFallback(text, sdkOptions, consumer = "prompt") {
     if (!this.hasExplicitModelFallbackConfig) {
-      try {
-        const activeSession = await this.ensureSession(consumer);
-        const resumedText2 = this.pendingCreationResumeMessage;
-        this.pendingCreationResumeMessage = undefined;
-        await this.promptWithThrownErrorRetry(activeSession, resumedText2 ?? text, sdkOptions);
-      } catch (error) {
-        if (error instanceof StageSessionCreationCancelled)
-          return;
-        throw error;
-      }
+      await this.promptWithPauseResume(await this.ensureSession(consumer), text, sdkOptions);
       return;
     }
     const candidates = await this.modelCandidates();
     if (candidates.length === 0) {
-      try {
-        const activeSession = await this.ensureSession(consumer);
-        const resumedText2 = this.pendingCreationResumeMessage;
-        this.pendingCreationResumeMessage = undefined;
-        await this.promptWithThrownErrorRetry(activeSession, resumedText2 ?? text, sdkOptions);
-      } catch (error) {
-        if (error instanceof StageSessionCreationCancelled)
-          return;
-        throw error;
-      }
+      await this.promptWithPauseResume(await this.ensureSession(consumer), text, sdkOptions);
       return;
     }
-    if (this.session === undefined && this.sessionPromise !== undefined) {
-      try {
-        await this.sessionPromise;
-      } catch (error) {
-        if (error instanceof StageSessionCreationCancelled)
-          return;
-      }
-    }
-    const resumedText = this.pendingCreationResumeMessage;
-    this.pendingCreationResumeMessage = undefined;
-    let promptText = resumedText ?? text;
-    if (await this.tryResumeCurrentSession(promptText, sdkOptions, candidates))
+    if (await this.tryResumeCurrentSession(text, sdkOptions, candidates))
       return;
     let index = this.activeCandidateIndex ?? 0;
     while (index < candidates.length) {
       const candidate = candidates[index];
+      const activeSession = this.session && this.activeCandidateIndex === index ? this.session : await this.createSession(candidate, consumer);
+      this.activeCandidateIndex = index;
+      this.selectedModel = candidate.id;
+      this.notifyModelFallbackMetaChange();
       try {
-        const created = this.session && this.activeCandidateIndex === index ? this.session : await this.createSessionWithThrownErrorRetry(candidate, consumer);
-        if (isSessionCreationPauseResult(created)) {
-          if (created.resumeMessage === undefined)
-            return;
-          promptText = created.resumeMessage;
-          continue;
-        }
-        const activeSession = created;
-        this.activeCandidateIndex = index;
-        this.selectedModel = candidate.id;
-        this.notifyModelFallbackMetaChange();
-        this.beginAttemptUsage(activeSession);
-        const { terminalScanStartIndex } = await this.promptWithThrownErrorRetry(activeSession, promptText, sdkOptions);
+        const { terminalScanStartIndex } = await this.promptWithPauseResume(activeSession, text, sdkOptions);
         const terminalFailure = latestTerminalAssistantFailureSince(activeSession.messages, terminalScanStartIndex);
         if (terminalFailure !== undefined) {
           if (this.capturedStructuredOutputForAttempt()) {
@@ -68793,9 +68166,6 @@ class StageSessionController {
   }
   async disposeAll() {
     this.disposed = true;
-    const reason = new Error(`atomic-workflows: stage "${this.opts.stageName}" session has been disposed`);
-    this.markAbort(reason);
-    this.pauseControl.reject(reason);
     for (const unsubscribe of this.listenerUnsubscribes.values())
       unsubscribe();
     this.listenerUnsubscribes.clear();
@@ -68808,25 +68178,8 @@ class StageSessionController {
     await this.replacement.dispose();
     await disposeStageSession(this.session);
   }
-  async abort() {
-    const reason = new DOMException("stage aborted", "AbortError");
-    this.markAbort(reason);
-    this.pauseControl.reject(reason);
-    await this.session?.abort();
-  }
   requestPause() {
-    const pause = this.pauseControl.requestPause();
-    const resume = this.pauseControl.currentResume();
-    if (resume !== undefined) {
-      this.pauseThrownErrorRetries(resume);
-      for (const observer of this.creationPauseObservers) {
-        if (observer.pauseResume !== undefined)
-          continue;
-        observer.pauseResume = resume;
-        this.latchCreationResume(resume);
-      }
-    }
-    return pause;
+    return this.pauseControl.requestPause();
   }
   resume(message, beforeResolve, beforeRelease) {
     return this.pauseControl.resume(message, beforeResolve, beforeRelease);
@@ -68847,252 +68200,20 @@ class StageSessionController {
     const { signal } = this.opts;
     if (!signal)
       return;
-    const abortReason2 = () => {
+    const abortReason = () => {
       const reason = signal.reason;
       if (reason instanceof Error || reason instanceof DOMException || typeof reason === "string")
         return reason;
       return new DOMException("workflow killed", "AbortError");
     };
     const onAbort = () => {
-      const reason = abortReason2();
-      this.markAbort(reason);
       this.session?.abort().catch(() => {});
-      this.pauseControl.reject(reason);
+      this.pauseControl.reject(abortReason());
     };
     if (signal.aborted)
       onAbort();
     else
       signal.addEventListener("abort", onAbort, { once: true });
-  }
-  markAbort(reason) {
-    this.abortGeneration += 1;
-    this.abortReason = reason;
-    this.abortReasonGeneration = this.abortGeneration;
-    this.abortThrownErrorRetries(reason);
-  }
-  pauseThrownErrorRetries(resume) {
-    for (const state2 of this.thrownErrorRetryStates) {
-      if (state2.pauseResume !== undefined)
-        continue;
-      state2.pauseResume = resume;
-      state2.controller.abort(new ThrownErrorRetryPaused(resume));
-    }
-  }
-  abortThrownErrorRetries(reason) {
-    for (const state2 of this.thrownErrorRetryStates)
-      state2.controller.abort(reason);
-    this.thrownErrorRetryStates.clear();
-  }
-  retrySettings() {
-    const managers = [
-      this.sessionSettingsManager,
-      this.session?.settingsManager,
-      this.effectiveStageOptions?.settingsManager
-    ];
-    for (const manager of managers) {
-      if (manager === undefined || typeof manager.getRetrySettings !== "function")
-        continue;
-      return manager.getRetrySettings();
-    }
-    return;
-  }
-  beginAttemptUsage(session) {
-    this.attemptUsageStartIndex = session.messages.length;
-    this.discardedAttemptUsage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0, turns: 0 };
-  }
-  takeAttemptUsage(session) {
-    const start = this.attemptUsageStartIndex;
-    const usage = session === undefined || start === undefined ? undefined : usageForAttempt(session.messages, start, this.discardedAttemptUsage);
-    this.clearAttemptUsage();
-    return usage;
-  }
-  clearAttemptUsage() {
-    this.attemptUsageStartIndex = undefined;
-    this.discardedAttemptUsage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0, turns: 0 };
-  }
-  accrueDiscardedAttemptUsage(message) {
-    if (!hasMeaningfulUsage(message.usage))
-      return;
-    this.discardedAttemptUsage.input += message.usage.input;
-    this.discardedAttemptUsage.output += message.usage.output;
-    this.discardedAttemptUsage.cacheRead += message.usage.cacheRead;
-    this.discardedAttemptUsage.cacheWrite += message.usage.cacheWrite;
-    this.discardedAttemptUsage.cost += message.usage.cost.total;
-    this.discardedAttemptUsage.turns += 1;
-  }
-  restoreSessionMessages(session, snapshot, promptText, keepPrompt) {
-    const snapshotMessages = new Set(snapshot);
-    const admitted = session.messages.filter((message) => !snapshotMessages.has(message));
-    for (const message of admitted) {
-      if (message.role !== "assistant" || message.stopReason !== "error")
-        continue;
-      this.accrueDiscardedAttemptUsage(message);
-    }
-    const failedAssistantIndex = admitted.findLastIndex((message) => message.role === "assistant" && message.stopReason === "error");
-    const promptUser = admitted.slice(0, failedAssistantIndex < 0 ? admitted.length : failedAssistantIndex).findLast((message) => message.role === "user" && stageUserMessageText(message) === promptText);
-    const retainedMessages = admitted.filter((message) => {
-      if (message === promptUser)
-        return keepPrompt;
-      if (message.role === "assistant")
-        return message.stopReason !== "error";
-      return ["user", "toolResult", "custom", "bashExecution", "branchSummary"].includes(message.role);
-    });
-    session.messages.splice(0, session.messages.length, ...snapshot, ...retainedMessages);
-    return keepPrompt ? promptUser : undefined;
-  }
-  dropRetainedPrompt(session, retained) {
-    if (retained === undefined)
-      return;
-    const index = session.messages.indexOf(retained);
-    if (index >= 0)
-      session.messages.splice(index, 1);
-  }
-  async sleepForThrownErrorRetry(delayMs, state2) {
-    this.thrownErrorRetryStates.add(state2);
-    const currentResume = this.pauseControl.currentResume();
-    if (currentResume !== undefined) {
-      state2.pauseResume = currentResume;
-      state2.controller.abort(new ThrownErrorRetryPaused(currentResume));
-    }
-    try {
-      await sleepOrAbort(delayMs, state2.controller.signal);
-    } finally {
-      this.thrownErrorRetryStates.delete(state2);
-    }
-  }
-  async continueWithPauseResume(continuationSession) {
-    const settlePause = async (resume) => {
-      const resumed = await resume;
-      await resumed.runnerOwnedDeliverySettlement;
-      return { kind: "paused", ...resumed.message === undefined ? {} : { message: resumed.message } };
-    };
-    const pauseBeforeContinue = this.pauseControl.currentResume();
-    if (pauseBeforeContinue !== undefined)
-      return settlePause(pauseBeforeContinue);
-    const state2 = { controller: new AbortController };
-    this.thrownErrorRetryStates.add(state2);
-    try {
-      await continuationSession._runAgentContinue();
-    } catch (error) {
-      const resume = state2.pauseResume ?? this.pauseControl.currentResume();
-      if (resume === undefined)
-        throw error;
-      return settlePause(resume);
-    } finally {
-      this.thrownErrorRetryStates.delete(state2);
-    }
-    const pauseAfterContinue = state2.pauseResume ?? this.pauseControl.currentResume();
-    if (pauseAfterContinue !== undefined)
-      return settlePause(pauseAfterContinue);
-    return { kind: "continued" };
-  }
-  async promptWithThrownErrorRetry(activeSession, text, sdkOptions) {
-    let retryAttempt = 0;
-    let nextText = text;
-    let retryAdmittedPrompt = false;
-    let retainedPrompt;
-    let terminalScanStartIndex;
-    while (true) {
-      const messagesBeforeAttempt = [...activeSession.messages];
-      try {
-        if (retryAdmittedPrompt) {
-          const continuationSession = retryableAgentSession(activeSession);
-          if (continuationSession !== undefined) {
-            const outcome = await this.continueWithPauseResume(continuationSession);
-            if (outcome.kind === "continued") {
-              return {
-                terminalScanStartIndex: terminalScanStartIndex ?? this.lastPromptStartIndex ?? messagesBeforeAttempt.length
-              };
-            }
-            this.dropRetainedPrompt(activeSession, retainedPrompt);
-            retainedPrompt = undefined;
-            retryAdmittedPrompt = false;
-            retryAttempt = 0;
-            terminalScanStartIndex = undefined;
-            if (outcome.message === undefined) {
-              return { terminalScanStartIndex: activeSession.messages.length };
-            }
-            nextText = outcome.message;
-            continue;
-          }
-          this.dropRetainedPrompt(activeSession, retainedPrompt);
-          retainedPrompt = undefined;
-          retryAdmittedPrompt = false;
-        }
-        const result = await this.promptWithPauseResume(activeSession, nextText, sdkOptions);
-        return {
-          terminalScanStartIndex: terminalScanStartIndex ?? result.terminalScanStartIndex
-        };
-      } catch (error) {
-        const errorSettingsManager = retrySettingsManagerFromError(error);
-        if (errorSettingsManager !== undefined)
-          this.sessionSettingsManager = errorSettingsManager;
-        const retryableFailure = isRetryableModelFailure(error);
-        const sameCandidateRetryable = isRetryableSameModelFailure(error) && !isUnresolvedContextOverflowFailure(error);
-        const decision = nextRetryDecision(this.retrySettings(), retryAttempt, sameCandidateRetryable);
-        const continuationSession = retryableAgentSession(activeSession);
-        const admittedMessages = activeSession.messages.length > messagesBeforeAttempt.length;
-        const willRetry = decision !== undefined && !this.disposed && this.opts.signal?.aborted !== true && !this.capturedStructuredOutputForAttempt();
-        const willContinue = continuationSession !== undefined && admittedMessages;
-        if (retryableFailure && willRetry) {
-          retainedPrompt = this.restoreSessionMessages(activeSession, messagesBeforeAttempt, nextText, willContinue) ?? retainedPrompt;
-        }
-        if (!willRetry)
-          throw error;
-        terminalScanStartIndex ??= this.lastPromptStartIndex ?? messagesBeforeAttempt.length;
-        retryAttempt = decision.attempt;
-        const state2 = { controller: new AbortController };
-        let pauseResume;
-        try {
-          await this.sleepForThrownErrorRetry(decision.delayMs, state2);
-        } catch (sleepError) {
-          if (sleepError instanceof ThrownErrorRetryPaused)
-            pauseResume = sleepError.resume;
-          else {
-            if (this.opts.signal?.aborted)
-              throw this.workflowAbortReason();
-            if (this.disposed)
-              throw new Error(`atomic-workflows: stage "${this.opts.stageName}" session has been disposed`);
-            throw sleepError;
-          }
-        }
-        if (pauseResume !== undefined) {
-          const resumed = await pauseResume;
-          retryAttempt = 0;
-          retryAdmittedPrompt = false;
-          terminalScanStartIndex = undefined;
-          this.dropRetainedPrompt(activeSession, retainedPrompt);
-          retainedPrompt = undefined;
-          if (resumed.message === undefined) {
-            return { terminalScanStartIndex: activeSession.messages.length };
-          }
-          nextText = resumed.message;
-          continue;
-        }
-        if (this.disposed)
-          throw new Error(`atomic-workflows: stage "${this.opts.stageName}" session has been disposed`);
-        if (this.opts.signal?.aborted)
-          throw this.workflowAbortReason();
-        retryAdmittedPrompt = willContinue && canContinueFromTranscript(activeSession);
-        if (!retryAdmittedPrompt) {
-          this.dropRetainedPrompt(activeSession, retainedPrompt);
-          retainedPrompt = undefined;
-        }
-      }
-    }
-  }
-  workflowAbortReason() {
-    const reason = this.opts.signal?.reason;
-    if (reason instanceof Error || reason instanceof DOMException || typeof reason === "string")
-      return reason;
-    return new DOMException("workflow killed", "AbortError");
-  }
-  staleCreationReason(startGeneration) {
-    if (this.opts.signal?.aborted)
-      return this.workflowAbortReason();
-    if (this.abortReasonGeneration > startGeneration && this.abortReason !== undefined)
-      return this.abortReason;
-    return new DOMException("stage aborted", "AbortError");
   }
   modelCandidates() {
     if (!this.candidatesPromise) {
@@ -69106,14 +68227,12 @@ class StageSessionController {
     return this.candidatesPromise;
   }
   async createInitialSession(consumer) {
-    if (!this.hasExplicitModelFallbackConfig) {
-      return this.createSessionObservingPause(undefined, consumer).catch((error) => this.createInitialSessionWithRetry(undefined, consumer, { error }));
-    }
+    if (!this.hasExplicitModelFallbackConfig)
+      return this.createSession(undefined, consumer);
     const candidates = await this.modelCandidates();
     const first = candidates[0];
-    if (first === undefined) {
-      return this.createSessionObservingPause(undefined, consumer).catch((error) => this.createInitialSessionWithRetry(undefined, consumer, { error }));
-    }
+    if (first === undefined)
+      return this.createSession(undefined, consumer);
     if (this.reattachSessionFile !== undefined) {
       const resumed = await this.createSession(undefined, consumer, { restoreSavedModel: true });
       const restoredId = workflowModelId(resumed.model);
@@ -69125,119 +68244,7 @@ class StageSessionController {
     }
     this.activeCandidateIndex = 0;
     this.selectedModel = first.id;
-    return this.createSessionObservingPause(first, consumer).catch((error) => this.createInitialSessionCandidateWalk(candidates, consumer, 0, { error }));
-  }
-  async createInitialSessionCandidateWalk(candidates, consumer, startIndex, initialFailure) {
-    let index = startIndex;
-    let pendingFailure = initialFailure;
-    let lastError = initialFailure?.error;
-    while (index < candidates.length) {
-      const candidate = candidates[index];
-      this.activeCandidateIndex = index;
-      this.selectedModel = candidate.id;
-      try {
-        const created = await this.createSessionWithThrownErrorRetry(candidate, consumer, pendingFailure);
-        pendingFailure = undefined;
-        if (!isSessionCreationPauseResult(created)) {
-          this.notifyModelFallbackMetaChange();
-          return created;
-        }
-        if (created.resumeMessage === undefined) {
-          this.pendingCreationResumeMessage = undefined;
-          this.sessionPromise = undefined;
-          throw new StageSessionCreationCancelled;
-        }
-        this.pendingCreationResumeMessage = created.resumeMessage;
-      } catch (error) {
-        if (error instanceof StageSessionCreationCancelled)
-          throw error;
-        pendingFailure = undefined;
-        lastError = error;
-        if (await this.handleCandidateFailure(error, candidate, candidates, index) !== "retry")
-          throw error;
-        index += 1;
-      }
-    }
-    throw lastError ?? new Error(`atomic-workflows: stage "${this.opts.stageName}" has no usable model candidate`);
-  }
-  async createInitialSessionWithRetry(candidate, consumer, initialFailure) {
-    let pendingFailure = initialFailure;
-    while (true) {
-      const created = await this.createSessionWithThrownErrorRetry(candidate, consumer, pendingFailure);
-      pendingFailure = undefined;
-      if (!isSessionCreationPauseResult(created))
-        return created;
-      if (created.resumeMessage === undefined) {
-        this.pendingCreationResumeMessage = undefined;
-        this.sessionPromise = undefined;
-        throw new StageSessionCreationCancelled;
-      }
-      this.pendingCreationResumeMessage = created.resumeMessage;
-    }
-  }
-  latchCreationResume(resume) {
-    resume.then(async (resolved) => {
-      await resolved.runnerOwnedDeliverySettlement;
-      if (resolved.message !== undefined)
-        this.pendingCreationResumeMessage = resolved.message;
-    }).catch(() => {});
-  }
-  createSessionObservingPause(candidate, consumer) {
-    const activePause = this.pauseControl.currentResume();
-    const observer = { pauseResume: activePause };
-    if (activePause !== undefined)
-      this.latchCreationResume(activePause);
-    this.creationPauseObservers.add(observer);
-    const creation = this.createSession(candidate, consumer);
-    const settle = () => {
-      this.creationPauseObservers.delete(observer);
-    };
-    creation.then(settle, settle);
-    return creation;
-  }
-  async createSessionWithThrownErrorRetry(candidate, consumer, initialFailure) {
-    let retryAttempt = 0;
-    let pendingFailure = initialFailure;
-    while (true) {
-      try {
-        if (pendingFailure !== undefined) {
-          const failure3 = pendingFailure;
-          pendingFailure = undefined;
-          throw failure3.error;
-        }
-        return await this.createSessionObservingPause(candidate, consumer);
-      } catch (error) {
-        const errorSettingsManager = retrySettingsManagerFromError(error);
-        if (errorSettingsManager !== undefined)
-          this.sessionSettingsManager = errorSettingsManager;
-        const decision = nextRetryDecision(this.retrySettings(), retryAttempt, isRetryableSameModelFailure(error));
-        if (decision === undefined || this.disposed || this.opts.signal?.aborted === true || this.capturedStructuredOutputForAttempt()) {
-          throw error;
-        }
-        retryAttempt = decision.attempt;
-        const state2 = { controller: new AbortController };
-        try {
-          await this.sleepForThrownErrorRetry(decision.delayMs, state2);
-        } catch (sleepError) {
-          if (sleepError instanceof ThrownErrorRetryPaused) {
-            const resumed = await sleepError.resume;
-            return {
-              kind: "paused",
-              ...resumed.message === undefined ? {} : { resumeMessage: resumed.message }
-            };
-          }
-          if (this.opts.signal?.aborted)
-            throw this.workflowAbortReason();
-          if (this.disposed)
-            throw new Error(`atomic-workflows: stage "${this.opts.stageName}" session has been disposed`);
-          throw sleepError;
-        }
-        if (this.disposed)
-          throw new Error(`atomic-workflows: stage "${this.opts.stageName}" session has been disposed`);
-        if (this.opts.signal?.aborted)
-          throw this.workflowAbortReason();
-      }
-    }
+    return this.createSession(first, consumer);
   }
   createSession(candidate, consumer, resumeOptions) {
     const creation = this.createSessionAttempt(candidate, consumer, resumeOptions);
@@ -69249,7 +68256,6 @@ class StageSessionController {
     return creation;
   }
   async createSessionAttempt(candidate, consumer, resumeOptions) {
-    const startGeneration = this.abortGeneration;
     this.applyCandidateThinking(candidate);
     const stageOptions = buildStageSessionOptions({
       effectiveStageOptions: this.effectiveStageOptions,
@@ -69258,29 +68264,12 @@ class StageSessionController {
       reattachSessionFile: this.reattachSessionFile,
       sharedModelRuntime: this.sharedModelRuntime
     });
-    let created;
-    try {
-      created = this.opts.adapters.agentSession ? await this.opts.adapters.agentSession.create(stripWorkflowOnlyOptions(stageOptions, this.opts.defaultSessionDir, this.meta), {
-        ...this.meta,
-        stageOptions,
-        ...this.sharedOrchestrationContext !== undefined ? { orchestrationContext: this.sharedOrchestrationContext } : {}
-      }) : missingAdapter(consumer);
-    } catch (error) {
-      if (this.disposed || this.opts.signal?.aborted === true || this.abortGeneration !== startGeneration)
-        throw this.disposed ? new Error(`atomic-workflows: stage "${this.opts.stageName}" session has been disposed`) : this.staleCreationReason(startGeneration);
-      throw error;
-    }
-    if (this.disposed || this.opts.signal?.aborted === true || this.abortGeneration !== startGeneration) {
-      await disposeStageSession(normalizeSessionCreateResult(created).session).catch(() => {});
-      if (this.disposed)
-        throw new Error(`atomic-workflows: stage "${this.opts.stageName}" session has been disposed`);
-      throw this.staleCreationReason(startGeneration);
-    }
-    const session = attachCreatedStageSession(created, this.disposed, this.opts.stageName, (result) => this.attachSession(result));
-    if (session instanceof Promise)
-      return await session;
-    await this.opts.onSessionReady?.();
-    return session;
+    const created = this.opts.adapters.agentSession ? await this.opts.adapters.agentSession.create(stripWorkflowOnlyOptions(stageOptions, this.opts.defaultSessionDir, this.meta), {
+      ...this.meta,
+      stageOptions,
+      ...this.sharedOrchestrationContext !== undefined ? { orchestrationContext: this.sharedOrchestrationContext } : {}
+    }) : missingAdapter(consumer);
+    return attachCreatedStageSession(created, this.disposed, this.opts.stageName, (result) => this.attachSession(result));
   }
   attachSession(created) {
     const result = normalizeSessionCreateResult(created);
@@ -69319,13 +68308,11 @@ class StageSessionController {
     return result.session;
   }
   async disposeCurrentSession() {
-    this.abortThrownErrorRetries(new Error(`atomic-workflows: stage "${this.opts.stageName}" session was replaced`));
     const current = this.session;
     this.messageAdmission.reset();
     this.replacement.retire(current);
     this.session = undefined;
-    if (this.sessionPromise !== this.ownedCreationPromise)
-      this.sessionPromise = undefined;
+    this.sessionPromise = undefined;
     this.sessionSettingsManager = undefined;
     this.resumeCurrentSession = false;
     for (const unsubscribe of this.listenerUnsubscribes.values())
@@ -69388,17 +68375,11 @@ class StageSessionController {
     const resumedSession = this.session;
     const resumedLabel = this.selectedModel ?? workflowModelId(resumedSession.model) ?? candidates[0].id;
     this.notifyModelFallbackMetaChange();
-    this.beginAttemptUsage(resumedSession);
     try {
-      const { terminalScanStartIndex } = await this.promptWithThrownErrorRetry(resumedSession, text, sdkOptions);
+      const { terminalScanStartIndex } = await this.promptWithPauseResume(resumedSession, text, sdkOptions);
       const terminalFailure = latestTerminalAssistantFailureSince(resumedSession.messages, terminalScanStartIndex);
       if (terminalFailure === undefined || this.capturedStructuredOutputForAttempt()) {
-        const usage = this.takeAttemptUsage(resumedSession);
-        this.modelAttempts.push({
-          model: resumedLabel,
-          success: true,
-          ...usage === undefined ? {} : { usage }
-        });
+        this.modelAttempts.push({ model: resumedLabel, success: true });
         this.pendingFallbackWarnings.length = 0;
         this.resumeCurrentSession = true;
         return true;
@@ -69406,24 +68387,13 @@ class StageSessionController {
       throw new WorkflowPromptModelFailure(terminalFailure);
     } catch (err) {
       if (this.capturedStructuredOutputForAttempt() && isRetryableModelFailure(err)) {
-        const usage2 = this.takeAttemptUsage(resumedSession);
-        this.modelAttempts.push({
-          model: resumedLabel,
-          success: true,
-          ...usage2 === undefined ? {} : { usage: usage2 }
-        });
+        this.modelAttempts.push({ model: resumedLabel, success: true });
         this.pendingFallbackWarnings.length = 0;
         this.resumeCurrentSession = true;
         return true;
       }
       const message = errorMessage3(err);
-      const usage = this.takeAttemptUsage(resumedSession);
-      this.modelAttempts.push({
-        model: resumedLabel,
-        success: false,
-        ...usage === undefined ? {} : { usage },
-        error: message
-      });
+      this.modelAttempts.push({ model: resumedLabel, success: false, error: message });
       if (this.opts.signal?.aborted || !isRetryableModelFailure(err)) {
         this.modelWarnings.push(...this.pendingFallbackWarnings);
         this.pendingFallbackWarnings.length = 0;
@@ -69449,12 +68419,10 @@ class StageSessionController {
       this.recordSuccessfulAttempt(candidate);
       return "handled";
     }
-    const usage = this.takeAttemptUsage(this.session);
     this.modelAttempts.push({
       model: candidate.id,
       success: false,
       ...modelAttemptReasoning(candidate, this.effectiveStageOptions?.thinkingLevel),
-      ...usage === undefined ? {} : { usage },
       error: message
     });
     if (this.opts.signal?.aborted || !isRetryableModelFailure(err) || index === candidates.length - 1) {
@@ -69472,12 +68440,10 @@ class StageSessionController {
     return this.structuredOutputCapture?.called === true && this.opts.signal?.aborted !== true;
   }
   recordSuccessfulAttempt(candidate) {
-    const usage = this.takeAttemptUsage(this.session);
     this.modelAttempts.push({
       model: candidate.id,
       success: true,
-      ...modelAttemptReasoning(candidate, this.effectiveStageOptions?.thinkingLevel),
-      ...usage === undefined ? {} : { usage }
+      ...modelAttemptReasoning(candidate, this.effectiveStageOptions?.thinkingLevel)
     });
     this.pendingFallbackWarnings.length = 0;
     this.resumeCurrentSession = true;
@@ -69501,10 +68467,10 @@ class StageSessionController {
   }
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-output.ts
+// src/runs/foreground/stage-runner-output.ts
 import { createHash as createHash3 } from "node:crypto";
 import { mkdir as mkdir6, writeFile as writeFile10 } from "node:fs/promises";
-import { basename as basename4, dirname as dirname11, isAbsolute as isAbsolute10, join as join27, resolve as resolve12 } from "node:path";
+import { basename as basename4, dirname as dirname10, isAbsolute as isAbsolute10, join as join27, resolve as resolve12 } from "node:path";
 var DEFAULT_MAX_OUTPUT_BYTES = 200 * 1024;
 var DEFAULT_MAX_OUTPUT_LINES = 5000;
 function normalizeMaxOutput2(maxOutput) {
@@ -69684,7 +68650,7 @@ async function finalizePromptOutput(fullOutput, outputOptions, runtimeCwd, runId
   const transcriptFile = transcriptPath(runId, outputPath);
   const transcript = renderTranscript(messages, fullOutput);
   try {
-    await mkdir6(dirname11(outputPath), { recursive: true });
+    await mkdir6(dirname10(outputPath), { recursive: true });
     await writeFile10(outputPath, fullOutput, "utf8");
   } catch (err) {
     return `${displayOutput}
@@ -69696,7 +68662,7 @@ ${err instanceof Error ? err.message : String(err)}`;
   let transcriptError;
   try {
     await ensureWorkflowArtifactRunDirectory(runId);
-    await mkdir6(dirname11(transcriptFile), { recursive: true });
+    await mkdir6(dirname10(transcriptFile), { recursive: true });
     await writeFile10(transcriptFile, transcript, "utf8");
     transcriptAvailable = true;
   } catch (err) {
@@ -69713,7 +68679,7 @@ ${err instanceof Error ? err.message : String(err)}`;
 ${reference}`;
 }
 
-// dist/builtin/workflows/src/runs/foreground/stage-runner-context.ts
+// src/runs/foreground/stage-runner-context.ts
 function createStageContext2(opts) {
   const { stageId, stageName, adapters, runId, workflowIntercomGroup, signal, stageOptions, executionMode } = opts;
   const structuredOutputCapture = stageOptions?.schema ? createStructuredOutputCapture() : undefined;
@@ -69865,7 +68831,7 @@ function createStageContext2(opts) {
       controller.currentSession?.abortCompaction();
     },
     async abort() {
-      await controller.abort();
+      await controller.currentSession?.abort();
     },
     async __dispose() {
       await controller.disposeAll();
@@ -69914,82 +68880,7 @@ function createStageContext2(opts) {
     }
   };
 }
-// dist/builtin/workflows/src/runs/foreground/stage-session-heartbeat.ts
-var STAGE_SESSION_HEARTBEAT_INTERVAL_MS = 30000;
-function createStageSessionHeartbeat(checkpoint, intervalMs = STAGE_SESSION_HEARTBEAT_INTERVAL_MS) {
-  let active2 = false;
-  let timer;
-  let generation = 0;
-  let nextDeadline = 0;
-  let failure3;
-  let inFlight;
-  let rejectFailure;
-  const failureSignal = new Promise((_resolve, reject) => {
-    rejectFailure = reject;
-  });
-  failureSignal.catch(() => {
-    return;
-  });
-  const stopScheduling = () => {
-    active2 = false;
-    generation += 1;
-    if (timer !== undefined)
-      clearTimeout(timer);
-    timer = undefined;
-  };
-  const fail = (error) => {
-    if (failure3 !== undefined)
-      return;
-    failure3 = error;
-    stopScheduling();
-    rejectFailure(error);
-  };
-  const schedule = (scheduledGeneration) => {
-    if (!active2 || failure3 !== undefined || scheduledGeneration !== generation)
-      return;
-    const delayMs = Math.max(0, nextDeadline - Date.now());
-    timer = setTimeout(() => {
-      timer = undefined;
-      const startedAt = Date.now();
-      do
-        nextDeadline += intervalMs;
-      while (nextDeadline <= startedAt);
-      const running = checkpoint().catch(fail).finally(() => {
-        if (inFlight === running)
-          inFlight = undefined;
-        schedule(scheduledGeneration);
-      });
-      inFlight = running;
-    }, delayMs);
-    timer.unref?.();
-  };
-  const drain = async () => {
-    stopScheduling();
-    await inFlight;
-    if (failure3 !== undefined)
-      throw failure3;
-  };
-  return {
-    start() {
-      if (active2 || failure3 !== undefined)
-        return;
-      active2 = true;
-      generation += 1;
-      nextDeadline = Date.now() + intervalMs;
-      schedule(generation);
-    },
-    stop: stopScheduling,
-    drain,
-    fail,
-    race(work) {
-      if (failure3 !== undefined)
-        return Promise.reject(failure3);
-      return Promise.race([work, failureSignal]);
-    }
-  };
-}
-
-// dist/builtin/workflows/src/runs/foreground/executor-stage-factory.ts
+// src/runs/foreground/executor-stage-factory.ts
 function createWorkflowStageFactory(input) {
   return (name, options, stageFailFastScope) => {
     input.exit.throwIfWorkflowExitSelected();
@@ -70069,15 +68960,6 @@ function createWorkflowStageFactory(input) {
       if (meta2.modelAttempts !== undefined)
         stageSnapshot.modelAttempts = meta2.modelAttempts;
     };
-    let runtime;
-    const stageSessionHeartbeat = createStageSessionHeartbeat(async () => {
-      try {
-        await runtime.captureStageSessionMeta({ awaitDurable: true });
-      } catch (error) {
-        await runtime.innerCtx.abort().catch(() => {});
-        throw error;
-      }
-    });
     const innerCtx = createStageContext2({
       stageId,
       stageName: name,
@@ -70093,12 +68975,6 @@ function createWorkflowStageFactory(input) {
         applyModelFallbackMeta(meta2);
         if (stageSnapshot.status === "running")
           input.activeStore.recordStageStart(input.runId, stageSnapshot);
-      },
-      async onSessionReady() {
-        if (stageSnapshot.status !== "running")
-          return;
-        await runtime.captureStageSessionMeta({ awaitDurable: true });
-        runtime.startStageSessionHeartbeat();
       }
     });
     const state2 = {
@@ -70161,7 +69037,8 @@ function createWorkflowStageFactory(input) {
       stageUiBroker.clearStagePrompt(input.runId, stageId);
       await innerCtx.__dispose();
     };
-    const captureStageSessionMeta = async (checkpointOptions) => {
+    let runtime;
+    const captureStageSessionMeta = (checkpointOptions) => {
       const meta2 = innerCtx.__sessionMeta();
       if (meta2.sessionId !== undefined)
         stageSnapshot.sessionId = meta2.sessionId;
@@ -70170,17 +69047,15 @@ function createWorkflowStageFactory(input) {
       if (meta2.sessionId !== undefined || meta2.sessionFile !== undefined)
         input.activeStore.recordStageSession(input.runId, stageId, meta2);
       const pending = input.opts.onStageSession?.(input.runId, stageSnapshot, checkpointOptions);
-      if (checkpointOptions?.forceDurable === true || checkpointOptions?.awaitDurable === true) {
-        await pending;
-        return;
-      }
+      if (checkpointOptions?.forceDurable === true)
+        return pending;
       Promise.resolve(pending).catch(() => {});
+      return;
     };
     const releaseLiveHandle = async () => {
       if (state2.liveHandleReleased)
         return;
       state2.liveHandleReleased = true;
-      stageSessionHeartbeat.stop();
       runtime.dropStageControlHandle();
       runtime.unregisterStageHandle();
       await disposeInnerContext();
@@ -70213,7 +69088,6 @@ function createWorkflowStageFactory(input) {
       });
     };
     const finalizeStageSnapshot = async () => {
-      stageSessionHeartbeat.stop();
       if (state2.stageFinalized)
         return false;
       if (stageSnapshot.endedAt !== undefined && isTerminalStage(stageSnapshot)) {
@@ -70286,9 +69160,6 @@ function createWorkflowStageFactory(input) {
       dropStageControlHandle: () => {},
       unregisterWorkflowExitCleanup: () => {},
       captureStageSessionMeta,
-      startStageSessionHeartbeat: stageSessionHeartbeat.start,
-      drainStageSessionHeartbeat: stageSessionHeartbeat.drain,
-      raceStageSessionHeartbeat: stageSessionHeartbeat.race,
       applyModelFallbackMeta,
       appendStageStartOnce,
       finalizeStageSnapshot,
@@ -70351,7 +69222,7 @@ function createWorkflowStageFactory(input) {
   };
 }
 
-// dist/builtin/workflows/src/engine/runtime.ts
+// src/engine/runtime.ts
 class EngineRuntime {
   runId;
   workflowIntercomGroup;
@@ -70441,22 +69312,9 @@ class EngineRuntime {
       apply: () => {
         if (!this.childRunOptions.mcp || !hasScope)
           return;
-        if (depth > 0) {
-          depth += 1;
-          return;
-        }
-        depth = 1;
-        try {
+        if (depth === 0)
           this.childRunOptions.mcp.setScope(stageId, allow, deny);
-        } catch (error) {
-          depth = 0;
-          try {
-            this.childRunOptions.mcp.clearScope(stageId);
-          } catch (cleanupError) {
-            throw new AggregateError([error, cleanupError], "MCP scope setup failed and compensating cleanup failed");
-          }
-          throw error;
-        }
+        depth += 1;
       },
       clear: () => {
         if (!this.childRunOptions.mcp || !hasScope)
@@ -70471,7 +69329,7 @@ class EngineRuntime {
   }
 }
 
-// dist/builtin/workflows/src/engine/workflow-activity.ts
+// src/engine/workflow-activity.ts
 import { runCallback as runCallback4 } from "@bastani/atomic";
 function nextEventLoopTurn() {
   return new Promise((resolve13) => setTimeout(resolve13, 0));
@@ -70480,7 +69338,7 @@ function runWorkflowDefinitionCallback(name, runId, callback) {
   return runCallback4({ kind: "workflow.run", name, runId }, callback);
 }
 
-// dist/builtin/workflows/src/engine/run.ts
+// src/engine/run.ts
 async function run(def, inputs, opts = {}) {
   if (!isWorkflowDefinition(def))
     throw new Error(workflowDefinitionRequirementMessage("run(definition, inputs)", def));
@@ -70522,7 +69380,6 @@ async function run(def, inputs, opts = {}) {
   const rootBackend = opts.durableRootBackend ?? backendView;
   const durableBackend = opts.durableScope !== undefined ? new ScopedDurableBackend(backendView, opts.durableScope) : backendView;
   const inheritedElapsedMs = opts.parentRun === undefined ? inheritedRunElapsedMs({ backend: durableBackend, runId, continuationSource: opts.continuation?.source }) : undefined;
-  const continuationOrigin = opts.continuation !== undefined ? opts.continuation.source.origin : opts.origin;
   const runSnapshot = {
     id: runId,
     name: def.name,
@@ -70540,8 +69397,6 @@ async function run(def, inputs, opts = {}) {
       resumedFromRunId: opts.continuation.source.id,
       resumeFromStageId: opts.continuation.resumeFromStageId
     } : {},
-    ...continuationOrigin !== undefined ? { origin: continuationOrigin } : {},
-    ...opts.resumeActor !== undefined ? { resumeActor: opts.resumeActor, resumeSource: "run_control" } : {},
     ...inheritedElapsedMs !== undefined ? { accumulatedDurationMs: inheritedElapsedMs } : {}
   };
   const classifiedFailures = new Map;
@@ -70572,7 +69427,6 @@ async function run(def, inputs, opts = {}) {
       ...runSnapshot.parentStageId !== undefined ? { parentStageId: runSnapshot.parentStageId } : {},
       ...runSnapshot.rootRunId !== undefined ? { rootRunId: runSnapshot.rootRunId } : {},
       ...runSnapshot.resumedFromRunId !== undefined ? { resumedFromRunId: runSnapshot.resumedFromRunId } : {},
-      ...runSnapshot.origin !== undefined ? { origin: runSnapshot.origin } : {},
       ...runSnapshot.resumeFromStageId !== undefined ? { resumeFromStageId: runSnapshot.resumeFromStageId } : {},
       ...runSnapshot.accumulatedDurationMs !== undefined ? { accumulatedDurationMs: runSnapshot.accumulatedDurationMs } : {},
       ts: runSnapshot.startedAt
@@ -70876,7 +69730,7 @@ async function run(def, inputs, opts = {}) {
       isChildRun: opts.parentRun !== undefined,
       registration: durableRootRegistration === undefined ? undefined : {
         ...durableRootRegistration,
-        ...workflowInvocationMetadata(inputRuntimeDefaults, workflowInvocationCwd, gitWorktreeSetupCache, runSnapshot.origin)
+        ...workflowInvocationMetadata(inputRuntimeDefaults, workflowInvocationCwd, gitWorktreeSetupCache)
       }
     });
     if (opts.deferWorkflowStart === true)
@@ -70996,7 +69850,7 @@ async function run(def, inputs, opts = {}) {
     }
   }
 }
-// dist/builtin/workflows/src/shared/types.ts
+// src/shared/types.ts
 var INTERACTIVE_WORKFLOW_POLICY = Object.freeze({
   mode: "interactive",
   allowHumanInput: true,
@@ -71010,13 +69864,13 @@ var NON_INTERACTIVE_WORKFLOW_POLICY = Object.freeze({
   allowInputPicker: false
 });
 
-// dist/builtin/workflows/src/sdk-surface.ts
+// src/sdk-surface.ts
 var REMOVED_RUN_WORKFLOW_MESSAGE = "@bastani/workflows no longer exports runWorkflow; author workflows with workflow({...})";
 var runWorkflow = () => {
   throw new Error(REMOVED_RUN_WORKFLOW_MESSAGE);
 };
 
-// dist/builtin/workflows/src/extension/workflow-module-loader.ts
+// src/extension/workflow-module-loader.ts
 var WORKFLOWS_MODULE_SPECIFIER = "@bastani/workflows";
 var WORKFLOWS_BUILTIN_MODULE_SPECIFIER = `${WORKFLOWS_MODULE_SPECIFIER}/builtin`;
 var TYPEBOX_MODULE_SPECIFIER = "typebox";
@@ -71118,7 +69972,7 @@ function collectWorkflowModuleCandidates(mod) {
   return candidates;
 }
 
-// dist/builtin/workflows/src/extension/discovery-loaders.ts
+// src/extension/discovery-loaders.ts
 async function scanWorkflowDir(dir) {
   try {
     const entries = await readdir2(dir, { withFileTypes: true });
@@ -71186,36 +70040,36 @@ async function loadFromPaths(pathsOrMap, kind, baseCwd, diagnostics) {
   return all;
 }
 
-// dist/builtin/workflows/src/extension/discovery.ts
+// src/extension/discovery.ts
 function workflowAgentDirs2(options) {
   if (options?.agentDirs !== undefined)
     return options.agentDirs;
   if (options?.homeDir !== undefined) {
     const homeDir = options.homeDir;
-    return CONFIG_DIR_NAMES2.map((name) => join29(homeDir, name, "agent"));
+    return HOST_CONFIG_DIR_NAMES.map((name) => join29(homeDir, name, "agent"));
   }
-  return getAgentDirs2();
+  return getHostAgentDirs();
 }
 function validateConfig2(config) {
   if (config === null || typeof config !== "object") {
     return "config must be an object";
   }
   const c = config;
-  for (const field2 of ["projectWorkflows", "globalWorkflows"]) {
-    const val = c[field2];
+  for (const field3 of ["projectWorkflows", "globalWorkflows"]) {
+    const val = c[field3];
     if (val !== undefined) {
       if (Array.isArray(val)) {
         for (const entry of val) {
           if (typeof entry !== "string")
-            return `config.${field2} entries must be strings`;
+            return `config.${field3} entries must be strings`;
         }
       } else if (typeof val === "object" && val !== null) {
         for (const [key2, entry] of Object.entries(val)) {
           if (typeof entry !== "string")
-            return `config.${field2}["${key2}"] must be a string path`;
+            return `config.${field3}["${key2}"] must be a string path`;
         }
       } else {
-        return `config.${field2} must be a string array or a Record<string, string> map`;
+        return `config.${field3} must be a string array or a Record<string, string> map`;
       }
     }
   }
@@ -71320,7 +70174,7 @@ async function discoverWorkflows(options) {
       registry = await applyBatch(candidates, registry, sources, diagnostics);
     }
   }
-  for (const dir of getProjectConfigPaths2(cwd, "workflows").reverse()) {
+  for (const dir of getHostProjectConfigPaths(cwd, "workflows").reverse()) {
     const candidates = await loadFromDir(dir, "project-local", diagnostics);
     registry = await applyBatch(candidates, registry, sources, diagnostics);
   }
@@ -71366,8 +70220,8 @@ async function discoverWorkflows(options) {
   return { registry, sources, errors: diagnostics };
 }
 async function defaultHomeDir() {
-  const { homedir: homedir3 } = await import("node:os");
-  return homedir3();
+  const { homedir: homedir4 } = await import("node:os");
+  return homedir4();
 }
 function discoverStartupWorkflowsSync() {
   return discoverBundledManifest();
@@ -71386,7 +70240,7 @@ function discoverBundledManifest() {
   return { registry, sources, errors: diagnostics };
 }
 
-// dist/builtin/workflows/src/extension/dispatcher.ts
+// src/extension/dispatcher.ts
 function failedRunResult(name, runId, error) {
   return {
     action: "run",
@@ -71473,7 +70327,6 @@ async function dispatch(args, opts) {
           executionMode: policy.mode,
           cwd: opts.cwd,
           defaultSessionDir: opts.defaultSessionDir,
-          ...opts.origin === undefined ? {} : { origin: opts.origin },
           runId
         });
       } catch (error) {
@@ -71530,7 +70383,7 @@ async function dispatch(args, opts) {
   }
 }
 
-// dist/builtin/workflows/src/extension/runtime-active-block-claim.ts
+// src/extension/runtime-active-block-claim.ts
 var inFlightActiveBlockResumes = new Set;
 function claimActiveBlockedResume(_backend, sourceId) {
   if (inFlightActiveBlockResumes.has(sourceId))
@@ -71571,7 +70424,7 @@ function finalizeResumedActiveBlockedSourceRun(source, continuationRunId, store2
   }
 }
 
-// dist/builtin/workflows/src/runs/foreground/postmortem-stage-chat.ts
+// src/runs/foreground/postmortem-stage-chat.ts
 var TERMINAL_POSTMORTEM_STATUSES = new Set(["completed"]);
 function ensurePostMortemStageHandle(runId, stage, deps) {
   if (!TERMINAL_POSTMORTEM_STATUSES.has(stage.status))
@@ -71715,7 +70568,7 @@ function createPostMortemStageHandle(runId, stage, sessionFile, adapters, cwd, d
   };
 }
 
-// dist/builtin/workflows/src/durable/completed-inspection.ts
+// src/durable/completed-inspection.ts
 var completedChatRegistrations = new WeakMap;
 function openCompletedDurableWorkflow(workflowId, deps, catalog = listOpenableCompletedWorkflows(deps.durableBackend)) {
   const resolved = resolveCompletedWorkflow(workflowId, deps.durableBackend, catalog);
@@ -71799,73 +70652,7 @@ function disposeCompletedChatHandle(handle) {
   });
 }
 
-// dist/builtin/workflows/src/durable/targeted-inspection.ts
-async function inspectTargetedDurableWorkflow(backend, workflowId, now = Date.now()) {
-  const hydrated = backend.hydrateWorkflowForInspection ? await backend.hydrateWorkflowForInspection(workflowId) : await hydrateWithoutClassification(backend, workflowId);
-  if (hydrated.kind !== "current")
-    return hydrationFailure(workflowId, hydrated.kind);
-  const handle = hydrated.handle;
-  if (handle.rootWorkflowId !== undefined && handle.rootWorkflowId !== handle.workflowId) {
-    return malformed(workflowId, "the requested id belongs to a nested workflow rather than a durable root");
-  }
-  const reconstructed = durableWorkflowRunSnapshots(backend, handle);
-  if (reconstructed.length === 0)
-    return malformed(workflowId, "durable checkpoint topology is malformed or incomplete");
-  const runs = structuredClone(reconstructed);
-  const inspectionStore = createStore();
-  for (const run2 of runs)
-    inspectionStore.recordRunStart(structuredClone(run2));
-  const inspected = inspectRun(workflowId, { store: inspectionStore });
-  if (!inspected.ok)
-    return malformed(workflowId, "the durable checkpoint graph has no reciprocal root");
-  const foreignLive = isForeignLiveWorkflow(handle, getAtomicExecutorId(), now);
-  const live = isLiveRunningWorkflow(handle, now);
-  const crashed = handle.status === "running" && !live;
-  const resumeGuidance = crashed ? inspected.detail.resumable === true ? `This workflow appears to have crashed and is resumable. Resume it explicitly with /workflow resume ${workflowId}.` : "This workflow appears to have crashed, but its retained state is not resumable." : foreignLive ? "This workflow is actively running in another Atomic session. Inspect it here, but control it from its owner session." : live ? "This workflow still has a fresh durable heartbeat. Inspect it here without starting another executor." : terminalGuidance(handle.status, workflowId, inspected.detail.resumable === true);
-  return {
-    kind: "found",
-    runs,
-    store: inspectionStore,
-    detail: {
-      ...inspected.detail,
-      ...crashed ? { status: "crashed" } : {},
-      ...live ? { resumable: false } : {},
-      ...foreignLive ? { ownerActiveElsewhere: true } : {},
-      resumeGuidance
-    }
-  };
-}
-function terminalGuidance(status, workflowId, resumable) {
-  if (resumable)
-    return `This retained workflow is ${status} and resumable. Resume it explicitly with /workflow resume ${workflowId}.`;
-  return `This retained workflow is ${status} and available for read-only inspection.`;
-}
-async function hydrateWithoutClassification(backend, workflowId) {
-  await backend.hydrateWorkflow(workflowId);
-  const handle = backend.getLoadableWorkflow(workflowId);
-  return handle === undefined ? { kind: "absent" } : { kind: "current", handle };
-}
-function hydrationFailure(workflowId, kind) {
-  switch (kind) {
-    case "absent":
-      return {
-        kind,
-        message: `Run not found: ${workflowId} (not present in the current session or durable store).`
-      };
-    case "deleted":
-      return { kind, message: `Durable workflow was deleted: ${workflowId}` };
-    case "malformed":
-      return malformed(workflowId, "current DBOS metadata or checkpoints are malformed");
-  }
-}
-function malformed(workflowId, reason) {
-  return {
-    kind: "malformed",
-    message: `Durable workflow ${workflowId} cannot be inspected safely: ${reason}.`
-  };
-}
-
-// dist/builtin/workflows/src/extension/runtime-durable-resume.ts
+// src/extension/runtime-durable-resume.ts
 function createDurableResumeRuntime(deps) {
   const hydrateStoredWorkflowCandidates = async (backend, target) => {
     const ids = deps.store.runs().map((run2) => run2.id).filter((id) => target === undefined || id === target);
@@ -71874,10 +70661,6 @@ function createDurableResumeRuntime(deps) {
   };
   let preparedCatalog = [];
   return {
-    async inspectDurableWorkflow(workflowId) {
-      await deps.ensureReady();
-      return await inspectTargetedDurableWorkflow(getDurableBackend(), workflowId);
-    },
     async resumeDurableWorkflow(workflowId, options) {
       await deps.ensureReady();
       const backend = getDurableBackend();
@@ -71889,10 +70672,7 @@ function createDurableResumeRuntime(deps) {
         await backend.hydrateWorkflow(resolved.workflowId);
       const adapterDeps = {
         registry: deps.registry,
-        baseRunOpts: {
-          ...deps.baseRunOpts(options?.policy),
-          ...options?.actor === undefined ? {} : { resumeActor: options.actor }
-        },
+        baseRunOpts: deps.baseRunOpts(options?.policy),
         durableBackend: backend,
         resolveDefinition: async (name, cwd) => (await discoverWorkflows({ cwd: cwd ?? deps.runtimeCwd })).registry.get(name),
         ...deps.jobs !== undefined ? { jobs: deps.jobs } : {}
@@ -71966,7 +70746,7 @@ function resolveCatalogEntry(workflowId, catalog) {
   return catalog.find((entry) => entry.workflowId === workflowId);
 }
 
-// dist/builtin/workflows/src/extension/runtime.ts
+// src/extension/runtime.ts
 function createExtensionRuntime(opts = {}) {
   const registry = opts.registry ?? createRegistry(opts.definitions ?? []);
   const adapters = opts.adapters;
@@ -72077,7 +70857,6 @@ function createExtensionRuntime(opts = {}) {
     const launchContinuation = () => launchDetachedUntilStartup(def, sourceInputs, {
       ...runOptions(options?.policy),
       continuation: { source, resumeFromStageId: resolvedStage.stageId },
-      ...options?.actor === undefined ? {} : { resumeActor: options.actor },
       ...jobs !== undefined ? { jobs } : {}
     });
     if (isActiveBlockedResumable) {
@@ -72194,7 +70973,6 @@ function createExtensionRuntime(opts = {}) {
         config,
         models,
         policy: options?.policy,
-        ...options?.origin === undefined ? {} : { origin: options.origin },
         cwd: runtimeCwd,
         ...defaultSessionDir !== undefined ? { defaultSessionDir } : {}
       });
@@ -72214,11 +70992,10 @@ function createExtensionRuntime(opts = {}) {
   };
 }
 
-// dist/builtin/workflows/src/extension/status-writer.ts
+// src/extension/status-writer.ts
 import { mkdir as mkdir7, rename, writeFile as writeFile11 } from "node:fs/promises";
-import { dirname as dirname12, join as join30 } from "node:path";
-import { CONFIG_DIR_NAME as CONFIG_DIR_NAME3 } from "@bastani/atomic";
-var DEFAULT_STATUS_SUBPATH = join30(CONFIG_DIR_NAME3, "workflows", "status.json");
+import { dirname as dirname11, join as join30 } from "node:path";
+var DEFAULT_STATUS_SUBPATH = join30(HOST_CONFIG_DIR_NAME, "workflows", "status.json");
 function resolveStatusFilePath(config, opts = {}) {
   if (config.statusFilePath)
     return config.statusFilePath;
@@ -72226,7 +71003,7 @@ function resolveStatusFilePath(config, opts = {}) {
   return join30(root, DEFAULT_STATUS_SUBPATH);
 }
 async function atomicWriteJson(path7, content) {
-  const dir = dirname12(path7);
+  const dir = dirname11(path7);
   await mkdir7(dir, { recursive: true });
   const tmpPath = `${path7}.tmp`;
   await writeFile11(tmpPath, content, "utf8");
@@ -72299,7 +71076,7 @@ function createStatusWriter(store2, config, opts = {}) {
   };
 }
 
-// dist/builtin/workflows/src/extension/workflow-model-catalog.ts
+// src/extension/workflow-model-catalog.ts
 function workflowModelCatalogFromContext(ctx) {
   if (ctx?.modelRegistry === undefined && ctx?.model === undefined)
     return;
@@ -72320,8 +71097,7 @@ function workflowModelCatalogFromContext(ctx) {
   };
 }
 
-// dist/builtin/workflows/src/extension/mcp.ts
-import { isStaleExtensionContextError as isStaleExtensionContextError5 } from "@bastani/atomic";
+// src/extension/mcp.ts
 function setMcpScope(pi, opts) {
   if (!pi.events)
     return;
@@ -72330,12 +71106,7 @@ function setMcpScope(pi, opts) {
     allow: opts.allow ?? null,
     deny: opts.deny ?? null
   };
-  try {
-    pi.events.emit("mcp.scope.set", payload);
-  } catch (error) {
-    if (!isStaleExtensionContextError5(error))
-      throw error;
-  }
+  pi.events.emit("mcp.scope.set", payload);
 }
 function clearMcpScope(pi, stageId) {
   if (!pi.events)
@@ -72345,15 +71116,10 @@ function clearMcpScope(pi, stageId) {
     allow: null,
     deny: null
   };
-  try {
-    pi.events.emit("mcp.scope.set", payload);
-  } catch (error) {
-    if (!isStaleExtensionContextError5(error))
-      throw error;
-  }
+  pi.events.emit("mcp.scope.set", payload);
 }
 
-// dist/builtin/workflows/src/extension/workflow-ports.ts
+// src/extension/workflow-ports.ts
 function makePersistencePort(pi, persistRuns) {
   if (!persistRuns)
     return;
@@ -72378,23 +71144,19 @@ function makeMcpPort(pi) {
   };
   return {
     setScope(stageId, allow, deny) {
-      try {
-        setMcpScope(piForMcp, {
-          stageId,
-          allow: allow ?? undefined,
-          deny: deny ?? undefined
-        });
-      } catch {}
+      setMcpScope(piForMcp, {
+        stageId,
+        allow: allow ?? undefined,
+        deny: deny ?? undefined
+      });
     },
     clearScope(stageId) {
-      try {
-        clearMcpScope(piForMcp, stageId);
-      } catch {}
+      clearMcpScope(piForMcp, stageId);
     }
   };
 }
 
-// dist/builtin/workflows/src/extension/workflow-reload-coordinator.ts
+// src/extension/workflow-reload-coordinator.ts
 function createBatch(discoveryGeneration) {
   let resolve14 = () => {
     return;
@@ -72445,7 +71207,7 @@ function createWorkflowReloadCoordinator(reload) {
   };
 }
 
-// dist/builtin/workflows/src/extension/workflow-reload-report.ts
+// src/extension/workflow-reload-report.ts
 function normalizeWorkflowReloadReport(report) {
   return report ?? {
     outcome: "applied",
@@ -72462,7 +71224,7 @@ function workflowReloadDiagnostics(configDiagnostics, discoveryDiagnostics) {
   ];
 }
 
-// dist/builtin/workflows/src/extension/extension-runtime-state.ts
+// src/extension/extension-runtime-state.ts
 function createWorkflowExtensionRuntimeState(pi, adapters, resolveCwd = () => pi.sessionManager?.getCwd?.() ?? process.cwd()) {
   const persistenceRef = { current: makePersistencePort(pi, WORKFLOW_CONFIG_DEFAULTS.persistRuns) };
   const mcpPort = makeMcpPort(pi);
@@ -72551,9 +71313,6 @@ function createWorkflowExtensionRuntimeState(pi, adapters, resolveCwd = () => pi
     },
     resumeDurableWorkflow(workflowId, options) {
       return runtimeRef.current.resumeDurableWorkflow(workflowId, options);
-    },
-    inspectDurableWorkflow(workflowId) {
-      return runtimeRef.current.inspectDurableWorkflow(workflowId);
     },
     listDurableResumable() {
       return runtimeRef.current.listDurableResumable();
@@ -72816,7 +71575,7 @@ function createWorkflowExtensionRuntimeState(pi, adapters, resolveCwd = () => pi
   };
 }
 
-// dist/builtin/workflows/src/extension/postmortem-deps.ts
+// src/extension/postmortem-deps.ts
 function resolveStageCwd(runId) {
   try {
     const backend = getDurableBackend();
@@ -72847,7 +71606,7 @@ function createPostMortemHandleResolver(deps) {
   };
 }
 
-// dist/builtin/workflows/src/extension/render-component.ts
+// src/extension/render-component.ts
 function dynamicTextRenderComponent(renderText) {
   return {
     render(width) {
@@ -72860,7 +71619,7 @@ function dynamicTextRenderComponent(renderText) {
   };
 }
 
-// dist/builtin/workflows/src/extension/renderers.ts
+// src/extension/renderers.ts
 function renderRunBanner(payload) {
   const inputCount = payload.inputs ? Object.keys(payload.inputs).length : 0;
   const inputNote = inputCount > 0 ? ` (${inputCount} input${inputCount !== 1 ? "s" : ""})` : "";
@@ -72871,19 +71630,8 @@ function renderRunSummary(payload) {
   return `${icon} workflow [${payload.runId}] ${payload.status}`;
 }
 
-// dist/builtin/workflows/src/extension/wiring.ts
-import {
-  isStaleExtensionContextError as isStaleExtensionContextError6
-} from "@bastani/atomic";
-
-// dist/builtin/workflows/src/extension/atomic-stage-session.ts
+// src/extension/atomic-stage-session.ts
 import { basename as basename5 } from "node:path";
-var WORKFLOW_STAGE_SUBAGENT_POLICY = {
-  managementActions: "full",
-  fanoutAuthorized: true,
-  inheritProjectContext: true,
-  inheritSkills: true
-};
 function resolveSessionCwd(options) {
   return options?.cwd ?? options?.sessionManager?.getCwd() ?? process.cwd();
 }
@@ -72893,10 +71641,8 @@ async function prepareAtomicStageSessionOptions(options, sdk, prepareOptions = {
     return atomicOptions;
   const inheritanceSnapshot = prepareOptions.resourceLoaderInheritanceSnapshot;
   const cwd = resolveSessionCwd(atomicOptions);
-  const hasAgentDirOverride = atomicOptions?.agentDir !== undefined;
-  const agentDir = atomicOptions?.agentDir ?? sdk.getAgentDir();
+  const agentDir = atomicOptions?.agentDir ?? getHostAgentDir();
   const settingsManager = atomicOptions?.settingsManager ?? sdk.SettingsManager.create(cwd, agentDir, inheritanceSnapshot?.projectTrusted === undefined ? undefined : { projectTrusted: inheritanceSnapshot.projectTrusted });
-  prepareOptions.onSettingsManager?.(settingsManager);
   const inheritedBuiltinPackagePaths = inheritanceSnapshot?.builtinPackagePaths;
   const builtinPackagePaths = inheritedBuiltinPackagePaths === undefined ? sdk.getBuiltinPackagePaths?.() ?? [] : [...inheritedBuiltinPackagePaths];
   const resourceLoader = new sdk.DefaultResourceLoader({
@@ -72910,10 +71656,9 @@ async function prepareAtomicStageSessionOptions(options, sdk, prepareOptions = {
   return {
     ...atomicOptions,
     cwd,
-    ...hasAgentDirOverride ? { agentDir } : {},
+    agentDir,
     settingsManager,
-    resourceLoader,
-    subagentPolicy: WORKFLOW_STAGE_SUBAGENT_POLICY
+    resourceLoader
   };
 }
 function clonePackageSource(source) {
@@ -72942,67 +71687,54 @@ function stageBuiltinPackagePaths(paths) {
     return basename5(packageSourcePath(cloned)) === "workflows" ? disablePackageExtensions(cloned) : cloned;
   });
 }
+var SUBAGENT_CHILD_EXTENSION_ENV_KEYS = [
+  "ATOMIC_SUBAGENT_CHILD",
+  "ATOMIC_SUBAGENT_FANOUT_CHILD",
+  "PI_SUBAGENT_CHILD",
+  "PI_SUBAGENT_FANOUT_CHILD"
+];
 var workflowStageResourceReloadQueue = Promise.resolve();
 async function reloadWorkflowStageResources(resourceLoader) {
-  const queuedReload = workflowStageResourceReloadQueue.then(() => resourceLoader.reload());
+  const queuedReload = workflowStageResourceReloadQueue.then(() => reloadWorkflowStageResourcesWithEnvIsolation(resourceLoader));
   workflowStageResourceReloadQueue = queuedReload.catch(() => {
     return;
   });
   return queuedReload;
 }
+async function reloadWorkflowStageResourcesWithEnvIsolation(resourceLoader) {
+  const previousValues = new Map;
+  for (const key2 of SUBAGENT_CHILD_EXTENSION_ENV_KEYS) {
+    previousValues.set(key2, process.env[key2]);
+    delete process.env[key2];
+  }
+  try {
+    await resourceLoader.reload();
+  } finally {
+    for (const key2 of SUBAGENT_CHILD_EXTENSION_ENV_KEYS) {
+      const previousValue = previousValues.get(key2);
+      if (previousValue === undefined)
+        delete process.env[key2];
+      else
+        process.env[key2] = previousValue;
+    }
+  }
+}
 
-// dist/builtin/workflows/src/extension/wiring.ts
+// src/extension/wiring.ts
 var LATE_STAGE_MESSAGE_EVENT2 = "atomic:workflow-stage-late-message";
 function isTestContext() {
   return process.env.NODE_TEST_CONTEXT !== undefined || false;
 }
-function attachSettingsManager(error, settingsManager) {
-  if (error !== null && (typeof error === "object" || typeof error === "function")) {
-    try {
-      if (Object.isExtensible(error)) {
-        Object.defineProperty(error, "settingsManager", {
-          configurable: true,
-          enumerable: false,
-          value: settingsManager,
-          writable: false
-        });
-        return error;
-      }
-    } catch {}
-  }
-  const wrapped = new Error(error instanceof Error ? error.message : String(error), { cause: error });
-  Object.defineProperty(wrapped, "settingsManager", {
-    configurable: true,
-    enumerable: false,
-    value: settingsManager,
-    writable: false
-  });
-  return wrapped;
-}
 async function createPiSdkAgentSession(options, prepareOptions) {
   const sdk = await import("@bastani/atomic");
-  let settingsManager;
-  try {
-    const sessionOptions = await prepareAtomicStageSessionOptions(options, sdk, {
-      ...prepareOptions,
-      onSettingsManager: (manager) => {
-        settingsManager = manager;
-        prepareOptions?.onSettingsManager?.(manager);
-      }
-    });
-    settingsManager = sessionOptions?.settingsManager ?? settingsManager;
-    const result = await sdk.createAgentSession(sessionOptions);
-    const resultSettingsManager = result.session.settingsManager;
-    settingsManager = sessionOptions?.settingsManager ?? resultSettingsManager ?? settingsManager;
-    return {
-      session: result.session,
-      ...settingsManager?.getCodexFastModeSettings !== undefined ? { settingsManager } : {}
-    };
-  } catch (error) {
-    if (settingsManager !== undefined)
-      throw attachSettingsManager(error, settingsManager);
-    throw error;
-  }
+  const sessionOptions = await prepareAtomicStageSessionOptions(options, sdk, prepareOptions);
+  const result = await sdk.createAgentSession(sessionOptions);
+  const resultSettingsManager = result.session.settingsManager;
+  const settingsManager = sessionOptions?.settingsManager ?? resultSettingsManager;
+  return {
+    session: result.session,
+    ...settingsManager?.getCodexFastModeSettings !== undefined ? { settingsManager } : {}
+  };
 }
 async function createTestAgentSession(_options) {
   let lastAssistantText;
@@ -73087,25 +71819,10 @@ function emitLateIntercomRoute(pi, meta2, messages, options, batch) {
     workflowStageId: meta2.stageId,
     workflowStageName: meta2.stageName
   };
-  try {
-    pi.events.emit(LATE_STAGE_MESSAGE_EVENT2, event);
-  } catch (error) {
-    if (!isStaleExtensionContextError6(error))
-      throw error;
-    return Promise.reject(error);
-  }
+  pi.events.emit(LATE_STAGE_MESSAGE_EVENT2, event);
   if (!event.handled)
     return;
   return event.completion ?? Promise.resolve();
-}
-function routeThroughStaleContextGuard(route) {
-  try {
-    return route();
-  } catch (error) {
-    if (!isStaleExtensionContextError6(error))
-      throw error;
-    return Promise.reject(error);
-  }
 }
 function makeWorkflowStageOrchestrationContext(meta2, pi) {
   const intercomGroup = stageHasIntercomAccess(meta2.stageOptions) ? resolveStageGroup(meta2.stageOptions, meta2.workflowIntercomGroup) : undefined;
@@ -73121,18 +71838,16 @@ function makeWorkflowStageOrchestrationContext(meta2, pi) {
         const intercomRoute = emitLateIntercomRoute(pi, meta2, [message], options, false);
         if (intercomRoute)
           return intercomRoute;
-        const sendMessage = pi.sendMessage;
-        if (!sendMessage)
+        if (!pi.sendMessage)
           throw new Error("atomic-workflows: main-chat late-message route is unavailable");
-        return routeThroughStaleContextGuard(() => sendMessage(message, options));
+        return pi.sendMessage(message, options);
       },
       routeMessages(messages, options) {
         const intercomRoute = emitLateIntercomRoute(pi, meta2, messages, options, true);
         if (intercomRoute)
           return intercomRoute;
-        const sendMessages = pi.sendMessages;
-        if (sendMessages)
-          return routeThroughStaleContextGuard(() => sendMessages(messages, options));
+        if (pi.sendMessages)
+          return pi.sendMessages(messages, options);
         const sendMessage = pi.sendMessage;
         if (!sendMessage)
           throw new Error("atomic-workflows: main-chat late-message route is unavailable");
@@ -73268,7 +71983,7 @@ function buildRuntimeAdapters(pi, options = {}) {
   return adapters;
 }
 
-// dist/builtin/workflows/src/shared/render-inputs-schema.ts
+// src/shared/render-inputs-schema.ts
 function renderInputsSchema(name, inputs, opts = {}) {
   return opts.theme === undefined ? renderPlain2(name, inputs, opts.width) : renderPretty(name, inputs, opts.theme, opts.width);
 }
@@ -73314,23 +72029,23 @@ function renderPretty(name, inputs, theme, width) {
     width: boxWidth
   });
 }
-function renderInputRows(field2, theme) {
-  const tagLabel = field2.required ? "required" : "optional";
-  const heading = theme ? ` ${paint(field2.name, theme.text, { bold: true })}  ${paint(field2.type, theme.dim)}  ·  ${paint(tagLabel, field2.required ? theme.warning : theme.dim)} ` : ` ${field2.name}  ${field2.type}  ·  ${tagLabel} `;
+function renderInputRows(field3, theme) {
+  const tagLabel = field3.required ? "required" : "optional";
+  const heading = theme ? ` ${paint(field3.name, theme.text, { bold: true })}  ${paint(field3.type, theme.dim)}  ·  ${paint(tagLabel, field3.required ? theme.warning : theme.dim)} ` : ` ${field3.name}  ${field3.type}  ·  ${tagLabel} `;
   const lines = [heading];
-  if (field2.description) {
-    lines.push(`   ${theme ? paint(field2.description, theme.textMuted) : field2.description} `);
+  if (field3.description) {
+    lines.push(`   ${theme ? paint(field3.description, theme.textMuted) : field3.description} `);
   }
-  if (field2.choices && field2.choices.length > 0) {
-    const values = field2.choices.join("  ·  ");
+  if (field3.choices && field3.choices.length > 0) {
+    const values = field3.choices.join("  ·  ");
     lines.push(`   ${theme ? paint("values: ", theme.dim) + paint(values, theme.text) : `values: ${values}`} `);
   }
-  if (field2.default !== undefined) {
-    const value2 = JSON.stringify(field2.default);
+  if (field3.default !== undefined) {
+    const value2 = JSON.stringify(field3.default);
     lines.push(`   ${theme ? paint("default: ", theme.dim) + paint(value2, theme.text) : `default: ${value2}`} `);
   }
-  if (field2.placeholder) {
-    lines.push(`   ${theme ? paint("placeholder: ", theme.dim) + paint(field2.placeholder, theme.textMuted) : `placeholder: ${field2.placeholder}`} `);
+  if (field3.placeholder) {
+    lines.push(`   ${theme ? paint("placeholder: ", theme.dim) + paint(field3.placeholder, theme.textMuted) : `placeholder: ${field3.placeholder}`} `);
   }
   return lines;
 }
@@ -73342,7 +72057,7 @@ function inputsSummary(name, inputs) {
   return `${totalLabel}  ·  ${reqLabel}  ·  pass via key=value or run \`/workflow ${name}\` with no args for picker`;
 }
 
-// dist/builtin/workflows/src/tui/host-input-form.ts
+// src/tui/host-input-form.ts
 function supportedType(type) {
   switch (type) {
     case "text":
@@ -73355,14 +72070,14 @@ function supportedType(type) {
       return "string";
   }
 }
-function initialValue(field2, prefilled) {
-  if (prefilled[field2.name] !== undefined)
-    return String(prefilled[field2.name]);
-  if (field2.default !== undefined)
-    return String(field2.default);
-  if (field2.type === "select" && field2.choices && field2.choices.length > 0)
-    return field2.choices[0];
-  if (field2.type === "boolean")
+function initialValue(field3, prefilled) {
+  if (prefilled[field3.name] !== undefined)
+    return String(prefilled[field3.name]);
+  if (field3.default !== undefined)
+    return String(field3.default);
+  if (field3.type === "select" && field3.choices && field3.choices.length > 0)
+    return field3.choices[0];
+  if (field3.type === "boolean")
     return "false";
   return "";
 }
@@ -73371,14 +72086,14 @@ async function openHostInputsForm(ui, options) {
   if (typeof open !== "function")
     return { kind: "unsupported" };
   const prefilled = options.prefilled ?? {};
-  const fields = options.fields.map((field2) => ({
-    name: field2.name,
-    type: supportedType(field2.type),
-    initialValue: initialValue(field2, prefilled),
-    ...field2.description !== undefined ? { description: field2.description } : {},
-    ...field2.required !== undefined ? { required: field2.required } : {},
-    ...field2.choices !== undefined ? { choices: [...field2.choices] } : {},
-    ...field2.placeholder !== undefined ? { placeholder: field2.placeholder } : {}
+  const fields = options.fields.map((field3) => ({
+    name: field3.name,
+    type: supportedType(field3.type),
+    initialValue: initialValue(field3, prefilled),
+    ...field3.description !== undefined ? { description: field3.description } : {},
+    ...field3.required !== undefined ? { required: field3.required } : {},
+    ...field3.choices !== undefined ? { choices: [...field3.choices] } : {},
+    ...field3.placeholder !== undefined ? { placeholder: field3.placeholder } : {}
   }));
   try {
     const raw = await open.call(ui, {
@@ -73393,7 +72108,7 @@ async function openHostInputsForm(ui, options) {
   }
 }
 
-// dist/builtin/workflows/src/tui/inputs-overlay.ts
+// src/tui/inputs-overlay.ts
 function openInputsPicker(ui, opts) {
   return new Promise((resolve14) => {
     const { workflowName, fields, prefilled, theme } = opts;
@@ -73463,14 +72178,12 @@ function openInputsPicker(ui, opts) {
         }),
         handleInput: (data) => {
           const kb = keys;
-          const consumed = isInputsPickerKey(data, state2, fields, kb);
           const action = handleInputsPickerInput(data, state2, fields, kb);
           if (action.kind === "noop") {
             tui.requestRender?.();
-            return consumed;
+            return;
           }
           finish(action);
-          return true;
         },
         invalidate: () => tui.requestRender?.(),
         dispose: () => {
@@ -73488,12 +72201,9 @@ function openInputsPicker(ui, opts) {
   });
 }
 
-// dist/builtin/workflows/src/tui/session-picker.ts
-import { keyText as keyText3 } from "@bastani/atomic";
+// src/tui/session-picker.ts
+import { keyText as keyText2 } from "@bastani/atomic";
 var ESCAPE_CODE = 27;
-function isQuitRun3(run2) {
-  return run2.endedAt === undefined && run2.status === "paused" && run2.exitReason === "quit";
-}
 var DOUBLE_ESCAPE_SEQUENCE = String.fromCharCode(ESCAPE_CODE, ESCAPE_CODE);
 function createSessionPickerState() {
   return { query: "", selectedIndex: 0, includeAll: true, filterFocused: false };
@@ -73582,12 +72292,12 @@ function renderHintsRow(width, theme, state2) {
   const muted = hexToAnsi(theme.textMuted);
   const sep7 = `${dim} · ${RESET}`;
   const hint = (key2, label) => `${text}${key2}${RESET} ${muted}${label}${RESET}`;
-  const parts = state2.filterFocused ? [hint(keyText3("tui.select.confirm"), "Submit"), hint(keyText3("tui.select.cancel"), "Exit Filter")] : [
-    hint(`${keyText3("tui.select.up")}/${keyText3("tui.select.down")}`, "Navigate"),
-    hint(keyText3("tui.select.confirm"), "Connect"),
+  const parts = state2.filterFocused ? [hint(keyText2("tui.select.confirm"), "Submit"), hint(keyText2("tui.select.cancel"), "Exit Filter")] : [
+    hint(`${keyText2("tui.select.up")}/${keyText2("tui.select.down")}`, "Navigate"),
+    hint(keyText2("tui.select.confirm"), "Connect"),
     hint("a", state2.includeAll ? "Active Only" : "All"),
     hint("/", "Filter"),
-    hint(keyText3("tui.select.cancel"), "Close")
+    hint(keyText2("tui.select.cancel"), "Close")
   ];
   const line = `  ${parts.join(sep7)}`;
   const clipped = truncateToWidth(line, width, "…");
@@ -73634,13 +72344,12 @@ function stageProgress(run2) {
   const done = run2.stages.filter((s) => s.status === "completed" || s.status === "failed").length;
   return `${done}/${total} stages`;
 }
-function renderRunRow(row, isSelected, inner, theme, now, allRuns) {
+function renderRunRow(row, isSelected, inner, theme, now) {
   const border = hexToAnsi(theme.border);
   const panelBg = hexBg(theme.bg);
   const run2 = row.run;
-  const indicatorStatus = isQuitRun3(run2) ? run2.status : runIndicatorStatus(run2, allRuns);
-  const icon = statusIcon(indicatorStatus);
-  const iconColor = hexToAnsi(statusColor(indicatorStatus, theme));
+  const icon = statusIcon(run2.status);
+  const iconColor = hexToAnsi(statusColor(run2.status, theme));
   const dim = hexToAnsi(theme.dim);
   const text = hexToAnsi(theme.text);
   const muted = hexToAnsi(theme.textMuted);
@@ -73694,7 +72403,6 @@ function renderSessionPicker(opts) {
   const start = Math.max(0, Math.min(sel - Math.floor(VIEWPORT / 2), rows.length - VIEWPORT));
   const visible = rows.slice(Math.max(0, start), Math.max(0, start) + VIEWPORT);
   let prevBucket = null;
-  const allRuns = opts.allRuns ?? rows.map(({ run: run2 }) => run2);
   for (let i = 0;i < visible.length; i++) {
     const row = visible[i];
     if (row.bucket !== prevBucket) {
@@ -73702,21 +72410,12 @@ function renderSessionPicker(opts) {
       prevBucket = row.bucket;
     }
     const absIndex = Math.max(0, start) + i;
-    lines.push(...renderRunRow(row, absIndex === sel, inner, theme, now, allRuns));
+    lines.push(...renderRunRow(row, absIndex === sel, inner, theme, now));
   }
   lines.push(renderBlankRow(inner, theme));
   lines.push(renderBottomBorder(width, theme));
   lines.push(renderHintsRow(width, theme, state2));
   return lines;
-}
-function isSessionPickerKey(data, state2, rows) {
-  if (state2.filterFocused) {
-    return matchesKey(data, Key.escape) || data === DOUBLE_ESCAPE_SEQUENCE || matchesKey(data, Key.enter) || matchesKey(data, Key.backspace) || data.length === 1 && data >= " " && data <= "~";
-  }
-  if (matchesKey(data, "/") || matchesKey(data, Key.escape) || matchesKey(data, "q") || matchesKey(data, Key.shift("q")) || matchesKey(data, "a") || matchesKey(data, Key.shift("a")) || matchesKey(data, Key.down) || matchesKey(data, "j") || matchesKey(data, Key.up) || matchesKey(data, "k")) {
-    return true;
-  }
-  return matchesKey(data, Key.enter) && rows[state2.selectedIndex] !== undefined;
 }
 function handleSessionPickerInput(data, state2, rows) {
   if (state2.filterFocused) {
@@ -73772,7 +72471,7 @@ function handleSessionPickerInput(data, state2, rows) {
   return { kind: "noop" };
 }
 
-// dist/builtin/workflows/src/extension/workflow-command-completions.ts
+// src/extension/workflow-command-completions.ts
 function completeToken(argumentText, candidates) {
   const tokenStart = /\s$/.test(argumentText) ? argumentText.length : Math.max(argumentText.lastIndexOf(" "), argumentText.lastIndexOf("\t")) + 1;
   const head = argumentText.slice(0, tokenStart);
@@ -73887,7 +72586,7 @@ function workflowArgumentCompletions(partial, runtime) {
   ]);
 }
 
-// dist/builtin/workflows/src/extension/workflow-policy.ts
+// src/extension/workflow-policy.ts
 var WORKFLOW_NON_INTERACTIVE_MESSAGE = "Workflows are policy-gated in non-interactive (-p) mode; deterministic workflows can run headlessly while runtime human input remains unavailable.";
 function workflowPolicyFromContext(ctx) {
   if (ctx?.hasUI === false)
@@ -73895,7 +72594,7 @@ function workflowPolicyFromContext(ctx) {
   return INTERACTIVE_WORKFLOW_POLICY;
 }
 
-// dist/builtin/workflows/src/extension/workflow-command-utils.ts
+// src/extension/workflow-command-utils.ts
 var WORKFLOW_COMMAND_OUTPUT_CUSTOM_TYPE = "workflows:command-output";
 function emitWorkflowCommandOutput(pi, content, details) {
   if (typeof pi.sendMessage !== "function")
@@ -74038,7 +72737,7 @@ function parseWorkflowArgs(tokens) {
   return result;
 }
 
-// dist/builtin/workflows/src/tui/session-list.ts
+// src/tui/session-list.ts
 function renderSessionList(runs, opts) {
   const now = opts.now ?? Date.now();
   const rows = selectRunsForPicker(runs, "", opts.includeAll, now);
@@ -74051,10 +72750,10 @@ function renderSessionList(runs, opts) {
       toolNodes: graph.tools.map((tool) => structuredClone(tool))
     };
   });
-  return renderStatusList(filtered, { theme: opts.theme, now, allRuns: runs });
+  return renderStatusList(filtered, { theme: opts.theme, now });
 }
 
-// dist/builtin/workflows/src/tui/session-overlays.ts
+// src/tui/session-overlays.ts
 function openSessionPicker(ui, store2, theme, intent = "connect") {
   function toResult(action) {
     if (intent === "pause")
@@ -74072,7 +72771,6 @@ function openSessionPicker(ui, store2, theme, intent = "connect") {
     const state2 = createSessionPickerState();
     let settled = false;
     let unsubscribe = null;
-    let pickerRevision = 0;
     const resumeCandidateCache = createSessionPickerResumeCandidateCache();
     const factory = (tui, _theme, _keys, done) => {
       const finish = (result) => {
@@ -74085,26 +72783,22 @@ function openSessionPicker(ui, store2, theme, intent = "connect") {
         resolve14(result);
       };
       const selectRows = () => {
-        const liveRuns = store2.runs();
-        const resumeCandidateLookup = intent === "resume" ? resumeCandidateCache({ runs: liveRuns, notices: store2.notices(), version: pickerRevision }) : undefined;
-        return selectRunsForPicker(liveRuns, state2.query, state2.includeAll, Date.now(), intent, resumeCandidateLookup);
+        const snapshot = readGraphStoreSnapshot(store2);
+        const resumeCandidateLookup = intent === "resume" ? resumeCandidateCache({ ...snapshot, runs: store2.runs() }) : undefined;
+        return selectRunsForPicker(snapshot.runs, state2.query, state2.includeAll, Date.now(), intent, resumeCandidateLookup);
       };
-      unsubscribe = subscribeStoreInvalidation(store2, () => {
-        pickerRevision++;
-        tui.requestRender?.();
-      });
+      unsubscribe = subscribeStoreInvalidation(store2, () => tui.requestRender?.());
       return {
         render: (width) => {
           const rows = selectRows();
-          return renderSessionPicker({ width, theme, rows, state: state2, allRuns: store2.runs() });
+          return renderSessionPicker({ width, theme, rows, state: state2 });
         },
         handleInput: (data) => {
           const rows = selectRows();
-          const consumed = isSessionPickerKey(data, state2, rows);
           const action = handleSessionPickerInput(data, state2, rows);
           if (action.kind === "noop") {
             tui.requestRender?.();
-            return consumed;
+            return;
           }
           if (action.kind === "close")
             finish({ kind: "close" });
@@ -74112,7 +72806,6 @@ function openSessionPicker(ui, store2, theme, intent = "connect") {
             finish(toResult(action));
           else
             finish(toResult(action));
-          return true;
         },
         invalidate: () => tui.requestRender?.(),
         dispose: () => {
@@ -74129,7 +72822,7 @@ function openSessionPicker(ui, store2, theme, intent = "connect") {
   });
 }
 
-// dist/builtin/workflows/src/tui/workflow-resume-selector.ts
+// src/tui/workflow-resume-selector.ts
 function latestStageTimestamp(stage) {
   return stage.endedAt ?? stage.startedAt ?? 0;
 }
@@ -74224,7 +72917,6 @@ function toPickerRow(session) {
     modifiedAt: session.modified.getTime(),
     messageCount: session.messageCount,
     firstMessage: session.firstMessage,
-    ...session.summary !== undefined ? { summary: session.summary } : {},
     allMessagesText: session.allMessagesText,
     ...session.name !== undefined ? { name: session.name } : {},
     ...session.messageColor !== undefined ? { messageColor: session.messageColor } : {}
@@ -74336,7 +73028,7 @@ function openWorkflowResumeSelector(ui, liveRuns, hydrate, options = {}) {
   });
 }
 
-// dist/builtin/workflows/src/durable/resume-catalog.ts
+// src/durable/resume-catalog.ts
 function formatResumableWorkflowList(entries) {
   if (entries.length === 0)
     return "No resumable or completed workflows found.";
@@ -74353,7 +73045,7 @@ ${lines.join(`
 `)}`;
 }
 
-// dist/builtin/workflows/src/durable/retention-policy.ts
+// src/durable/retention-policy.ts
 async function deleteDurableWorkflowIfSafe(backend, workflowId, isInFlight) {
   if (isInFlight(workflowId)) {
     return { ok: false, message: "Cannot delete an in-flight workflow run." };
@@ -74380,7 +73072,7 @@ async function deleteDurableWorkflowIfSafe(backend, workflowId, isInFlight) {
   }
 }
 
-// dist/builtin/workflows/src/extension/workflow-durable-resume-command.ts
+// src/extension/workflow-durable-resume-command.ts
 async function prepareWorkflowResumeCatalog(runtime, suppressedLiveIds, target) {
   const shared = await runtime.prepareDurableCatalog?.();
   const prepared = shared?.resumable ?? await runtime.prepareDurableResumable(target);
@@ -74428,7 +73120,7 @@ async function handleDurableResume(target, ctx, reporter, deps, preparedCatalog)
       fail(completedAttempt.message);
       return true;
     }
-    const result = await runtime.resumeDurableWorkflow(target, { policy, actor: "user" });
+    const result = await runtime.resumeDurableWorkflow(target, { policy });
     fail(allOpenable.length === 0 ? result.message : `${result.message}
 
 ${formatResumableWorkflowList(allOpenable)}`);
@@ -74497,10 +73189,7 @@ function isExplicitResumeCandidate(run2) {
   return isWorkflowRunResumable(workflowRunResumeCandidate(run2)) || run2.endedAt === undefined && run2.status === "running";
 }
 async function resumeDurableTarget(workflowId, ctx, reporter, deps, runtime) {
-  const result = await runtime.resumeDurableWorkflow(workflowId, {
-    policy: workflowPolicyFromContext(ctx),
-    actor: "user"
-  });
+  const result = await runtime.resumeDurableWorkflow(workflowId, { policy: workflowPolicyFromContext(ctx) });
   if (!result.ok)
     reporter.error(result.message);
   else {
@@ -74531,7 +73220,7 @@ function openCompleted(runtime, workflowId, catalog, beforeRestoreCompleted) {
   }, catalog);
 }
 
-// dist/builtin/workflows/src/extension/workflow-resume-shadow.ts
+// src/extension/workflow-resume-shadow.ts
 function classifyDurableResumeShadow(run2, store2, deps = {}) {
   const backend = deps.backend ?? getDurableBackend();
   const handle = getLoadableDurableWorkflow(backend, run2.id);
@@ -74558,7 +73247,7 @@ function reconcileDurableResumeShadow(run2, store2, deps = {}) {
   return classifyDurableResumeShadow(run2, store2, deps) === "eligible";
 }
 
-// dist/builtin/workflows/src/extension/workflow-resume-picker-rows.ts
+// src/extension/workflow-resume-picker-rows.ts
 function isResumableLiveRun(run2) {
   if (!getDurableBackend().isWorkflowLoadable(run2.id))
     return false;
@@ -74590,7 +73279,7 @@ function resumePickerLiveUpdateOptions(runStore, runtime) {
   };
 }
 
-// dist/builtin/workflows/src/extension/workflow-run-control-command.ts
+// src/extension/workflow-run-control-command.ts
 async function handleRunControlCommand(action, rest, ctx, reporter, deps) {
   const policy = workflowPolicyFromContext(ctx);
   const print = (msg) => reporter.info(msg);
@@ -74675,7 +73364,7 @@ ${renderSessionList(store.runs(), { theme, includeAll: true })}`);
           return true;
         }
       }
-      const results = action === "quit" ? await quitAllRuns({ actor: "user" }) : await interruptAllRuns();
+      const results = action === "quit" ? await quitAllRuns() : await interruptAllRuns();
       const successes = results.filter((result) => result.ok);
       const changed = successes.length;
       const failures = results.filter((result) => !result.ok);
@@ -74709,7 +73398,7 @@ ${renderSessionList(store.runs(), { theme, includeAll: true })}`);
         return true;
       }
       try {
-        const result = await quitRun(resolved.runId, { actor: "user" });
+        const result = await quitRun(resolved.runId);
         if (result.ok)
           print(`Run ${result.runId} quit and can be resumed with /workflow resume.`);
         else if (result.reason === "already_ended")
@@ -74799,18 +73488,14 @@ Picker requires an interactive UI surface. Pass a runId: /workflow attach <id> [
           }
           const run3 = store.runs().find((r) => r.id === resolved.runId);
           const isPaused3 = run3 !== undefined && workflowHasPausedState(store, resolved.runId);
-          const isDurableAuthorExit2 = run3?.exited === true && run3.status === "failed" && run3.resumable === true;
           const isResumableContinuation2 = run3 !== undefined && !isPaused3 && run3.exitReason !== "quit" && isWorkflowRunResumable(workflowRunResumeCandidate(run3));
-          if (isDurableAuthorExit2) {
-            return await handleDurableResume(resolved.runId, ctx, reporter, deps);
-          }
           if (isResumableContinuation2) {
             await ensureWorkflowResourcesVisible();
-            const continuation = await deps.runtimeForContext(ctx).resumeFailedRun(resolved.runId, undefined, { policy, actor: "user" });
+            const continuation = await deps.runtimeForContext(ctx).resumeFailedRun(resolved.runId, undefined, { policy });
             continuation.ok ? print(continuation.message) : fail(continuation.message);
           } else {
             try {
-              const result2 = await resumeRun(resolved.runId, { actor: "user" });
+              const result2 = await resumeRun(resolved.runId, {});
               if (result2.ok && !isPaused3 && result2.mode === "snapshot" && run3?.exitReason === "quit") {
                 return await handleDurableResume(resolved.runId, ctx, reporter, deps);
               }
@@ -74920,7 +73605,7 @@ Picker requires an interactive UI surface. Pass a runId: /workflow attach <id> [
     const stageRunId = resolvedStage.runId ?? runId;
     if (action === "pause") {
       try {
-        const result2 = await pauseRun(stageRunId, { stageId, actor: "user" });
+        const result2 = await pauseRun(stageRunId, { stageId });
         if (!result2.ok) {
           fail(result2.reason === "not_found" ? `Run not found: ${stageRunId}` : result2.reason === "already_ended" ? `Run ${stageRunId} already ended.` : result2.reason === "no_active_stages" ? `No pausable stages on run ${stageRunId}.` : `Stage not found: ${stageTarget ?? "(unknown)"}`);
           return true;
@@ -74937,19 +73622,15 @@ Picker requires an interactive UI surface. Pass a runId: /workflow attach <id> [
     const hadPausedRunState = run2?.status === "paused";
     const hadPausedStageState = run2 !== undefined && workflowHasPausedStages(store, stageRunId);
     const isPaused2 = run2 !== undefined && workflowHasPausedState(store, stageRunId);
-    const isDurableAuthorExit = run2?.exited === true && run2.status === "failed" && run2.resumable === true;
     const isResumableContinuation = run2 !== undefined && !isPaused2 && run2.exitReason !== "quit" && isWorkflowRunResumable(workflowRunResumeCandidate(run2));
     const isActivelyRunning = run2 !== undefined && run2.endedAt === undefined && run2.status === "running" && !isPaused2 && run2.exitReason !== "quit";
     if (isActivelyRunning && !isResumableContinuation && action === "resume" && !hasPendingDurableResumeTransition(stageRunId)) {
       fail(`Workflow ${stageRunId} is already running in this session. Attach with \`/workflow connect ${stageRunId}\` instead of resuming.`);
       return true;
     }
-    if (isDurableAuthorExit) {
-      return await handleDurableResume(stageRunId, ctx, reporter, deps);
-    }
     if (isResumableContinuation) {
       await ensureWorkflowResourcesVisible();
-      const continuation = await deps.runtimeForContext(ctx).resumeFailedRun(stageRunId, stageId, { policy, actor: "user" });
+      const continuation = await deps.runtimeForContext(ctx).resumeFailedRun(stageRunId, stageId, { policy });
       continuation.ok ? print(continuation.message) : fail(continuation.message);
       return true;
     }
@@ -74958,7 +73639,7 @@ Picker requires an interactive UI surface. Pass a runId: /workflow attach <id> [
     }
     let result;
     try {
-      result = await resumeRun(stageRunId, { stageId, message, actor: "user" });
+      result = await resumeRun(stageRunId, { stageId, message });
     } catch (error) {
       fail(`Failed to resume run ${stageRunId}: ${error instanceof Error ? error.message : String(error)}`);
       return true;
@@ -74999,7 +73680,7 @@ Picker requires an interactive UI surface. Pass a runId: /workflow attach <id> [
   return false;
 }
 
-// dist/builtin/workflows/src/extension/workflow-command-registration.ts
+// src/extension/workflow-command-registration.ts
 function registerWorkflowSlashCommand(pi, workflowCommands, deps) {
   registerWorkflowCommand(pi, "workflow", {
     description: "Run or inspect Atomic workflows. Usage: /workflow <name> [key=value…] | /workflow [list|status|connect|attach|interrupt|quit|pause|resume|inputs|reload] [args]",
@@ -75074,27 +73755,16 @@ Available: ${formatAvailableWorkflowNames(deps.runtimeProxy.registry.names())}`)
       const resolved = resolveRunId(target);
       if (resolved.kind === "malformed")
         return fail(resolved.message);
-      if (resolved.kind === "not_found") {
-        const durable = await deps.runtimeForContext(ctx).inspectDurableWorkflow(target);
-        if (durable.kind !== "found")
-          return fail(durable.message);
-        emitChatSurface(pi, { kind: "detail", detail: durable.detail });
-        return;
-      }
+      if (resolved.kind === "not_found")
+        return fail(`Run not found: ${target}`);
       const inspected = inspectRun(resolved.runId);
       if (!inspected.ok)
         return fail(`Run not found: ${target}`);
       emitChatSurface(pi, { kind: "detail", detail: inspected.detail });
       return;
     }
-    const capturedRuns = store.graphSnapshot().runs;
-    const rows = selectRunsForPicker(capturedRuns, "", true, Date.now());
-    const visibleRuns = rows.map((r) => r.run);
-    emitChatSurface(pi, {
-      kind: "status",
-      runs: visibleRuns,
-      indicatorStatuses: resolveRunIndicatorStatuses(visibleRuns, capturedRuns)
-    });
+    const rows = selectRunsForPicker(store.runs(), "", true, Date.now());
+    emitChatSurface(pi, { kind: "status", runs: rows.map((r) => r.run) });
     return;
   }
   if (subcommand === "reload") {
@@ -75169,7 +73839,7 @@ Available: ${formatAvailableWorkflowNames(deps.runtimeProxy.registry.names())}`)
     }
   }
   await ensureWorkflowResourcesVisible();
-  const result = await deps.runWithLifecycleSuppressedForPolicy(policy, () => deps.runtimeForContext(ctx).dispatch({ workflow: workflowName, inputs: mergedInputs, action: "run" }, { policy, origin: "user" }));
+  const result = await deps.runWithLifecycleSuppressedForPolicy(policy, () => deps.runtimeForContext(ctx).dispatch({ workflow: workflowName, inputs: mergedInputs, action: "run" }, { policy }));
   if (result.action !== "run" || !("runId" in result))
     return;
   const runResult = result;
@@ -75196,17 +73866,10 @@ Available: ${formatAvailableWorkflowNames(deps.runtimeProxy.registry.names())}`)
   }
 }
 
-// dist/builtin/workflows/src/extension/workflow-tool.ts
+// src/extension/workflow-tool.ts
 import { getSupportedThinkingLevels } from "@earendil-works/pi-ai/compat";
 
-// dist/builtin/workflows/src/extension/workflow-status-summary.ts
-var workflowStatusRenderRuns = new WeakMap;
-function setWorkflowStatusRenderRuns(result, runs) {
-  workflowStatusRenderRuns.set(result, runs);
-}
-function getWorkflowStatusRenderRuns(result) {
-  return workflowStatusRenderRuns.get(result);
-}
+// src/extension/workflow-status-summary.ts
 function stageIsActive(stage) {
   return stage.status === "running" || stage.status === "awaiting_input";
 }
@@ -75304,7 +73967,7 @@ function buildWorkflowStatusListing(snapshots, filter = "all", now = Date.now())
   };
 }
 
-// dist/builtin/workflows/src/extension/workflow-tool-content.ts
+// src/extension/workflow-tool-content.ts
 function stringifyWorkflowToolResult(result) {
   return JSON.stringify(result, null, 2);
 }
@@ -75350,17 +74013,7 @@ function statusAwaitingInputLine(entry) {
   const message = entry.message !== undefined ? ` — "${truncateStatusText(entry.message)}"` : "";
   return `    awaiting input: ${target}${prompt}${message}`;
 }
-function statusRunIcon(run2, snapshot, allRuns) {
-  if (snapshot === undefined)
-    return statusIcon(run2.status);
-  const indicatorStatus = runIndicatorStatus(snapshot, allRuns);
-  if (snapshot.endedAt === undefined && snapshot.status === "paused" && snapshot.exitReason === "quit") {
-    return statusIcon("pending");
-  }
-  return statusIcon(indicatorStatus);
-}
 function renderStatusToolContent(result) {
-  const allRuns = getWorkflowStatusRenderRuns(result) ?? result.snapshots;
   const lines = ["action: status", `filter: ${result.filter}`];
   if (result.runs.length === 0) {
     lines.push(result.filter === "all" ? "runs: none" : `runs: none (statusFilter: ${result.filter})`);
@@ -75373,7 +74026,6 @@ function renderStatusToolContent(result) {
     const hint = statusRunHint(run2);
     const summaryLine = [
       `[${index + 1}]`,
-      statusRunIcon(run2, result.snapshots[index], allRuns),
       run2.runId,
       run2.name,
       run2.status,
@@ -75553,7 +74205,7 @@ function workflowGetResult(runtime, args) {
   };
 }
 
-// dist/builtin/workflows/src/runs/background/quit-tool-node.ts
+// src/runs/background/quit-tool-node.ts
 async function abortToolNode(runId, nodeId, opts) {
   const activeStore = opts?.store ?? store;
   const toolControls = opts?.toolControlRegistry ?? toolControlRegistry;
@@ -75580,7 +74232,7 @@ async function abortToolNode(runId, nodeId, opts) {
   };
 }
 
-// dist/builtin/workflows/src/extension/workflow-tool-control.ts
+// src/extension/workflow-tool-control.ts
 function controlFailure(action, runId, error) {
   return {
     action,
@@ -75608,7 +74260,7 @@ async function workflowPauseAction(args) {
       return { action, runId: "--all", status: "noop", message: allStageConflictMessage("pause") };
     }
     try {
-      const results = await pauseAllRuns({ actor: "agent" });
+      const results = await pauseAllRuns();
       const paused = results.filter((result) => result.ok).length;
       return {
         action,
@@ -75638,7 +74290,7 @@ async function workflowPauseAction(args) {
     return { action, runId: target.runId, status: "noop", message: stage.message };
   const stageRunId = stage.runId ?? target.runId;
   try {
-    const result = await pauseRun(stageRunId, { stageId: stage.stageId, actor: "agent" });
+    const result = await pauseRun(stageRunId, { stageId: stage.stageId });
     return result.ok ? {
       action,
       runId: result.runId,
@@ -75727,7 +74379,7 @@ async function workflowQuitAction(args) {
     if (args.stageId !== undefined && args.stageId.length > 0) {
       return { action, runId: "--all", status: "noop", message: allStageConflictMessage("quit") };
     }
-    const results = await quitAllRuns({ actor: "agent" });
+    const results = await quitAllRuns();
     const successes = results.filter((result) => result.ok);
     const quitCount = successes.length;
     const failures = results.filter((result) => !result.ok);
@@ -75747,7 +74399,7 @@ async function workflowQuitAction(args) {
   if (controlNode.kind === "tool")
     return quitToolNodeAction(controlNode.runId, controlNode.nodeId, action);
   try {
-    const result = await quitRun(target.runId, { actor: "agent" });
+    const result = await quitRun(target.runId);
     if (result.ok) {
       return {
         action,
@@ -75829,7 +74481,7 @@ async function resumeDurableShadow(runId, deps) {
   } catch (error) {
     warning = formatWorkflowResourceLoadWarning(error);
   }
-  const resumed = await runtime.resumeDurableWorkflow(runId, { policy: deps.policy, actor: "agent" });
+  const resumed = await runtime.resumeDurableWorkflow(runId, { policy: deps.policy });
   const message = warning === undefined ? resumed.message : `${warning}
 
 ${resumed.message}`;
@@ -75842,7 +74494,7 @@ ${resumed.message}`;
 }
 async function resumePreparedDurableTarget(runId, deps) {
   try {
-    const resumed = await deps.getRuntime().resumeDurableWorkflow(runId, { policy: deps.policy, actor: "agent" });
+    const resumed = await deps.getRuntime().resumeDurableWorkflow(runId, { policy: deps.policy });
     return {
       action: "resume",
       runId: resumed.ok ? resumed.runId : runId,
@@ -75943,17 +74595,14 @@ async function workflowResumeAction(args, deps) {
   const hadPausedRunState = run2?.status === "paused";
   const hadPausedStageState = run2 !== undefined && workflowHasPausedStages(store, stageRunId);
   const isPaused2 = run2 !== undefined && workflowHasPausedState(store, stageRunId);
-  const isDurableAuthorExit = run2?.exited === true && run2.status === "failed" && run2.resumable === true;
   const isResumableContinuation = run2 !== undefined && !isPaused2 && run2.exitReason !== "quit" && isWorkflowRunResumable(workflowRunResumeCandidate(run2));
-  if (isDurableAuthorExit)
-    return resumeDurableShadow(stageRunId, deps);
   if (isResumableContinuation) {
     try {
       await deps.ensureWorkflowResourcesLoaded();
     } catch (error) {
       warning = formatWorkflowResourceLoadWarning(error);
     }
-    const continuation = await deps.getRuntime().resumeFailedRun(stageRunId, stage.stageId, { policy: deps.policy, actor: "agent" });
+    const continuation = await deps.getRuntime().resumeFailedRun(stageRunId, stage.stageId, { policy: deps.policy });
     const message = warning === undefined ? continuation.message : `${warning}
 
 ${continuation.message}`;
@@ -75965,7 +74614,7 @@ ${continuation.message}`;
     };
   }
   try {
-    const result = await resumeRun(stageRunId, { stageId: stage.stageId, message: args.message, actor: "agent" });
+    const result = await resumeRun(stageRunId, { stageId: stage.stageId, message: args.message });
     if (result.ok) {
       const runLevelResumed = hadPausedRunState && !hadPausedStageState && stage.stageId === undefined && result.snapshot.status === "running";
       const noPausedProgress = isPaused2 && result.resumed.length === 0 && result.message === undefined && !runLevelResumed;
@@ -75979,7 +74628,7 @@ ${continuation.message}`;
   }
 }
 
-// dist/builtin/workflows/src/extension/workflow-stage-results.ts
+// src/extension/workflow-stage-results.ts
 function cloneStage(stage) {
   const cloned = structuredClone(stage);
   if (cloned.sessionFile !== undefined)
@@ -76153,10 +74802,9 @@ function snapshotTranscriptEntryCount(snapshot) {
   return (snapshot?.toolEvents?.length ?? 0) + (snapshot?.result !== undefined ? 1 : 0) + (snapshot?.error !== undefined ? 1 : 0);
 }
 
-// dist/builtin/workflows/src/extension/workflow-tool-inspection.ts
-function workflowStagesResult(args, source) {
-  const activeStore = source?.store ?? store;
-  const target = resolveToolRunTarget(args, "No active run to inspect.", activeStore);
+// src/extension/workflow-tool-inspection.ts
+function workflowStagesResult(args) {
+  const target = resolveToolRunTarget(args, "No active run to inspect.");
   const filter = args.statusFilter ?? "all";
   if (target.kind === "all") {
     return {
@@ -76176,20 +74824,19 @@ function workflowStagesResult(args, source) {
       error: target.message
     };
   }
-  const stageSnapshots = source?.store === undefined ? activeStore.runs().find((run2) => run2.id === target.runId)?.stages ?? [] : expandWorkflowGraph(readGraphStoreSnapshot(activeStore), target.runId).stages;
-  const stages = stageSnapshots.filter((stage) => filter === "all" || stage.status === filter).map(summarizeStage);
+  const run2 = store.runs().find((r) => r.id === target.runId);
+  const stages = (run2?.stages ?? []).filter((stage) => filter === "all" || stage.status === filter).map(summarizeStage);
   return { action: "stages", runId: target.runId, filter, stages };
 }
-function workflowStageResult(args, source) {
-  const activeStore = source?.store ?? store;
-  const target = resolveToolRunTarget(args, "No active run to inspect.", activeStore);
+function workflowStageResult(args) {
+  const target = resolveToolRunTarget(args, "No active run to inspect.");
   if (target.kind === "all") {
     return { action: "stage", runId: "--all", error: "Stage inspection requires a single run." };
   }
   if (target.kind === "malformed" || target.kind === "not_found") {
     return { action: "stage", runId: target.target, error: target.message };
   }
-  const stage = resolveToolStageTarget(target.runId, args.stageId, activeStore);
+  const stage = resolveToolStageTarget(target.runId, args.stageId);
   if (!stage.ok || stage.stageId === undefined) {
     return {
       action: "stage",
@@ -76198,7 +74845,7 @@ function workflowStageResult(args, source) {
     };
   }
   const stageRunId = stage.runId ?? target.runId;
-  const run2 = activeStore.runs().find((r) => r.id === stageRunId);
+  const run2 = store.runs().find((r) => r.id === stageRunId);
   const snapshot = run2?.stages.find((s) => s.id === stage.stageId);
   return snapshot ? { action: "stage", runId: stageRunId, stage: cloneStage(snapshot) } : {
     action: "stage",
@@ -76206,9 +74853,8 @@ function workflowStageResult(args, source) {
     error: `Stage not found in run ${stageRunId}: ${stage.stageId}`
   };
 }
-function workflowTranscriptResult(args, source) {
-  const activeStore = source?.store ?? store;
-  const target = resolveToolRunTarget(args, "No active run to inspect.", activeStore);
+function workflowTranscriptResult(args) {
+  const target = resolveToolRunTarget(args, "No active run to inspect.");
   if (target.kind === "all") {
     return {
       action: "transcript",
@@ -76229,7 +74875,7 @@ function workflowTranscriptResult(args, source) {
       truncated: false
     };
   }
-  const stage = resolveToolStageTarget(target.runId, args.stageId, activeStore);
+  const stage = resolveToolStageTarget(target.runId, args.stageId);
   if (!stage.ok || stage.stageId === undefined) {
     return {
       action: "transcript",
@@ -76241,9 +74887,9 @@ function workflowTranscriptResult(args, source) {
     };
   }
   const stageRunId = stage.runId ?? target.runId;
-  const run2 = activeStore.runs().find((r) => r.id === stageRunId);
+  const run2 = store.runs().find((r) => r.id === stageRunId);
   const snapshot = run2?.stages.find((s) => s.id === stage.stageId);
-  const liveHandle2 = source?.allowLiveHandles === false ? undefined : stageControlRegistry.get(stageRunId, stage.stageId);
+  const liveHandle2 = stageControlRegistry.get(stageRunId, stage.stageId);
   if (liveHandle2 !== undefined) {
     const sessionFile = liveHandle2.sessionFile ?? snapshot?.sessionFile;
     const sessionId = liveHandle2.sessionId ?? snapshot?.sessionId;
@@ -76274,7 +74920,7 @@ function workflowTranscriptResult(args, source) {
   });
 }
 
-// dist/builtin/workflows/src/extension/workflow-tool-send.ts
+// src/extension/workflow-tool-send.ts
 function hasPayloadProperty(args) {
   return args.text !== undefined || args.response !== undefined || args.message !== undefined;
 }
@@ -76302,41 +74948,6 @@ function brokerAnswerFromArgs(args) {
   }
   const text = textPayloadFromArgs(args);
   return text !== undefined ? { text } : {};
-}
-function answersPendingPrompt(delivery, promptId) {
-  return delivery === "answer" || delivery === "auto" || promptId !== undefined;
-}
-function answerablePromptIds(stage) {
-  const target = stage.workflowGraphTarget;
-  const ids = [];
-  const brokered = stageUiBroker.peekStagePrompt(target.runId, target.stageId);
-  if (brokered !== undefined)
-    ids.push(brokered.id);
-  if (stage.pendingPrompt !== undefined)
-    ids.push(stage.pendingPrompt.id);
-  if (stage.status === "awaiting_input" && stage.promptFootprint?.kind === "custom") {
-    ids.push(stage.promptFootprint.id);
-  }
-  return ids;
-}
-function inferPromptStageTarget(runId, delivery, promptId) {
-  if (!answersPendingPrompt(delivery, promptId))
-    return { ok: true, runId };
-  const pending = expandWorkflowGraph(readGraphStoreSnapshot(store), runId).stages.filter((stage) => {
-    const ids = answerablePromptIds(stage);
-    return promptId === undefined ? ids.length > 0 : ids.includes(promptId);
-  });
-  const only = pending[0];
-  if (pending.length === 1 && only !== undefined) {
-    return { ok: true, runId: only.workflowGraphTarget.runId, stageId: only.workflowGraphTarget.stageId };
-  }
-  if (pending.length === 0) {
-    return promptId === undefined ? { ok: true, runId } : { ok: false, message: `No pending prompt ${promptId} in run ${runId}.` };
-  }
-  return {
-    ok: false,
-    message: `${pending.length} prompts pending; pass stageId: ${pending.map(expandedStageLabel).join(", ")}`
-  };
 }
 function workflowSendResult(runId, stageId, delivery, status, message) {
   return { action: "send", runId, stageId, delivery, status, message };
@@ -76398,8 +75009,7 @@ async function workflowSendAction(args, deps = {}) {
   if (rootRun !== undefined && isTerminalRunStatus(rootRun.status)) {
     return terminalWorkflowSendResult(rootRun.id, args.stageId?.trim() ?? "", rootRun.status);
   }
-  const requested = resolveToolStageTarget(target.runId, args.stageId);
-  const stage = requested.ok && requested.stageId === undefined ? inferPromptStageTarget(target.runId, requestedDelivery, args.promptId) : requested;
+  const stage = resolveToolStageTarget(target.runId, args.stageId);
   if (!stage.ok || stage.stageId === undefined) {
     return workflowSendResult(target.runId, "", requestedDelivery, "noop", stage.ok ? "Stage id or name is required." : stage.message);
   }
@@ -76539,33 +75149,7 @@ async function workflowSendAction(args, deps = {}) {
   }
 }
 
-// dist/builtin/workflows/src/extension/workflow-tool.ts
-async function resolveDurableInspectionSource(args, runtime) {
-  const target = args.runId?.trim();
-  if (args.all === true || target === undefined || target.length === 0 || target === "--all")
-    return { kind: "local" };
-  const local = resolveRunId(target);
-  if (local.kind !== "not_found")
-    return { kind: "local" };
-  const durable = await runtime.inspectDurableWorkflow(target);
-  if (durable.kind !== "found")
-    return { kind: "error", message: durable.message };
-  return { kind: "durable", source: { store: durable.store, allowLiveHandles: false } };
-}
-function durableInspectionError(action, runId, message) {
-  if (action === "stages")
-    return { action, runId, filter: "all", stages: [], error: message };
-  if (action === "stage")
-    return { action, runId, error: message };
-  return {
-    action,
-    runId,
-    stageId: "",
-    source: "error",
-    entries: [{ role: "notice", text: message }],
-    truncated: false
-  };
-}
+// src/extension/workflow-tool.ts
 function makeExecuteWorkflowTool(runtime, reloadWorkflowResources, ensureWorkflowResourcesLoaded = () => {}, sendDeps = {}) {
   return async function executeWorkflowTool(args, ctx) {
     const action = args.action ?? "run";
@@ -76611,7 +75195,7 @@ function makeExecuteWorkflowTool(runtime, reloadWorkflowResources, ensureWorkflo
       }
       case "run": {
         await ensureWorkflowResourcesVisible();
-        return getRuntime().dispatch(args, { policy, origin: "agent" });
+        return getRuntime().dispatch(args, { policy });
       }
       case "status": {
         const target = args.runId;
@@ -76621,35 +75205,25 @@ function makeExecuteWorkflowTool(runtime, reloadWorkflowResources, ensureWorkflo
             return { action: "statusDetail", runId: target, error: resolved.message };
           }
           if (resolved.kind === "not_found") {
-            const durable = await getRuntime().inspectDurableWorkflow(target);
-            return durable.kind === "found" ? { action: "statusDetail", runId: target, detail: durable.detail } : { action: "statusDetail", runId: target, error: durable.message };
+            return { action: "statusDetail", runId: target, error: `run not found: ${target}` };
           }
-          const result2 = inspectRun(resolved.runId);
-          return result2.ok ? { action: "statusDetail", runId: result2.runId, detail: result2.detail } : { action: "statusDetail", runId: target, error: `run not found: ${target}` };
+          const result = inspectRun(resolved.runId);
+          return result.ok ? { action: "statusDetail", runId: result.runId, detail: result.detail } : { action: "statusDetail", runId: target, error: `run not found: ${target}` };
         }
         const listing = buildWorkflowStatusListing(topLevelExpandedSnapshots(), args.statusFilter ?? "all");
-        const result = {
+        return {
           action: "status",
           filter: listing.filter,
           runs: listing.runs,
           snapshots: listing.snapshots
         };
-        setWorkflowStatusRenderRuns(result, store.graphSnapshot().runs);
-        return result;
       }
       case "stages":
+        return workflowStagesResult(args);
       case "stage":
-      case "transcript": {
-        const resolved = await resolveDurableInspectionSource(args, getRuntime());
-        if (resolved.kind === "error")
-          return durableInspectionError(action, args.runId ?? "", resolved.message);
-        const source = resolved.kind === "durable" ? resolved.source : undefined;
-        if (action === "stages")
-          return workflowStagesResult(args, source);
-        if (action === "stage")
-          return workflowStageResult(args, source);
-        return workflowTranscriptResult(args, source);
-      }
+        return workflowStageResult(args);
+      case "transcript":
+        return workflowTranscriptResult(args);
       case "send":
         return workflowSendAction(args, sendDeps);
       case "pause":
@@ -76670,7 +75244,7 @@ function makeExecuteWorkflowTool(runtime, reloadWorkflowResources, ensureWorkflo
   };
 }
 
-// dist/builtin/workflows/src/extension/render-call.ts
+// src/extension/render-call.ts
 function runTarget(args) {
   if (args.workflow !== undefined && args.workflow.trim().length > 0)
     return args.workflow;
@@ -76743,7 +75317,7 @@ function renderCall(args, opts = {}) {
   return fitLine3(line, opts.width);
 }
 
-// dist/builtin/workflows/src/extension/render-result.ts
+// src/extension/render-result.ts
 import { wrapTextWithAnsi as wrapTextWithAnsi2 } from "@earendil-works/pi-tui";
 function fitLine4(line, width) {
   if (width === undefined || width <= 0)
@@ -76809,8 +75383,7 @@ function renderResult(result, opts) {
       return renderStatusList(r.snapshots, {
         theme: themed ? deriveGraphTheme({}) : undefined,
         width: opts?.width,
-        now: opts?.now,
-        allRuns: opts?.allRuns ?? getWorkflowStatusRenderRuns(r) ?? r.snapshots
+        now: opts?.now
       });
     }
     case "statusDetail": {
@@ -76866,7 +75439,7 @@ function renderResult(result, opts) {
         const guidance = r.details.message === undefined ? "" : ` — ${r.details.message}`;
         return renderNotice("WORKFLOW RUN", `${r.runId}${label2}: ${r.details.mode} ${r.details.status}${guidance}`, opts, themed);
       }
-      if (r.status === "completed" || r.status === "failed" || r.status === "skipped" || r.status === "cancelled" || r.status === "blocked" || r.status === "killed") {
+      if (r.status === "completed" || r.status === "skipped" || r.status === "cancelled" || r.status === "blocked" || r.status === "killed") {
         const label2 = r.name ? ` (${r.name})` : "";
         return renderNotice("WORKFLOW RUN", `${r.runId}${label2}: ${r.status}`, opts, themed);
       }
@@ -76946,14 +75519,14 @@ function renderResult(result, opts) {
   }
 }
 
-// dist/builtin/workflows/src/extension/workflow-prompts.ts
+// src/extension/workflow-prompts.ts
 var WORKFLOW_TOOL_DESCRIPTION = "Run named builtin, project, user, or package workflows; custom definitions may import reusable project/package workflows or builtin definitions from @bastani/workflows/builtin and nest them with ctx.workflow(...), including deeper composition within the configured maxDepth; " + "when workflow execution fits but another shape would better achieve the task, author a custom TypeScript workflow({...}) inline with normal coding tools, reload it, and run it; after successfully creating and reloading a newly authored custom workflow, report the folder containing its generated code as 'Custom workflow created. You can inspect its code at: <workflow-folder-path>'; do this only for newly created custom workflows, never builtin or pre-existing workflows; " + "discover with list/get/inputs/models, list session runs with status (no runId; statusFilter narrows the list), inspect status/stages/stage details, " + "send prompt answers or steering only while the root workflow is nonterminal, pause/resume/interrupt/quit runs, and reload workflow resources. " + "For large stage handoffs, write context to files/artifacts, pass paths via reads, and prompt downstream agents to 'Read the file at <path>...' instead of injecting large previous text. " + "Wrap critical parts of run inputs and steering messages in <keepContext>...</keepContext> so compaction preserves them verbatim in the stages that inherit them; tag role constraints, prohibitions, must-hold criteria, and identifiers, not background or bulk reference material. " + "For transcripts, prefer status/stages/stage to get sessionFile/transcriptPath, " + "quote the exact path without rewriting separators (Windows backslashes are valid), " + "then search it with rg/grep and read small ranges; transcript is path-only by default when sessionFile/transcriptPath exists, explicit tail/limit returns bounded previews, and missing transcript paths fall back to a small preview. " + "Use action 'models' to inspect models in the configured catalog; the result is a configured-auth snapshot showing what's present in the registry with configured authentication, not proof of credentials, entitlements, OAuth freshness, or live provider access. " + "When authoring a workflow that should dynamically select a model, first call workflow({ action: 'models' }) to inspect the configured catalog, then select from the returned provider/id entries considering the isCurrent marker and available thinking levels.";
 var DEFAULT_PROMPT_GUIDANCE = [
   `**Workflows**: Treat workflows as the default execution path for any non-trivial task and for any request that has inherent structure plus an objective you can make verifiable. Use the \`workflow\` tool for existing named workflows; when the task needs a graph that is not installed, author a custom TypeScript \`workflow({...})\` inline with normal coding tools, reload workflow resources, and run it.
   - Workflow fit check: prefer a workflow for implementation, build, debug/diagnosis, bug-fix, migration, new-feature, scoped multi-file, or docs/code changes with validation; and whenever there are multiple steps, dependencies, handoffs, uncertainty, review/validation needs, long-running work, measurable done criteria, or an outcome that needs evidence.
   - Treat loop or stop-condition wording as a strong workflow signal, especially "do X until Y", "repeat until", "iterate until", "review/fix until passing", "run checks and fix until green", "keep going until done", or any prompt that names an approval gate or evidence requirement.
   - Do not force-fit an installed workflow. When another graph better matches the task, write a task-specific TypeScript workflow inline. Rich custom workflows may use deterministic branching, dynamic fan-out, child workflows, artifacts, structured outputs, human-in-the-loop prompts, gates, retries, and explicit stop conditions.
-  - Before launching any workflow for a non-trivial task, perform a short workflow-architecture pass. Derive implementation lifecycle needs, whole-codebase research needs, independent slices, competing strategies, exact API/type/build contracts, schema or generated-artifact contracts, state transitions/lifecycle behavior, deterministic stop conditions, and required evidence. Enumerate implementation slices in this same pass, not a second planning ritual; give each slice its own objective, acceptance criteria, and gates, and require each to leave a buildable, testable repository state before the next slice. Use a compact internal coverage matrix: \`requirement/risk | required evidence | workflow/stage that produces it | gap\`. Add the topology row \`acyclic topology | node/edge sketch for branches and loops | architecture pass | unresolved back-edge\`. Unresolved material rows or back-edges must change the graph before launch.
+  - Before launching any workflow for a non-trivial task, perform a short workflow-architecture pass. Derive implementation lifecycle needs, whole-codebase research needs, independent slices, competing strategies, exact API/type/build contracts, schema or generated-artifact contracts, state transitions/lifecycle behavior, deterministic stop conditions, and required evidence. Use a compact internal coverage matrix: \`requirement/risk | required evidence | workflow/stage that produces it | gap\`. Add the topology row \`acyclic topology | node/edge sketch for branches and loops | architecture pass | unresolved back-edge\`. Unresolved material rows or back-edges must change the graph before launch.
   - In that architecture pass, sketch each branch, loop, and nested workflow boundary. Identify which stages repeat, require distinct tracked work for every iteration, name the current frontier before each repeat, reject self-edges and ancestor edges, compose nested workflows through \`ctx.workflow(...)\` boundaries rather than recursive \`run\` invocation, and preserve stable per-iteration identity and call order for resume/replay.
   - Compare candidate workflows by guarantees, not broad objectives: run one named workflow only when it covers the lifecycle and produces evidence for every material requirement/risk. A generic implementation workflow may cover the lifecycle without covering exact API/type/build contracts, schemas/generated artifacts, state transitions, or domain-specific gates. Do not treat "has reviewers" as proof that a task-specific risk is covered.
   - Use these routing signals without adding decorative stages: broad repository uncertainty → Fan-out-and-synthesize with repository-focused branches; independent slices → Fan-out-and-synthesize; plausible-but-wrong contract risk → Adversarial verification or a task-specific verification stage; competing architectures or implementations → Generate-and-filter or Tournament; an explicit repeat-until condition → Loop until done; implementation lifecycle → a task-specific worker/reviewer loop; exact API/build/schema requirements → dedicated deterministic gates.
@@ -76967,11 +75540,9 @@ var DEFAULT_PROMPT_GUIDANCE = [
   - When plausible-but-wrong behavior is a material risk in an arbitrary task-specific workflow, prefer a bounded evidence-backed adversarial loop. Give a fresh-context grumpy/skeptical-but-fair reviewer the literal objective and require actionable, evidence-backed falsification probes without invented requirements. Have it emit a structured verifier plan containing each exact probe, inputs, command/assertion, expected success condition, and requirement/risk covered.
   - Support both verifier shapes: for explicit known contracts, author direct task-specific \`ctx.tool(...)\` gates before launch; for risks requiring adversarial discovery, let the model select high-value probes through structured output, then execute the selected compile, test, schema generation/validation, runtime, or artifact-inspection checks authoritatively through durable \`ctx.tool(...)\` calls. Actual tool results—not model self-report—must feed skeptical evaluation, consolidated evidence-backed repair findings, and reruns after the implementation child repairs them.
   - Define bounded pass, repair, failure, and iteration-limit conditions before launch. Use \`ctx.tool\` for workflow-owned external checks and side effects whose results should be durably checkpointed. Each \`ctx.tool\` call is tracked as a durable, non-chat graph node and may run before, between, after, or without model stages; a tool-only workflow is valid tracked execution; keep pure transformations as ordinary TypeScript, and do not wrap every model-stage action in a tool call.
-  - Choose the cheapest graph that covers every material coverage row without collapsing independently verifiable implementation slices merely to minimize stage count. Avoid decorative composition and duplicated research or review loops. Prefer composing a proven builtin or shared child over copying its prompt/graph.
+  - Choose the cheapest graph that covers every material coverage row. Avoid decorative composition and duplicated research or review loops. Prefer composing a proven builtin or shared child over copying its prompt/graph.
   - Before the first launch, state the selected graph, why one broad builtin is sufficient or insufficient, the evidence each major stage produces, and the stop/repair conditions. A simple direct match may use one sentence; a composed graph must briefly name its children and task-specific gates. For a custom adversarial loop, also name the skeptical reviewer, deterministic \`ctx.tool\` verifier gates, how model-selected plans become tool executions, and how failures reach bounded repair.
-  - Before launching an authored workflow, assign every model stage a role, failure cost, primary model, thinking level, and fallback policy. Use the role/risk defaults in the model-selection guide: reserve \`max\` for high-cost-of-error roles such as security, identity, adversarial challenge, and final approval; use \`high\` for demanding codebase mapping, lifecycle analysis, compatibility, planning, synthesis, triage, and repair; use \`medium\` for user-impact review and final reporting; keep deterministic checks as tool nodes with no model call. An explicit user request for a thinking level always wins over these defaults, subject to catalog support. For a mixed workflow, mapping may be \`high\`, approval \`max\`, reporting \`medium\`, and tests tool-only; never assign \`max\` to every model stage without a stage-specific reason.
-  - Print a compact \`Stage | Model | Thinking | Role\` assignment before launch with a short cost/quality rationale for each model stage. Apply the same role/risk policy to every fallback attempt rather than inheriting \`max\` mechanically; choose each primary and fallback level from the configured catalog, and if no selected catalog model supports the role's level, leave the stage unpinned rather than inventing an unsupported level.
-  - Example custom shapes: classify a request and dispatch category-specific stages; fan out per package and synthesize artifact-backed results; decompose one implementation objective into stacked, independently verified slices with a bounded child lifecycle per slice; implement, run fresh-context verifiers, reduce findings, and loop through repairs until approved; generate several plans and filter or tournament-rank them; or rerun checks and fixes until green with a progress ledger and max-iteration escape hatch.
+  - Example custom shapes: classify a request and dispatch category-specific stages; fan out per package and synthesize artifact-backed results; implement, run fresh-context verifiers, reduce findings, and loop through repairs until approved; generate several plans and filter or tournament-rank them; or rerun checks and fixes until green with a progress ledger and max-iteration escape hatch.
   - Budget reconnaissance: once workflow fit is clear, keep pre-workflow exploration to a few quick reads that sharpen the objective and validation criteria. Put deep research, upstream/design comparison, and behavior probing inside the workflow. Pass large context through files/artifacts and \`reads\` rather than injecting it into prompts.
   - Course-correct instead of drifting: after roughly ten exploratory tool calls with no artifact, edit, or commit, or repeated "let me verify one more thing" loops, stop, write findings to a context file, and hand the task to the best-fit named or custom workflow. Sunk inline research transfers through files; it is not a reason to stay inline.
   - Only skip workflows for tiny, deterministic, low-risk answers or direct edits where stage tracking clearly costs more than it adds, typically a single-file/no-test/no-review change or a simple answer.`,
@@ -76986,16 +75557,13 @@ var DEFAULT_PROMPT_GUIDANCE = [
   - For transcripts, avoid whole-file reads. Get \`sessionFile\`/\`transcriptPath\` from \`stages\` or \`stage\`, preserve the exact path and platform separators, search with \`rg\`/\`grep\`, and read small relevant ranges; use explicit \`tail\` or \`limit\` only for a bounded preview.`,
   `**Workflow authoring and handoffs**:
   - When a user asks to create or edit a workflow, clarify only unresolved requirements that materially affect its purpose, inputs, stages, handoffs, validation, success criteria, or starter pattern. Read the workflow docs/examples, implement the TypeScript definition with normal coding tools, reload it, and run representative test inputs before presenting it. Use the create-spec skill when it adds value; it is not mandatory when context is already sufficient.
-  - After creating and reloading a newly authored custom workflow, close the loop by stating the folder containing the workflow file just written, for example \`.atomic/workflows/\`, in this shape: \`Custom workflow created. You can inspect its code at: <workflow-folder-path>\`. Do this only for newly created custom workflows, never builtin or pre-existing workflows.
-  - When creating or editing a workflow that pins an explicit stage \`model\` or \`fallbackModels\`, consult \`packages/coding-agent/docs/models/model-selection.md\` for role-based recommendations, treating benchmark thinking levels as measurement configurations rather than universal workflow defaults, then call \`workflow({ action: "models" })\` to see the models actually present in the user's configured catalog. Use only the catalog's returned \`fullId\` values as model strings, and append a thinking suffix only when that exact level appears in the entry's \`availableThinkingLevels\`; apply the stage role and failure-cost policy independently to the primary and every fallback; treat an absent or empty \`availableThinkingLevels\` as no suffix support rather than inferring one. If a guide-recommended model for the role is unavailable, try another guide-recommended model that is present in the catalog. If the selected model does not support the role's level, choose another catalog model that does or leave the stage unpinned rather than inventing or silently promoting a level. An explicit user request for a level overrides the role default, but never fabricate an unsupported catalog level. If no recommendation intersects with the catalog, leave the stage unpinned rather than inventing a substitute, and mention the limitation, asking the user only if the workflow requires an explicit model choice. If the catalog is empty, continue with unpinned stages, state that no configured models were returned, and do not fabricate model IDs. Do not inspect or infer credentials, environment variables, auth files, token validity, entitlements, or the reason a model is absent; \`isCurrent\` marks the active selection, not a quality recommendation.
-  - Consult docs/workflows.md and its starter patterns (Classify-and-act, Fan-out-and-synthesize, Adversarial verification, Generate-and-filter, Tournament, Loop until done, and Stacked implementation slices) when designing a stage graph.
+  - After creating and reloading a newly authored custom workflow, close the loop by stating the folder containing the workflow file just written, for example \`.pi/workflows/\`, in this shape: \`Custom workflow created. You can inspect its code at: <workflow-folder-path>\`. Do this only for newly created custom workflows, never builtin or pre-existing workflows.
+  - When creating or editing a workflow that pins an explicit stage \`model\` or \`fallbackModels\`, consult \`packages/coding-agent/docs/models/model-selection.md\` for role-based recommendations, then call \`workflow({ action: "models" })\` to see the models actually present in the user's configured catalog. Use only the catalog's returned \`fullId\` values as model strings, and append a thinking suffix only when that exact level appears in the entry's \`availableThinkingLevels\`; treat an absent or empty \`availableThinkingLevels\` as no suffix support rather than inferring one. If a guide-recommended model for the role is unavailable, try another guide-recommended model that is present in the catalog. If no recommendation intersects with the catalog, leave the stage unpinned rather than inventing a substitute, and mention the limitation, asking the user only if the workflow requires an explicit model choice. If the catalog is empty, continue with unpinned stages, state that no configured models were returned, and do not fabricate model IDs. Do not inspect or infer credentials, environment variables, auth files, token validity, entitlements, or the reason a model is absent; \`isCurrent\` marks the active selection, not a quality recommendation.
+  - Consult docs/workflows.md and its starter patterns (Classify-and-act, Fan-out-and-synthesize, Adversarial verification, Generate-and-filter, Tournament, and Loop until done) when designing a stage graph.
   - Treat workflow composition as a first-class authoring option. Before duplicating stages, inspect reusable workflow modules and builtin exports; import their definitions and invoke them with \`ctx.workflow(...)\`, mapping typed inputs and consuming only declared outputs. Nested workflows can themselves import children, so combine small reusable graphs into a richer parent while respecting \`maxDepth\`.
-  - For implementation objectives, prefer the smallest independently verifiable slice: target roughly 100–500 changed lines between verification points by default, with one reviewable concern that builds and tests on its own. This is a default, not a law: a genuinely atomic change (for example, a mechanical rename across many files or a generated-artifact refresh) stays one slice, and a small objective is not split merely to reach a count.
-  - Decompose those slices during the pre-launch architecture pass, not in a second planning ritual. Run every slice through a child workflow with its own implement/review/repair lifecycle: invoke imported \`goal\`, \`ralph\`, or a task-specific child via \`ctx.workflow(...)\`, rather than making one parent stage own all slices.
-  - Stack implementation slices in order: give each slice an explicit branch input and, before invoking its child, create or check out that named branch in its worktree with a durable \`ctx.tool(...)\` step; \`base_branch\` and \`git_worktree_dir\` alone do not create/check out a feature branch. Slice N+1 must be created from slice N's verified branch, pass that branch as \`base_branch\`, and use a distinct worktree. Verify each slice before proceeding; if a slice fails its gates, stop at the first unverified slice; earlier verified slices remain verified and are reported as such; do not roll them back or continue past the failure.
   - Atomic \`workflow({ run })\` definitions are imperative, dynamic TypeScript. Discovery validates module loading, imports, and definition shape, including schemas and the \`run\` function, but it does not compile \`run\` into a complete graph or prove acyclicity. Runtime inputs, branches, loops, files, network data, model or human output, helpers, and nested workflows determine the materialized graph during execution.
   - Cyclic workflow graphs are unsupported. Workflow authors and coding agents MUST NOT create self-edges or dependency edges from the current frontier to an existing ancestor. Every materialized execution topology must remain a DAG. Redesign or stop before launch if a cycle cannot be removed.
-  - Bounded loops must create distinct tracked work for every iteration; never reopen an ancestor below its downstream work. Stacked implementation slices are unrolled, not looped: each slice gets a fresh child boundary and distinct tracked nodes, and no slice may add an edge back to the current frontier, itself, or an ancestor. If a retained session receives follow-up without new dependency work, keep it as non-topological activity metadata rather than adding a back-edge. Before launch, sketch nodes and dependencies for every branch and loop and reject any proposed parent edge to the node itself or an ancestor.
+  - Bounded loops must create distinct tracked work for every iteration; never reopen an ancestor below its downstream work. If a retained session receives follow-up without new dependency work, keep it as non-topological activity metadata rather than adding a back-edge. Before launch, sketch nodes and dependencies for every branch and loop and reject any proposed parent edge to the node itself or an ancestor.
   - Treat dynamic graph validation during execution, replay, and DBOS hydration as the authoritative cycle boundary. If runtime topology code changes, require incremental edge checks and DBOS hydration validation; prompt guidance and TypeScript types cannot replace those runtime checks.
   - Every workflow invocation automatically receives one stable, non-default Intercom group. Intercom-capable stages inherit it, nested workflows keep the top-level invocation group, and subagents inherit their launching stage's group. Do not mint or thread group names through ordinary workflow definitions. Use an explicit \`group\` only for an intentional override: a named group or \`group: true\` creates a subgroup, while \`group: "default"\` opts into the shared default group. Stages without Intercom access receive no group, and \`contact_supervisor\` still crosses group boundaries for authorized escalation.
   - Prefer \`ctx.tool(name, args, fn)\` for workflow-owned TypeScript operations with side effects, such as filesystem writes, network mutations, and external API actions. It creates a tracked, non-attachable durable graph node before invoking \`fn\`; it may be used before, between, after, or without model stages. A completed \`ctx.tool\` call is durably checkpointed with its serializable result, so resume replays that result without rerunning \`fn\`. For checks that may fail during a bounded repair loop, opt into \`failureMode: "return"\`, branch on the typed outcome, and pass only the needed error fields to the repair stage or artifact yourself; Atomic does not inject failure evidence into later prompts. Cancellation and storage faults still throw. Keep pure computation and side-effect-free transformations as ordinary TypeScript. Do not wrap agent-stage internals or every function call indiscriminately; this rule applies to side effects orchestrated directly by the workflow definition.
@@ -77005,7 +75573,7 @@ var DEFAULT_PROMPT_GUIDANCE = [
   - A model stage sees its local prompt, artifacts, tools, and reads, not the graph name or surrounding implementation. State the concrete action, evidence, and success criteria directly.`
 ];
 
-// dist/builtin/workflows/src/extension/workflow-schema.ts
+// src/extension/workflow-schema.ts
 import { Type as Type21 } from "typebox";
 var WorkflowParametersSchema = Type21.Object({
   workflow: Type21.Optional(Type21.String({
@@ -77099,7 +75667,7 @@ var WorkflowParametersSchema = Type21.Object({
   }))
 }, { additionalProperties: false });
 
-// dist/builtin/workflows/src/extension/workflow-tool-registration.ts
+// src/extension/workflow-tool-registration.ts
 function registerWorkflowTool(pi, executeWorkflowTool, runWithLifecycleSuppressedForPolicy) {
   if (typeof pi.registerTool !== "function")
     return;
@@ -77131,8 +75699,9 @@ function registerWorkflowTool(pi, executeWorkflowTool, runWithLifecycleSuppresse
   });
 }
 
-// dist/builtin/workflows/src/extension/extension-factory.ts
+// src/extension/extension-factory.ts
 function registerWorkflowMessageRenderers(pi) {
+  ensureAtomicThemeInitialized();
   if (typeof pi.registerMessageRenderer !== "function")
     return;
   pi.registerMessageRenderer("workflow.run.start", (payload) => dynamicTextRenderComponent(() => renderRunBanner(payload)));

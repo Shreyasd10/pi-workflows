@@ -1,6 +1,7 @@
 import { isAbsolute, join, resolve } from "node:path";
-import { CONFIG_DIR_NAME, isCodexFastModeCandidateModelId } from "@bastani/atomic";
+import { isCodexFastModeCandidateModelId } from "@bastani/atomic";
 import type { WorkflowActor } from "../../shared/store-types.js";
+import { HOST_CONFIG_DIR_NAME } from "../../shared/host-paths.js";
 import type { StageOptions, WorkflowArtifact, WorkflowTaskOptions, WorkflowTaskStep } from "../../shared/types.js";
 import { workflowArtifactRunPath } from "../../shared/workflow-artifacts.js";
 import { buildModelCandidatesFromCatalog, workflowModelId } from "../shared/model-fallback.js";
@@ -259,7 +260,7 @@ export function prepareTaskWorktrees(
 		tasks: tasks.map((task, index) => ({ ...task, cwd: setup.worktrees[index]!.agentCwd })),
 		setup,
 		agents,
-		diffsDir: join(setup.cwd, CONFIG_DIR_NAME, "workflows", "worktree-diffs", runId, scope),
+		diffsDir: join(setup.cwd, HOST_CONFIG_DIR_NAME, "workflows", "worktree-diffs", runId, scope),
 		outputIsolations: tasks.map((_, index) => ({
 			baseDir: join(trustedRoot, runId, scope, String(index)),
 			trustedRoot,
