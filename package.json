@@ -67,5 +67,8 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --import jiti/register --test test/**/*.test.ts"
   }
 }
