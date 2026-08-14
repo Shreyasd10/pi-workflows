@@ -37,6 +37,22 @@ bash scripts/reapply-pi-host-patch.sh
 The script skips when the patch is already applied and refuses to clobber a
 host file that no longer matches the 0.84.1 baseline.
 
+### Automatic guard (recommended)
+
+Install a launchd agent that watches the pi host directory and re-applies the
+patch automatically after every `pi update` — no remembering needed:
+
+```bash
+bash scripts/install-pi-host-patch-guard.sh
+# remove later with: bash scripts/install-pi-host-patch-guard.sh --uninstall
+```
+
+The guard runs `scripts/auto-apply-pi-host-patch.mjs` (anchor-based, so it
+survives minor pi version bumps that keep the same layout structure). It
+syntax-checks the result, logs to `~/.pi/local/pi-patch-backup/auto-apply.log`,
+and shows a macOS notification if it needs manual re-baselining (anchors
+moved) — the only time you'd ever have to think about it.
+
 ## Install
 
 From git (any machine):
