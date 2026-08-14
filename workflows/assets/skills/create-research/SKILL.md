@@ -3,6 +3,16 @@ name: create-research
 description: Only use when the user explicitly invokes this skill by name.
 disable-model-invocation: true
 ---
+## Plain language
+
+Every document this skill produces must be written in plain, simple language — without losing any depth or quality:
+
+- Short sentences. Everyday words where they exist. One idea per sentence.
+- Explain every acronym, technical term, and piece of jargon in plain words on first use, then keep the term.
+- Keep full depth, detail, nuance, and rigor. Simplify the expression, never the substance: do not cut content, omit caveats, or water down tradeoffs.
+- Use short headed sections and concrete examples so a reader can skim and still get the full meaning.
+- If a sentence needs a second read to understand, rewrite it. If it can be read by a non-specialist and still says everything it said before, keep it.
+
 
 # Research Codebase
 

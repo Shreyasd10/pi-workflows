@@ -117,8 +117,8 @@
     },
     {
       "path": "skills/create-design-discussion/SKILL.md",
-      "bytes": 6785,
-      "sha256": "87c934dc17590a6d780a700cd9d0e686a8fd3f6dd502be7aa10929025d2a2b2c"
+      "bytes": 7515,
+      "sha256": "d45a3dbe73a9d3e7fa073a3c2d7823089ebc4c7c8b793a4e49fa7da01fc129f4"
     },
     {
       "path": "skills/create-design-discussion/references/design_discussion_final_answer.md",
@@ -137,8 +137,8 @@
     },
     {
       "path": "skills/create-plan/SKILL.md",
-      "bytes": 4018,
-      "sha256": "f6ddffbabc8bc175797b467f73267204d2c81dded89769342d51780bad0ec4a1"
+      "bytes": 4748,
+      "sha256": "80bd78cc546f8a9960fae99a8ebf0bc380680284f213b1496a98e61a50f946ce"
     },
     {
       "path": "skills/create-plan/references/plan_final_answer.md",
@@ -152,8 +152,8 @@
     },
     {
       "path": "skills/create-prd/SKILL.md",
-      "bytes": 11977,
-      "sha256": "5fdd98e002784a8b618fead905fb5368f1dd187391fa2f7402e35bff6a9c0335"
+      "bytes": 12707,
+      "sha256": "d0dace81861ae18fc64ea3913958ff637deb373396fb74f8f02e590f5c9f18c5"
     },
     {
       "path": "skills/create-prd/references/prd_final_answer_resolved.md",
@@ -167,8 +167,8 @@
     },
     {
       "path": "skills/create-research-questions/SKILL.md",
-      "bytes": 7089,
-      "sha256": "345a5421b7d1b8aa490204aebe9ded87f372b9b35ad565c42fdac1dc1d34fc7d"
+      "bytes": 7819,
+      "sha256": "4608368adde34b2a23b87dc27a052260db20a83675c681733b7044202921c0b3"
     },
     {
       "path": "skills/create-research-questions/references/research_questions_final_answer.md",
@@ -182,8 +182,8 @@
     },
     {
       "path": "skills/create-research/SKILL.md",
-      "bytes": 16537,
-      "sha256": "7bb4af898458cfcdbbd2f60743a688e871f7a741c2604278c47523e3981e565e"
+      "bytes": 17267,
+      "sha256": "ce20045e529af962765e7e2c283ee5fff5176849d5522c68ede8a25868f9ab09"
     },
     {
       "path": "skills/create-research/references/research_final_answer.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "skills/create-structure-outline/SKILL.md",
-      "bytes": 7760,
-      "sha256": "c63e838adb90ba4ff54260ddb78a1df4968385dc1112dbdd77b2e77f8c38c8c9"
+      "bytes": 8490,
+      "sha256": "133915446b81a5b7f5b121cd38a5a6bcbfd55f06f9cb49148a51c983d38c9afd"
     },
     {
       "path": "skills/create-structure-outline/references/structure_outline_final_answer.md",
@@ -212,8 +212,8 @@
     },
     {
       "path": "skills/create-technical-design/SKILL.md",
-      "bytes": 18075,
-      "sha256": "3eaf41c64f9d03a3849d1482cee1d2d963ec4cd65198a2a6291e30ae5975f93f"
+      "bytes": 18805,
+      "sha256": "24be307a13f64ec0bfdf89564e35ea599f979e1bb85d63384963a255ad03af65"
     },
     {
       "path": "skills/create-technical-design/references/artifact_template.html",
@@ -237,8 +237,8 @@
     },
     {
       "path": "skills/implement-outline/SKILL.md",
-      "bytes": 6625,
-      "sha256": "63ba3d23130887c1399df6aa30b5cd41ca30562410e013866d5d3c726461f212"
+      "bytes": 7355,
+      "sha256": "36eef416282fc2119b1e84f4189385cc30fe41bf93acc8dd2f255f422f878752"
     },
     {
       "path": "skills/implement-outline/references/implement_outline_final_answer.md",
@@ -247,8 +247,8 @@
     },
     {
       "path": "skills/implement-plan/SKILL.md",
-      "bytes": 5967,
-      "sha256": "e3f8b81ab5a847217bf1ef2fd0a6f74a97a3c60d032cfac769826daa2644ba8b"
+      "bytes": 6697,
+      "sha256": "5296f7ee662d1858cf0c6c35208c858b85f239e2a7281b645393cea919734116"
     },
     {
       "path": "skills/implement-plan/references/implement_plan_final_answer.md",
@@ -272,8 +272,8 @@
     },
     {
       "path": "skills/prototype/SKILL.md",
-      "bytes": 2477,
-      "sha256": "499bfeaef45c4a1ed9a18d5a74e6dc0edb3e8702740c3e2590cb135dcf17c7aa"
+      "bytes": 3207,
+      "sha256": "cf5bc265124c0567610a2e6449e94db82a867129e06ff955b07ee02bfafdb473"
     },
     {
       "path": "skills/prototype/UI.md",
@@ -292,8 +292,8 @@
     },
     {
       "path": "skills/wiki/SKILL.md",
-      "bytes": 53000,
-      "sha256": "ca39ce837cdb83d9b3768c7cef202e125041d2c9ce620e463c06ea4f0e13254f"
+      "bytes": 53730,
+      "sha256": "56c8e90c941ad9cf15750212c43e12c3cd8ad4c946f489c81e9d028b6011f233"
     },
     {
       "path": "skills/workflow-help/SKILL.md",
