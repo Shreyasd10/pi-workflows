@@ -25,13 +25,14 @@ import type {
 import type { WorkflowDetails, WorkflowInputValues, WorkflowOutputValues } from "../shared/types.js";
 import { renderRoundedBox } from "../tui/chat-surface.js";
 import { renderDispatchConfirm } from "../tui/dispatch-confirm.js";
-import { deriveGraphThemeFromPiTheme } from "../tui/graph-theme.js";
+import { deriveGraphTheme } from "../tui/graph-theme.js";
 import { renderRunDetail } from "../tui/run-detail.js";
 import { renderStatusList } from "../tui/status-list.js";
 import { truncateToWidth } from "../tui/text-helpers.js";
 import { renderWorkflowList } from "../tui/workflow-list.js";
 import type { WorkflowReloadReport } from "./workflow-reload-report.js";
 import type { WorkflowRunStatusFilter, WorkflowRunStatusSummary } from "./workflow-status-summary.js";
+import { getWorkflowStatusRenderRuns } from "./workflow-status-summary.js";
 
 // ---------------------------------------------------------------------------
 // Result variants
@@ -228,7 +229,7 @@ export interface RenderResultOpts {
 	runInputs?: Readonly<WorkflowInputValues>;
 	/**
 	 * Suppress ANSI colour output (CLI flag paths / non-TTY consumers).
-	 * When false/undefined the host Pi theme (Oscura, etc.) is used.
+	 * When false/undefined the canonical Catppuccin chrome is rendered.
 	 */
 	plain?: boolean;
 	/**
@@ -240,8 +241,8 @@ export interface RenderResultOpts {
 	 * not implement synchronized output (e.g. mosh).
 	 */
 	now?: number;
-	/** Live Pi Theme instance; omitted → Mocha fallback inside deriveGraphThemeFromPiTheme. */
-	hostTheme?: unknown;
+	/** Point-in-time full run collection used only to resolve hidden nested indicators. */
+	allRuns?: readonly RunSnapshot[];
 }
 
 /**
@@ -268,13 +269,8 @@ function noticeBodyLines(message: string, width?: number): string[] {
 		.map((line) => ` ${line} `);
 }
 
-function resultTheme(themed: boolean, opts?: RenderResultOpts): ReturnType<typeof deriveGraphThemeFromPiTheme> | undefined {
-	if (!themed) return undefined;
-	return deriveGraphThemeFromPiTheme(opts?.hostTheme);
-}
-
 function renderNotice(title: string, message: string, opts: RenderResultOpts | undefined, themed: boolean): string {
-	const theme = resultTheme(themed, opts);
+	const theme = themed ? deriveGraphTheme({}) : undefined;
 	const width = opts?.width;
 	const contentWidth = width && width > 0 ? Math.max(1, width - 4) : undefined;
 	return renderRoundedBox({
@@ -331,7 +327,7 @@ export function renderResult(result: WorkflowToolResult, opts?: RenderResultOpts
 		case "list": {
 			const r = result as ListResult;
 			return renderWorkflowList(r.items, {
-				theme: resultTheme(themed, opts),
+				theme: themed ? deriveGraphTheme({}) : undefined,
 				width: opts?.width,
 			});
 		}
@@ -339,9 +335,10 @@ export function renderResult(result: WorkflowToolResult, opts?: RenderResultOpts
 		case "status": {
 			const r = result as StatusResult;
 			return renderStatusList(r.snapshots, {
-				theme: resultTheme(themed, opts),
+				theme: themed ? deriveGraphTheme({}) : undefined,
 				width: opts?.width,
 				now: opts?.now,
+				allRuns: opts?.allRuns ?? getWorkflowStatusRenderRuns(r) ?? r.snapshots,
 			});
 		}
 
@@ -352,7 +349,7 @@ export function renderResult(result: WorkflowToolResult, opts?: RenderResultOpts
 			}
 			const r = result as Extract<StatusDetailResult, { detail: RunDetail }>;
 			return renderRunDetail(r.detail, {
-				theme: resultTheme(themed, opts),
+				theme: themed ? deriveGraphTheme({}) : undefined,
 				width: opts?.width,
 				now: opts?.now,
 			});
@@ -361,7 +358,7 @@ export function renderResult(result: WorkflowToolResult, opts?: RenderResultOpts
 		case "inputs": {
 			const r = result as InputsResult;
 			return renderInputsSchema(r.name, r.inputs, {
-				theme: resultTheme(themed, opts),
+				theme: themed ? deriveGraphTheme({}) : undefined,
 				width: opts?.width,
 			});
 		}
@@ -402,7 +399,7 @@ export function renderResult(result: WorkflowToolResult, opts?: RenderResultOpts
 						workflowName: r.name,
 						runId: r.runId,
 						inputs: opts?.runInputs ?? {},
-						theme: resultTheme(themed, opts),
+						theme: themed ? deriveGraphTheme({}) : undefined,
 						width: opts?.width,
 					});
 				}
@@ -417,6 +414,7 @@ export function renderResult(result: WorkflowToolResult, opts?: RenderResultOpts
 			}
 			if (
 				r.status === "completed" ||
+				r.status === "failed" ||
 				r.status === "skipped" ||
 				r.status === "cancelled" ||
 				r.status === "blocked" ||
@@ -432,7 +430,7 @@ export function renderResult(result: WorkflowToolResult, opts?: RenderResultOpts
 					workflowName: r.name,
 					runId: r.runId,
 					inputs: opts?.runInputs ?? {},
-					theme: resultTheme(themed, opts),
+					theme: themed ? deriveGraphTheme({}) : undefined,
 					width: opts?.width,
 				});
 			}

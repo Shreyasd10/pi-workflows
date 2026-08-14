@@ -1,7 +1,7 @@
 import type { ChatMessageRenderOptions, ChatSessionHostStyle } from "@bastani/atomic";
 import { hexToAnsi, RESET } from "./color-utils.js";
 import { editorRuleColor } from "./stage-chat-view-footer-status.js";
-import { blankLine, cursorBlock, paint } from "./stage-chat-view-render-helpers.js";
+import { blankLine, cursorBlock, paint, workingIndicatorPalette } from "./stage-chat-view-render-helpers.js";
 import type { StageChatViewContext, StageChatViewOpts } from "./stage-chat-view-types.js";
 
 type StageChatRenderSettings = Partial<Omit<ChatMessageRenderOptions, "ui" | "cwd">>;
@@ -39,11 +39,8 @@ export function chatHostStyle(ctx: StageChatViewContext): ChatSessionHostStyle {
 		textMuted: (text) => paint(text, ctx.theme.textMuted),
 		accent: (text) => paint(text, ctx.theme.accent),
 		accentBold: (text) => paint(text, ctx.theme.accent, { bold: true }),
-		// Stock pi never calls Atomic initTheme(). Always use GraphTheme caller
-		// styling so AtomicWorkingStatusComponent never touches the uninitialized
-		// Atomic theme proxy ("Theme not initialized").
-		workingIndicatorPalette: undefined,
-		workingIndicatorUseGlobalTheme: false,
+		workingIndicatorPalette: ctx.piTheme === undefined ? () => workingIndicatorPalette(ctx.theme) : undefined,
+		workingIndicatorUseGlobalTheme: ctx.piTheme !== undefined,
 		rule: (hex, text) => hexToAnsi(hex) + text + RESET,
 		cursor: () => cursorBlock(),
 		blank: (width) => blankLine(width),

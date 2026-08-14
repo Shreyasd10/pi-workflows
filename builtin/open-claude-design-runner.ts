@@ -12,7 +12,6 @@ import {
   taggedPrompt,
 } from "./open-claude-design-utils.js";
 import { exportOpenClaudeDesign, refineOpenClaudeDesign } from "./open-claude-design-phases.js";
-import { parseIterationContext } from "./iteration-context.js";
 import {
   NO_REFERENCES_BRIEF,
   buildReferenceDiscoveryPrompt,
@@ -27,7 +26,7 @@ import {
 const GROUNDED_REPORTING =
   "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
 const DELEGATION_RULE =
-  "Delegate further only work genuinely independent and too large for a handful of tool calls; do not delegate self-verification, and prefer one task over several.";
+  "Delegate further only work genuinely independent and too large for a handful of tool calls; do not delegate self-verification, and prefer one subagent over several.";
 
 type OpenClaudeDesignOutputs = {
   readonly output_type?: string; readonly design_system?: string; readonly artifact?: string; readonly handoff?: string;
@@ -38,7 +37,7 @@ type OpenClaudeDesignOutputs = {
 
 type OpenClaudeDesignContext = {
   readonly cwd?: string;
-  readonly inputs: { readonly prompt: string; readonly discover_references?: boolean; readonly max_refinements?: number; readonly iteration_context?: "fresh" | "fork" };
+  readonly inputs: { readonly prompt: string; readonly discover_references?: boolean; readonly max_refinements?: number };
   exit?(options?: { readonly status?: string; readonly reason?: string; readonly outputs?: Partial<OpenClaudeDesignOutputs> }): never;
   task(name: string, options: WorkflowTaskOptions): Promise<WorkflowTaskResult>;
   parallel(steps: readonly WorkflowTaskStep[], options: WorkflowParallelOptions): Promise<WorkflowTaskResult[]>;
@@ -113,7 +112,6 @@ export async function runOpenClaudeDesignWorkflow(ctx: OpenClaudeDesignContext):
     model: "anthropic/claude-opus-5:high",
     fallbackModels: [
       "github-copilot/claude-opus-5:high",
-      "opencode-go/deepseek-v4-flash:high",
       "anthropic/claude-fable-5:high",
       "github-copilot/claude-fable-5:high",
       "kimi-coding/k3:max",
@@ -323,7 +321,6 @@ export async function runOpenClaudeDesignWorkflow(ctx: OpenClaudeDesignContext):
     workflowCwd,
     importContext,
     ui: designContext.ui,
-    iterationContext: parseIterationContext(designContext.inputs.iteration_context),
   });
   latestDesign = refinement.latestDesign;
   approvedForExport = refinement.approvedForExport;

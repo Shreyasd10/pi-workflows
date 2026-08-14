@@ -96,7 +96,7 @@ function isWorkflowAuthoringImplementationFrame(filePath: string): boolean {
 		normalized.includes("/packages/workflows/") ||
 		normalized.includes("/node_modules/@bastani/workflows/") ||
 		normalized.includes("/dist/builtin/workflows/") ||
-		normalized.includes("/.pi/agent/extensions/workflows/") ||
+		normalized.includes("/.atomic/agent/extensions/workflows/") ||
 		normalized.includes("/.pi/agent/extensions/workflows/")
 	);
 }

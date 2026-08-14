@@ -3,7 +3,7 @@
  * an inline workflow form is active. Owns ALL keystrokes during fill-out:
  *
  *   tab / shift+tab     — move focus across form fields and the final Submit action
- *   ↑/↓                 — move through options, then fields (or logical lines in `text`)
+ *   ↑/↓                 — move focus (or caret between logical lines in `text`)
  *   ←/→                 — caret nav (text) | choice cycle (select) | flip (bool)
  *   alt/ctrl+←/→        — word movement in text/string/number fields
  *   home/end (ctrl+a/e) — caret to start/end of the current logical line
@@ -60,7 +60,6 @@ import {
 	wordRight,
 } from "./keybindings-adapter.js";
 import { decodePrintableKey, Key, matchesKey } from "./text-helpers.js";
-import { moveOption } from "./option-navigation.js";
 
 export type FormEditorOutcome = "submit" | "cancel";
 
@@ -99,7 +98,7 @@ export class InlineFormEditor implements PiEditorComponent {
 	/** Required by Focusable; we always have focus during the form. */
 	focused = true;
 
-	private readonly tui: { requestRender?: () => void; invalidate?: () => void };
+	private readonly tui: { requestRender?: () => void };
 	private readonly opts: InlineFormEditorOpts;
 	private readonly kb: KeybindingsLike | undefined;
 
@@ -204,9 +203,9 @@ export class InlineFormEditor implements PiEditorComponent {
 	render(_width: number): string[] {
 		return [];
 	}
-	handleInput(data: string): void {
+	handleInput(data: string): boolean {
 		const state = getForm(this.opts.formId);
-		if (state?.status !== "editing") return;
+		if (state?.status !== "editing") return false;
 		if (data.includes(PASTE_START)) {
 			this.isInPaste = true;
 			this.pasteBuffer = "";
@@ -215,43 +214,32 @@ export class InlineFormEditor implements PiEditorComponent {
 		if (this.isInPaste) {
 			this.pasteBuffer += data;
 			const endIdx = this.pasteBuffer.indexOf(PASTE_END);
-			if (endIdx === -1) return; // wait for the close marker
+			if (endIdx === -1) return true; // wait for the close marker
 			const content = this.pasteBuffer.slice(0, endIdx);
 			const remaining = this.pasteBuffer.slice(endIdx + PASTE_END.length);
 			this.isInPaste = false;
 			this.pasteBuffer = "";
 			if (content.length > 0 && this.applyPaste(content, state)) {
 				touch(state);
-				this.notifyFormChanged();
+				this.tui.requestRender?.();
 			}
 			if (remaining.length > 0) this.handleInput(remaining);
-			return;
+			return true;
 		}
 		if (data.length > 1 && isPrintableTextChunk(data)) {
-			if (this.applyPaste(data, state)) {
+			const consumed = this.applyPaste(data, state);
+			if (consumed) {
 				touch(state);
-				this.notifyFormChanged();
+				this.tui.requestRender?.();
 			}
-			return;
+			return consumed;
 		}
 		const consumed = this.routeKey(data, state);
 		if (consumed) {
 			touch(state);
-			this.notifyFormChanged();
+			this.tui.requestRender?.();
 		}
-	}
-
-	/**
-	 * Signal the host to repaint the form card. `requestRender` re-invokes the
-	 * card's `render()` every frame, but hosts or extensions that cache custom
-	 * message render output (e.g. render-cache wrappers around pi's
-	 * `CustomMessageComponent`) serve the stale first frame unless the
-	 * component is explicitly invalidated. Invalidate first so the card
-	 * rebuilds and re-reads the mutated form state.
-	 */
-	notifyFormChanged(): void {
-		this.tui.invalidate?.();
-		this.tui.requestRender?.();
+		return consumed;
 	}
 	private applyPaste(content: string, state: InlineFormState): boolean {
 		const field = state.fields[state.focusedIdx];
@@ -330,27 +318,16 @@ export class InlineFormEditor implements PiEditorComponent {
 		const i = Math.max(0, choices.indexOf(cur));
 		if (
 			matchesAction(this.kb, data, TUI_ACTION.selectUp) ||
-			matchesAction(this.kb, data, TUI_ACTION.editorCursorUp)
+			matchesAction(this.kb, data, TUI_ACTION.editorCursorLeft)
 		) {
-			const move = moveOption(choices, cur, -1);
-			state.rawText[field.name] = move.value;
-			if (move.focusDelta) this.moveFocus(state, move.focusDelta);
-			return true;
-		}
-		if (matchesAction(this.kb, data, TUI_ACTION.editorCursorLeft)) {
 			state.rawText[field.name] = choices[(i - 1 + choices.length) % choices.length]!;
 			return true;
 		}
 		if (
 			matchesAction(this.kb, data, TUI_ACTION.selectDown) ||
-			matchesAction(this.kb, data, TUI_ACTION.editorCursorDown)
+			matchesAction(this.kb, data, TUI_ACTION.editorCursorRight) ||
+			matchesKey(data, Key.space)
 		) {
-			const move = moveOption(choices, cur, +1);
-			state.rawText[field.name] = move.value;
-			if (move.focusDelta) this.moveFocus(state, move.focusDelta);
-			return true;
-		}
-		if (matchesAction(this.kb, data, TUI_ACTION.editorCursorRight) || matchesKey(data, Key.space)) {
 			state.rawText[field.name] = choices[(i + 1) % choices.length]!;
 			return true;
 		}
@@ -364,32 +341,14 @@ export class InlineFormEditor implements PiEditorComponent {
 		return false;
 	}
 	private handleBoolean(data: string, field: WorkflowInputEntry, state: InlineFormState): boolean {
-		// Treat the rendered on/off rows as a bounded list: arrows select the
-		// adjacent value, then leave the field when pressed past either edge.
 		if (
 			matchesKey(data, Key.space) ||
+			matchesAction(this.kb, data, TUI_ACTION.selectUp) ||
+			matchesAction(this.kb, data, TUI_ACTION.selectDown) ||
 			matchesAction(this.kb, data, TUI_ACTION.editorCursorLeft) ||
 			matchesAction(this.kb, data, TUI_ACTION.editorCursorRight)
 		) {
 			state.rawText[field.name] = state.rawText[field.name] === "true" ? "false" : "true";
-			return true;
-		}
-		if (
-			matchesAction(this.kb, data, TUI_ACTION.selectUp) ||
-			matchesAction(this.kb, data, TUI_ACTION.editorCursorUp)
-		) {
-			const move = moveOption(["true", "false"], state.rawText[field.name] ?? "false", -1);
-			state.rawText[field.name] = move.value;
-			if (move.focusDelta) this.moveFocus(state, move.focusDelta);
-			return true;
-		}
-		if (
-			matchesAction(this.kb, data, TUI_ACTION.selectDown) ||
-			matchesAction(this.kb, data, TUI_ACTION.editorCursorDown)
-		) {
-			const move = moveOption(["true", "false"], state.rawText[field.name] ?? "false", +1);
-			state.rawText[field.name] = move.value;
-			if (move.focusDelta) this.moveFocus(state, move.focusDelta);
 			return true;
 		}
 		if (

@@ -2,10 +2,9 @@ import { randomUUID } from "node:crypto";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import type { WorkflowRunContext } from "../src/shared/types.js";
-import { getHostProjectPath } from "../src/shared/host-paths.js";
 
 /**
- * Durable per-run artifact root under `<cwd>/.pi/workflows/runs`.
+ * Durable per-run artifact root under `<cwd>/.atomic/workflows/runs`.
  *
  * The random directory name is generated exactly once through `ctx.tool`, so
  * a durable resume replays the original path instead of computing a fresh
@@ -22,7 +21,7 @@ export async function stableArtifactRoot(
   const artifactDir = await ctx.tool(
     "artifact-root",
     { workflow: workflowName },
-    async () => getHostProjectPath(cwd, "workflows", "runs", `${workflowName}-${randomUUID()}`),
+    async () => join(cwd, ".atomic", "workflows", "runs", `${workflowName}-${randomUUID()}`),
   );
   await mkdir(artifactDir, { recursive: true });
   return artifactDir;

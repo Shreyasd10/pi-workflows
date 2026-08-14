@@ -2,7 +2,7 @@ import { buildIntercomCallbacks } from "../intercom/intercom-routing.js";
 import { subscribeIntercomControl } from "../intercom/result-intercom.js";
 import { store } from "../shared/store.js";
 import { registerChatSurfaceRenderer } from "../tui/chat-surface-message.js";
-import { ensureAtomicThemeInitialized } from "../tui/atomic-theme.js";
+import { deriveGraphTheme } from "../tui/graph-theme.js";
 import { registerInlineFormRenderer } from "../tui/inline-form-overlay.js";
 import type { GraphOverlayPort } from "../tui/overlay-adapter.js";
 import { buildGraphOverlayAdapter } from "../tui/overlay-adapter.js";
@@ -24,7 +24,6 @@ import { makeExecuteWorkflowTool } from "./workflow-tool.js";
 import { registerWorkflowTool } from "./workflow-tool-registration.js";
 
 function registerWorkflowMessageRenderers(pi: ExtensionAPI): void {
-	ensureAtomicThemeInitialized();
 	if (typeof pi.registerMessageRenderer !== "function") return;
 	pi.registerMessageRenderer("workflow.run.start", (payload) =>
 		dynamicTextRenderComponent(() => renderRunBanner(payload as RunStartPayload)),
@@ -32,8 +31,8 @@ function registerWorkflowMessageRenderers(pi: ExtensionAPI): void {
 	pi.registerMessageRenderer("workflow.run.end", (payload) =>
 		dynamicTextRenderComponent(() => renderRunSummary(payload as RunEndPayload)),
 	);
-	registerInlineFormRenderer(pi);
-	registerChatSurfaceRenderer(pi);
+	registerInlineFormRenderer(pi, deriveGraphTheme({}));
+	registerChatSurfaceRenderer(pi, deriveGraphTheme({}));
 }
 
 function buildWorkflowOverlay(

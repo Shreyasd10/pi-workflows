@@ -21,11 +21,12 @@
  *  - src/tui/inline-form-editor.ts (custom EditorComponent)
  */
 
+import { isStaleExtensionContextError } from "@bastani/atomic";
 import type { ExtensionAPI, PiCommandContext } from "../extension/index.js";
 import type { WorkflowInputEntry } from "../extension/render-result.js";
 import type { PiEditorComponent, PiEditorFactory } from "../extension/wiring.js";
 import type { WorkflowInputValues } from "../shared/types.js";
-import { deriveGraphThemeFromPiTheme, type GraphTheme } from "./graph-theme.js";
+import type { GraphTheme } from "./graph-theme.js";
 import { renderInlineCard } from "./inline-form-card.js";
 import { InlineFormEditor } from "./inline-form-editor.js";
 import { createForm, finalizeForm, getForm } from "./inline-form-store.js";
@@ -69,7 +70,7 @@ interface CardComponent {
 	invalidate?(): void;
 }
 
-type RawRenderer = (payload: unknown, options?: unknown, theme?: unknown) => CardComponent | null | undefined;
+type RawRenderer = (payload: unknown) => CardComponent | null | undefined;
 
 /**
  * Wire the message renderer once per live ExtensionAPI host. pi creates a new
@@ -78,14 +79,16 @@ type RawRenderer = (payload: unknown, options?: unknown, theme?: unknown) => Car
  * the replacement session and leave emitted workflow form messages without a
  * renderer.
  *
- * Theme follows the host Pi theme on each render.
+ * Theme is captured at registration. If pi's active theme changes later the
+ * renderer continues with the original; acceptable since these cards are
+ * mostly historical artefacts.
  */
-export function registerInlineFormRenderer(pi: ExtensionAPI): void {
+export function registerInlineFormRenderer(pi: ExtensionAPI, theme: GraphTheme): void {
 	if (rendererRegisteredHosts.has(pi)) return;
 	const register = pi.registerMessageRenderer;
 	if (typeof register !== "function") return;
 
-	const renderer: RawRenderer = (raw, _options, piTheme) => {
+	const renderer: RawRenderer = (raw) => {
 		const message = raw as {
 			content?: string;
 			details?: { formId?: string };
@@ -100,8 +103,10 @@ export function registerInlineFormRenderer(pi: ExtensionAPI): void {
 			// /resume rather than showing a stale or "snapshot lost" placeholder.
 			return null;
 		}
-		const theme = deriveGraphThemeFromPiTheme(piTheme);
 		return {
+			// The card is fully reactive: read fresh state on every render call,
+			// not just at construction time. pi's host re-runs render() whenever
+			// `tui.requestRender()` fires — that's our editor's mutation signal.
 			render: (width: number) =>
 				renderInlineCard({
 					width,
@@ -191,7 +196,7 @@ export async function openInlineInputsForm(
 
 	return new Promise<InlineFormResult>((resolve) => {
 		let resolved = false;
-		let activeEditor: InlineFormEditor | undefined;
+		let activeEditor: PiEditorComponent | undefined;
 		let installedFactory: PiEditorFactory | undefined;
 		const shouldRestorePreviousEditor = (): boolean => {
 			if (typeof getEditor !== "function") return true;
@@ -202,7 +207,7 @@ export async function openInlineInputsForm(
 				// extension command context as stale before tearing down the old editor
 				// surface. A workflow form that settles after that point must not write
 				// its captured pre-switch editor factory back into the fresh session.
-				if (err instanceof Error && err.message.includes("This extension ctx is stale")) {
+				if (isStaleExtensionContextError(err)) {
 					return false;
 				}
 				// Preserve the previous best-effort behavior for older or unusual hosts:
@@ -225,10 +230,6 @@ export async function openInlineInputsForm(
 			if (resolved) return;
 			resolved = true;
 			finalizeForm(formId, result.kind === "run" ? "submit" : "cancel");
-			// Flush the frozen submitted/cancelled card frame: same cache-busting
-			// rationale as InlineFormEditor.notifyFormChanged — the host render
-			// cache must not serve the last editing frame after finalize.
-			activeEditor?.notifyFormChanged?.();
 			activeEditor?.dispose?.();
 			activeEditor = undefined;
 			// Restore the previous editor (or default if there wasn't one).

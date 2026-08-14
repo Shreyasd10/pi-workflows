@@ -8,7 +8,6 @@ import {
   normalizeBranchInput,
   positiveInteger,
 } from "./ralph-core.js";
-import { parseIterationContext } from "./iteration-context.js";
 import { runRalphWorkflow } from "./ralph-runner.js";
 
 export default workflow({
@@ -35,13 +34,6 @@ export default workflow({
       description:
         "Whether to run the final pull-request creation stage. Defaults to false; prompt text alone does not opt in. If the task asks to submit a PR/MR/review, remove that from the prompt text and set this to true — only the final stage then attempts provider-appropriate PR/MR/review creation.",
     }),
-    iteration_context: Type.Optional(Type.Union([
-      Type.Literal("fresh"),
-      Type.Literal("fork"),
-    ], {
-      description:
-        'How looped stages continue across iterations. Default "fresh" starts each iteration in a new session and re-grounds from bounded artifact handoffs (recommended). "fork" is a transitional rollback that preserves the matching-role transcript and accepts context growth; supported for two minor releases.',
-    })),
   },
   outputs: {
     result: Type.Optional(Type.String({ description: "Final implementation report from the orchestrator stage." })),
@@ -81,7 +73,6 @@ export default workflow({
       workflowStartCwd,
       createPr,
       runId: workflowCtx.runId,
-      iterationContext: parseIterationContext(inputs.iteration_context),
     });
   },
 });

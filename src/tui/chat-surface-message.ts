@@ -27,10 +27,11 @@
 
 import type { ExtensionAPI } from "../extension/index.js";
 import type { RunDetail } from "../runs/background/status.js";
+import type { RunIndicatorStatus } from "../shared/run-indicator-status.js";
 import type { RunSnapshot } from "../shared/store-types.js";
 import type { WorkflowInputValues } from "../shared/types.js";
 import { renderDispatchConfirm } from "./dispatch-confirm.js";
-import { deriveGraphThemeFromPiTheme, type GraphTheme } from "./graph-theme.js";
+import type { GraphTheme } from "./graph-theme.js";
 import { renderRunDetail } from "./run-detail.js";
 import { renderStatusList } from "./status-list.js";
 import type { WorkflowListEntry } from "./workflow-list.js";
@@ -67,6 +68,15 @@ export interface DispatchPayload {
 export interface StatusPayload {
 	kind: "status";
 	runs: readonly RunSnapshot[];
+	/**
+	 * Emit-time indicator status per visible run id, resolved against the
+	 * complete point-in-time run collection (including hidden nested
+	 * descendants). Persisted with the payload because chat entries are
+	 * re-rendered from `details` after a session restore, where the full
+	 * collection is gone; storing only the derived statuses keeps hidden
+	 * run snapshots out of the serialized message.
+	 */
+	indicatorStatuses?: Readonly<Record<string, RunIndicatorStatus>>;
 }
 
 /** Workflow catalogue after `/workflow list`. */
@@ -97,7 +107,7 @@ interface CardComponent {
 	invalidate?(): void;
 }
 
-type RawRenderer = (payload: unknown, options?: unknown, theme?: unknown) => string | CardComponent | undefined;
+type RawRenderer = (payload: unknown) => string | CardComponent | undefined;
 
 const rendererRegisteredHosts = new WeakSet<object>();
 
@@ -106,18 +116,20 @@ const rendererRegisteredHosts = new WeakSet<object>();
  * creates a new extension host on `/new`, `/resume`, `/fork`, and `/reload`,
  * while jiti may keep this module cached. A process-global boolean would skip
  * registration in the replacement session and leave emitted workflow chat cards
- * without a renderer. Theme follows the host Pi theme on each render.
+ * without a renderer. Theme is captured at registration; later theme changes
+ * don't retro-style historical entries (acceptable — these are scrollback
+ * snapshots, not live UI).
  */
-export function registerChatSurfaceRenderer(pi: ExtensionAPI): void {
+export function registerChatSurfaceRenderer(pi: ExtensionAPI, theme: GraphTheme): void {
 	if (rendererRegisteredHosts.has(pi)) return;
 	const register = pi.registerMessageRenderer;
 	if (typeof register !== "function") return;
 
-	const renderer: RawRenderer = (raw, _options, piTheme) => {
+	const renderer: RawRenderer = (raw) => {
 		const message = raw as { details?: ChatSurfacePayload };
 		const payload = message.details;
 		if (!payload) return undefined;
-		return makeComponent(payload, deriveGraphThemeFromPiTheme(piTheme));
+		return makeComponent(payload, theme);
 	};
 
 	// `.call(pi, …)` preserves `this` for pi's class-backed ExtensionAPI.
@@ -162,7 +174,12 @@ export function renderChatSurfacePlainText(
 			return [rendered, `run id: ${payload.runId}`, `inputs: ${formatPlainRecord(payload.inputs)}`].join("\n");
 		}
 		case "status": {
-			const rendered = renderStatusList(payload.runs, { width, now, ...themed });
+			const rendered = renderStatusList(payload.runs, {
+				width,
+				now,
+				...themed,
+				indicatorStatuses: payload.indicatorStatuses,
+			});
 			if (payload.runs.length === 0) return rendered;
 			return [
 				rendered,
@@ -286,7 +303,12 @@ function renderPayload(payload: ChatSurfacePayload, theme: GraphTheme, width: nu
 				width,
 			});
 		case "status":
-			return renderStatusList(payload.runs, { theme, width, now });
+			return renderStatusList(payload.runs, {
+				theme,
+				width,
+				now,
+				indicatorStatuses: payload.indicatorStatuses,
+			});
 		case "list":
 			return renderWorkflowList(payload.entries, { theme, width });
 		case "detail":

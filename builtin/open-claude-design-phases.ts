@@ -1,5 +1,3 @@
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 import type { WorkflowTaskResult } from "../src/shared/types.js";
 import {
   ANTI_SLOP_RULES,
@@ -22,21 +20,6 @@ import {
   isUiUnavailableRejection,
   type LiveReviewGateUi,
 } from "./open-claude-design-setup.js";
-import {
-  ITERATION_CONTEXT_FORK,
-  hasLegacyLoopArtifacts,
-  iterationContinuationOptions,
-  parseIterationContext,
-  resolveHandoffPolicy,
-  type IterationContextMode,
-} from "./iteration-context.js";
-import {
-  buildHandoffManifest,
-  handoffLatestManifestPath,
-  snapshotEvidenceRef,
-  validateHandoffManifest,
-  writeHandoffManifest,
-} from "./iteration-handoff.js";
 
 const GROUNDED_REPORTING =
   "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.";
@@ -47,6 +30,19 @@ type DesignContext = {
 };
 
 type ModelConfig = Record<string, object | string | readonly string[]>;
+
+type ForkContinuationOptions = {
+  readonly context?: "fork";
+  readonly forkFromSessionFile?: string;
+};
+
+function forkContinuationOptions(
+  sessionFile: string | undefined,
+): ForkContinuationOptions {
+  return sessionFile === undefined || sessionFile.length === 0
+    ? {}
+    : { context: "fork", forkFromSessionFile: sessionFile };
+}
 
 type RefineOptions = {
   readonly designContext: DesignContext;
@@ -65,39 +61,19 @@ type RefineOptions = {
   readonly workflowCwd: string;
   readonly importContext?: string;
   readonly ui: LiveReviewGateUi;
-  readonly iterationContext?: IterationContextMode;
 };
 
 export async function refineOpenClaudeDesign(options: RefineOptions): Promise<{ readonly latestDesign: string; readonly approvedForExport: boolean; readonly refinementCount: number; }> {
   const { designContext, prompt, outputType, maxRefinements, previewPath, previewFileUrl, artifactDir, browserBootstrapRules, designContextFile, referencesFile, designModelConfig, workflowCwd } = options;
   const importContext = options.importContext ?? "";
-  const handoffPolicy = await resolveHandoffPolicy({
-    artifactDir,
-    requested: parseIterationContext(options.iterationContext),
-    hasLegacyLoopArtifacts: hasLegacyLoopArtifacts(artifactDir),
-  });
-  const iterationContext = handoffPolicy.iteration_context;
   let latestDesign = "";
   let latestGenerateSessionFile: string | undefined;
   let latestUserFeedbackSessionFile: string | undefined;
-  let latestHandoffManifestPath: string | undefined;
   let pendingFeedback: PreviewFeedback | undefined;
-  let feedbackHistory: PreviewFeedback[] = [];
   let approvedForExport = false;
   let refinementCount = 0;
 
   for (let iteration = 1; iteration <= maxRefinements; iteration += 1) {
-    if (iteration > 1 && iterationContext !== ITERATION_CONTEXT_FORK) {
-      const manifestPath = latestHandoffManifestPath ?? handoffLatestManifestPath(artifactDir);
-      validateHandoffManifest({ artifactRoot: artifactDir, manifestPath });
-      latestHandoffManifestPath = manifestPath;
-    }
-    const handoffReads =
-      iteration > 1 &&
-      iterationContext !== ITERATION_CONTEXT_FORK &&
-      latestHandoffManifestPath !== undefined
-        ? [latestHandoffManifestPath]
-        : [];
     const generateStageName = `generate-${iteration}`;
     const generatePrompt = pendingFeedback === undefined
       ? buildInitialGeneratePrompt({
@@ -127,18 +103,14 @@ export async function refineOpenClaudeDesign(options: RefineOptions): Promise<{ 
     // so a single oversized research result cannot become a single oversized
     // prompt message (issue #2121). Only the revision loop threads the small,
     // word-capped prior design summary inline.
-    const generateOptions = iterationContinuationOptions(
-      iterationContext,
-      latestGenerateSessionFile,
-    );
     const generated = await designContext.task(generateStageName, {
       prompt: generatePrompt,
-      reads: [designContextFile, referencesFile, ...handoffReads],
+      reads: [designContextFile, referencesFile],
       ...(pendingFeedback === undefined
         ? {}
         : { previous: { name: "current-design", text: latestDesign } }),
       ...designModelConfig,
-      ...generateOptions,
+      ...forkContinuationOptions(latestGenerateSessionFile),
     });
     latestDesign = generated.text;
     latestGenerateSessionFile = generated.sessionFile ?? latestGenerateSessionFile;
@@ -162,17 +134,6 @@ export async function refineOpenClaudeDesign(options: RefineOptions): Promise<{ 
       });
     if (gateChoice === LIVE_REVIEW_GATE_OPTIONS[1]) {
       approvedForExport = true;
-      latestHandoffManifestPath = writeOpenClaudeDesignHandoff({
-        artifactDir,
-        iteration,
-        iterationContext,
-        prompt,
-        previewPath,
-        designContextFile,
-        referencesFile,
-        approved: true,
-        feedbackHistory,
-      });
       break;
     }
 
@@ -181,16 +142,9 @@ export async function refineOpenClaudeDesign(options: RefineOptions): Promise<{ 
     // rejects: playwright-cli is auto-installed up front, the runner exits
     // early when the browser is unavailable, and the stage prompt requires a
     // degraded non-empty report instead of failing. What rejects here is
-    // model/infra failure — provider errors, fallback exhaustion — and that
-    // must never be laundered into approval. Only a resolved result with no
-    // meaningful notes means the user approved.
-    const feedbackHistoryPaths = feedbackHistory
-      .map((entry) => join(artifactDir, "feedback", `iteration-${entry.iteration}.md`))
-      .filter((path) => existsSync(path));
-    const userFeedbackOptions = iterationContinuationOptions(
-      iterationContext,
-      latestUserFeedbackSessionFile,
-    );
+    // model/infra failure — provider errors, fallback exhaustion, broken
+    // session forks — and that must never be laundered into approval. Only a
+    // resolved result with no meaningful notes means the user approved.
     const userFeedbackResult = await designContext.task(`user-feedback-${iteration}`, {
       prompt: buildLivePreviewDisplayPrompt({
         previewPath,
@@ -198,17 +152,9 @@ export async function refineOpenClaudeDesign(options: RefineOptions): Promise<{ 
         browserBootstrapRules,
         iteration,
         maxRefinements,
-        designIterationManifestPath: latestHandoffManifestPath,
-        annotationHistoryPaths: feedbackHistoryPaths,
-        latestDesignSummary: latestDesign,
       }),
-      reads: [
-        previewPath,
-        ...feedbackHistoryPaths,
-        ...handoffReads,
-      ].filter((path) => existsSync(path)),
       ...designModelConfig,
-      ...userFeedbackOptions,
+      ...forkContinuationOptions(latestUserFeedbackSessionFile),
     });
 
     latestUserFeedbackSessionFile =
@@ -222,106 +168,12 @@ export async function refineOpenClaudeDesign(options: RefineOptions): Promise<{ 
 
     if (!hasMeaningfulFeedback(feedback)) {
       approvedForExport = true;
-      latestHandoffManifestPath = writeOpenClaudeDesignHandoff({
-        artifactDir,
-        iteration,
-        iterationContext,
-        prompt,
-        previewPath,
-        designContextFile,
-        referencesFile,
-        approved: true,
-        feedbackHistory,
-      });
       break;
     }
     pendingFeedback = feedback;
-    feedbackHistory = [...feedbackHistory, feedback];
-    latestHandoffManifestPath = writeOpenClaudeDesignHandoff({
-      artifactDir,
-      iteration,
-      iterationContext,
-      prompt,
-      previewPath,
-      designContextFile,
-      referencesFile,
-      approved: false,
-      feedbackHistory,
-    });
   }
 
   return { latestDesign, approvedForExport, refinementCount };
-}
-
-function writeOpenClaudeDesignHandoff(args: {
-  readonly artifactDir: string;
-  readonly iteration: number;
-  readonly iterationContext: IterationContextMode;
-  readonly prompt: string;
-  readonly previewPath: string;
-  readonly designContextFile: string;
-  readonly referencesFile: string;
-  readonly approved: boolean;
-  readonly feedbackHistory: readonly PreviewFeedback[];
-}): string {
-  const evidence = [
-    snapshotEvidenceRef({
-      artifactRoot: args.artifactDir,
-      path: args.designContextFile,
-      role: "design_context",
-      iteration: args.iteration,
-    }),
-    snapshotEvidenceRef({
-      artifactRoot: args.artifactDir,
-      path: args.referencesFile,
-      role: "references",
-      iteration: args.iteration,
-    }),
-  ];
-  if (existsSync(args.previewPath)) {
-    evidence.push(
-      snapshotEvidenceRef({
-        artifactRoot: args.artifactDir,
-        path: args.previewPath,
-        role: "preview",
-        iteration: args.iteration,
-      }),
-    );
-  }
-  for (const entry of args.feedbackHistory) {
-    const feedbackPath = join(args.artifactDir, "feedback", `iteration-${entry.iteration}.md`);
-    if (existsSync(feedbackPath)) {
-      evidence.push(
-        snapshotEvidenceRef({
-          artifactRoot: args.artifactDir,
-          path: feedbackPath,
-          role: `feedback_iteration_${entry.iteration}`,
-          iteration: args.iteration,
-        }),
-      );
-    }
-  }
-  const userAmendments = args.feedbackHistory.flatMap((entry) =>
-    entry.userNotes === undefined || entry.userNotes.trim().length === 0
-      ? []
-      : [entry.userNotes],
-  );
-  return writeHandoffManifest({
-    artifactRoot: args.artifactDir,
-    manifest: buildHandoffManifest({
-      workflow: "open-claude-design",
-      iteration: args.iteration,
-      iterationContext: args.iterationContext,
-      objective: args.prompt,
-      acceptanceCriteria: args.prompt,
-      userAmendments,
-      unresolvedFindings: [],
-      approved: args.approved,
-      status: args.approved ? "approved_for_export" : "needs_refinement",
-      nextAction: args.approved ? "export" : "generate",
-      evidence,
-    }),
-  });
 }
 
 function buildInitialGeneratePrompt(args: {

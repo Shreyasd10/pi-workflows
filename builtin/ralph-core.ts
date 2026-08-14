@@ -131,7 +131,7 @@ export function workflowCwdContextSection(workflowCwd: string): PromptSection {
       `Current working directory: ${workflowCwd}`,
       "Use this as the starting directory for repository work in this stage.",
       "Shell commands and relative file paths should be relative to this directory unless you intentionally pass an explicit cwd override.",
-      "When delegating via the `task` tool, pass along that this is the current working directory.",
+      "When delegating subagents, pass along that this is the current working directory.",
     ].join("\n"),
   ];
 }
@@ -183,10 +183,6 @@ export async function createImplementationNotesFile(prompt: string, runId?: stri
     "",
     "- Record implementation decisions, deviations from research, tradeoffs, blockers, validation outcomes, and user-relevant facts. Keep entries concise and readable.",
     "- Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.",
-    "",
-    "## Failed Approaches / Dead Ends",
-    "",
-    "- Record each failed approach that a later fresh iteration must not retry: what was tried, why it was rejected, and what evidence ruled it out. Prefer short factual entries over narrative.",
   ].join("\n");
   await writeFile(notesPath, `${initialNotes}\n`, {
     encoding: "utf8",
@@ -321,8 +317,18 @@ export function compactReviewReport(path: string | undefined): string {
     : `Latest review round artifact: ${path}`;
 }
 
-export { forkContinuationOptions, iterationContinuationOptions } from "./iteration-context.js";
-export type { IterationContextMode, IterationContinuationOptions } from "./iteration-context.js";
+type ForkContinuationOptions = {
+  readonly context?: "fork";
+  readonly forkFromSessionFile?: string;
+};
+
+export function forkContinuationOptions(
+  sessionFile: string | undefined,
+): ForkContinuationOptions {
+  return sessionFile === undefined || sessionFile.length === 0
+    ? {}
+    : { context: "fork", forkFromSessionFile: sessionFile };
+}
 
 export function renderResearchPromptRefinementPrompt(args: {
   readonly request: string;
@@ -403,7 +409,6 @@ export type RalphInputs = {
   readonly base_branch?: string;
   readonly git_worktree_dir?: string;
   readonly create_pr?: boolean;
-  readonly iteration_context?: "fresh" | "fork";
 };
 
 export type RalphWorkflowOptions = {
@@ -414,7 +419,6 @@ export type RalphWorkflowOptions = {
   readonly workflowStartCwd: string;
   readonly createPr: boolean;
   readonly runId?: string;
-  readonly iterationContext?: "fresh" | "fork";
 };
 
 export type RalphWorkflowResult = {

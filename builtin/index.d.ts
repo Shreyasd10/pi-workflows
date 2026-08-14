@@ -95,5 +95,3 @@ export {
 } from "./tournament.js";
 
 export declare const openClaudeDesign: OpenClaudeDesignWorkflowDefinition;
-export declare const prdOriented: WorkflowDefinition;
-export declare const rpi: WorkflowDefinition;

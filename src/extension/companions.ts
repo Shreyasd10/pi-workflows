@@ -65,7 +65,7 @@ export const COMPANIONS: readonly CompanionSpec[] = [
 		installSpec: "npm:pi-subagents",
 		purpose: "delegate stages to focused child agents",
 		pathHints: ["/pi-subagents/", "/pi-subagents-", "/pi-subagents."],
-		commandHints: ["subagents-doctor", "run", "chain", "parallel", "run-chain"],
+		commandHints: ["subagents-doctor", "run", "parallel"],
 		toolHints: ["subagent"],
 	},
 	{
@@ -201,7 +201,7 @@ function shortenForEvidence(p: string): string {
 	const marker = "/node_modules/";
 	const idx = p.lastIndexOf(marker);
 	if (idx >= 0) return p.slice(idx + marker.length);
-	// Some installs (git, local) land under `~/.pi/agent/extensions/<name>` —
+	// Some installs (git, local) land under `~/.atomic/extensions/<name>` —
 	// surface the trailing `extensions/<name>/…` segment instead.
 	const extMarker = "/extensions/";
 	const extIdx = p.lastIndexOf(extMarker);

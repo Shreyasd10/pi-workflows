@@ -7,7 +7,6 @@ export type RalphWorkflowInputs = WorkflowInputValues & {
   readonly base_branch: string;
   readonly git_worktree_dir: string;
   readonly create_pr: boolean;
-  readonly iteration_context?: "fresh" | "fork";
 };
 
 export type RalphWorkflowRunInputs = WorkflowInputValues & {
@@ -17,7 +16,6 @@ export type RalphWorkflowRunInputs = WorkflowInputValues & {
   readonly base_branch?: string;
   readonly git_worktree_dir?: string;
   readonly create_pr?: boolean;
-  readonly iteration_context?: "fresh" | "fork";
 };
 
 export type RalphWorkflowOutputs = WorkflowOutputValues & {

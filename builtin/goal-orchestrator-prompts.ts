@@ -16,8 +16,8 @@ export const GOAL_ORCHESTRATOR_RECEIPT_CONTRACT = [
 ].join("\n");
 
 export const GOAL_ORCHESTRATION_GUIDANCE = [
-  "You supervise implementation, investigation, edits, and validation through the `task` tool rather than implementing directly.",
-  "Delegate only work that is genuinely independent and too large to finish in a handful of tool calls. Do not assign tasks as a check on work you already own. Prefer one task over several.",
+  "You supervise implementation, investigation, edits, and validation through the `subagent` tool rather than implementing directly.",
+  "Delegate only work that is genuinely independent and too large to finish in a handful of tool calls. Do not assign subagents as a check on work you already own. Prefer one subagent over several.",
   "Delegate implementation with its relevant objective, cwd, files, constraints, findings, and validation. Use focused locator/analyzer/pattern or shell-heavy delegation when that work meets the delegation threshold.",
   "Keep overlapping work with one owner; parallelize only independent tasks. While an agent runs, prepare dependent follow-up work rather than duplicating its assignment.",
   "Coordinate follow-ups for all required implementation, tests, docs, validation, and cleanup before reporting readiness.",
@@ -25,11 +25,11 @@ export const GOAL_ORCHESTRATION_GUIDANCE = [
 
 export const GOAL_ORCHESTRATOR_BEST_PRACTICES = [
   "The output is an orchestrator receipt produced after reading current goal/review artifacts and incorporating delegated results.",
-  "Distinguish completed, evidenced changes from recommendations and blockers. If goal context or required task capability is unavailable, report the blocker rather than success.",
+  "Distinguish completed, evidenced changes from recommendations and blockers. If goal context or required subagent capability is unavailable, report the blocker rather than success.",
   "If the final paragraph would be a plan, a question, or a promise to act next, make the appropriate tool calls instead of ending the turn.",
 ].join("\n");
 
-export const GOAL_TASK_TRACKING_GUIDANCE = [
+export const GOAL_SUBAGENT_TRACKING_GUIDANCE = [
   "Use `todo` as the active delegation ledger when work is meaningfully multi-step: record owner, purpose, and expected output; mark starts, append results, and close only after incorporation or explicit rejection.",
   "Before the receipt, resolve each pending/in_progress item as completed, blocked, or deferred with a reason so parallel work and follow-ups remain visible.",
 ].join("\n");
@@ -56,15 +56,15 @@ export function renderGoalOrchestratorPrompt(
       ["context", [`Current working directory: ${args.workflowStartCwd}`, "Use it for repository work and relative paths unless an explicit cwd is intentional; pass it to delegated agents."].join("\n")],
       ["project_setup", WORKER_PREFLIGHT_CONTRACT],
       ["orchestration_guidance", GOAL_ORCHESTRATION_GUIDANCE],
-      ["task_tracking", GOAL_TASK_TRACKING_GUIDANCE],
+      ["subagent_tracking", GOAL_SUBAGENT_TRACKING_GUIDANCE],
       ["receipt_contract", [GOAL_ORCHESTRATOR_RECEIPT_CONTRACT, RECEIPT_EXPECTATIONS].join("\n")],
       ["constraints", [
         "Do not submit a PR; a later authorized PR/MR/review action handles that external write after approval.",
-        "For the requested change/build/fix, make in-scope local edits and non-destructive validation through the `task` tool without asking. Confirm destructive actions, other external writes, and scope expansion first.",
+        "For the requested change/build/fix, make in-scope local edits and non-destructive validation through subagents without asking. Confirm destructive actions, other external writes, and scope expansion first.",
         "Preserve repository architecture and conventions unless the literal contract and repository evidence justify changing them; add no features or abstractions beyond the task.",
       ].join("\n")],
       ["output", "Return readable Markdown headed: Delegations performed, Progress made, Files changed, Commands run, Evidence, Blockers, Ready for review, Remaining work."],
-      ["role", "You are the sub-agent orchestrator; supervise the complete objective through the `task` tool rather than implementing directly."],
+      ["role", "You are the sub-agent orchestrator; supervise the complete objective through the `subagent` tool rather than implementing directly."],
       ["objective", [
         `Read the goal ledger at ${args.ledgerPath} and latest review artifacts from the workflow read hint.`,
         "Perform the initialization preflight, then delegate the smallest coherent work that satisfies the literal objective, acceptance criteria, current state, and consolidated findings.",
@@ -83,11 +83,11 @@ export function renderForkedGoalOrchestratorPrompt(
   return taggedPrompt([
     ["receipts", [`Goal ledger artifact: ${ledgerPath}`, renderReceiptHistory(ledger), renderLatestReviewArtifacts(latestReviewArtifactPaths)].join("\n\n")],
     ["orchestration_guidance", GOAL_ORCHESTRATION_GUIDANCE],
-    ["task_tracking", GOAL_TASK_TRACKING_GUIDANCE],
+    ["subagent_tracking", GOAL_SUBAGENT_TRACKING_GUIDANCE],
     ["receipt_contract", [GOAL_ORCHESTRATOR_RECEIPT_CONTRACT, RECEIPT_EXPECTATIONS].join("\n")],
     ["constraints", "The established literal contract, acceptance matrix, contract-fidelity audit, findings batch, regression evidence, closure, worktree, PR handoff, setup, E2E, and blocked-threshold rules remain in force. Do not shrink the ledger objective."],
     ["objective", [
-      "Continue the same goal-runner orchestrator thread as supervisor, using the `task` tool for implementation and validation through completion.",
+      "Continue the same goal-runner orchestrator thread as supervisor, using the `subagent` tool for implementation and validation through completion.",
       "Read the current ledger and latest artifacts, coordinate the smallest coherent remaining delegation, incorporate results, and return the established readable receipt. If the ending would only promise or plan more work, make the tool calls instead.",
     ].join("\n")],
   ]);

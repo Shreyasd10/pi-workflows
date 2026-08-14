@@ -42,7 +42,6 @@ export const GOAL_METHOD_REFERENCE = [
 export const RECEIPT_EXPECTATIONS = [
   "Before reporting progress, audit each claim against a tool result from this session. Report only work you can point to evidence for; say so explicitly when something is unverified.",
   "Leave an inspectable receipt naming changes and files, commands/checks with outcomes, artifacts, decisions, blockers, residual risks, next action, and the oracle portion supported or still unverified.",
-  "Record failed approaches and dead ends with why they were rejected so a later fresh iteration does not retry them; keep those notes in the ledger/receipt rather than only in transcript memory.",
   "Lead with the outcome. Keep facts, decisions, caveats, and next steps; drop background, repetition, and detail that would not change the next action. Stay readable rather than compressing into fragments, arrow chains, or invented shorthand.",
 ].join("\n");
 
@@ -68,13 +67,26 @@ export const goalRunnerTools = [
   "edit",
   "write",
   "todo",
-  "task",
+  "subagent",
   "web_search",
   "code_search",
   "fetch_content",
   "get_search_content",
   "intercom",
 ];
+
+type ForkContinuationOptions = {
+  readonly context?: "fork";
+  readonly forkFromSessionFile?: string;
+};
+
+export function forkContinuationOptions(
+  sessionFile: string | undefined,
+): ForkContinuationOptions {
+  return sessionFile === undefined || sessionFile.length === 0
+    ? {}
+    : { context: "fork", forkFromSessionFile: sessionFile };
+}
 
 export function normalizeBranchInput(
   value: string | undefined,

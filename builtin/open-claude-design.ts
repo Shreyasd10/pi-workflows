@@ -40,13 +40,6 @@ export default workflow({
       default: DEFAULT_MAX_REFINEMENTS,
       description: `Maximum generate/user-feedback loop iterations (default ${DEFAULT_MAX_REFINEMENTS}).`,
     }),
-    iteration_context: Type.Optional(Type.Union([
-      Type.Literal("fresh"),
-      Type.Literal("fork"),
-    ], {
-      description:
-        'How generate/user-feedback stages continue across iterations. Default "fresh" starts each iteration in a new session and re-grounds from design context, preview feedback, and bounded handoff manifests (recommended). "fork" is a transitional rollback that preserves matching-role transcripts and accepts context growth; supported for two minor releases.',
-    })),
   },
   outputs: {
     output_type: Type.Optional(Type.String({ description: "Kind of design artifact produced." })),

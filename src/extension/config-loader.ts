@@ -6,7 +6,7 @@
  *
  * Config file candidates (first readable wins per scope):
  *   Project-local:
- *     <projectRoot>/.pi/extensions/workflow/config.json
+ *     <projectRoot>/.atomic/extensions/workflow/config.json
  *   User-global:
  *     <agentDir>/extensions/workflow/config.json
  * Invalid JSON or invalid shape → CONFIG_INVALID diagnostic (not silent success).
@@ -17,13 +17,7 @@
  */
 
 import { isAbsolute, join } from "node:path";
-import {
-	HOST_CONFIG_DIR_NAME,
-	HOST_CONFIG_DIR_NAMES,
-	getHostAgentDir,
-	getHostAgentDirs,
-	getHostProjectConfigPaths,
-} from "../shared/host-paths.js";
+import { CONFIG_DIR_NAME, CONFIG_DIR_NAMES, getAgentDir, getAgentDirs, getProjectConfigPaths } from "@bastani/atomic";
 import { loadConfigFile } from "./config-file-loader.js";
 import type { WorkflowLifecycleNoticeKind } from "./lifecycle-notifications.js";
 
@@ -120,7 +114,7 @@ export interface LoadWorkflowConfigOpts {
 	readonly projectRoot?: string;
 	/**
 	 * User home directory. When set, preserves legacy test/compat resolution
-	 * relative to <homeDir>/.pi/agent.
+	 * relative to <homeDir>/.atomic/agent and <homeDir>/.pi/agent.
 	 */
 	readonly homeDir?: string;
 	/**
@@ -192,7 +186,7 @@ export const WORKFLOW_CONFIG_DEFAULTS = {
 	resumeInFlight: "ask" as const,
 	workflowNotifications: {
 		enabled: true,
-		notifyOn: ["completed", "failed", "blocked", "awaiting_input"] as const,
+		notifyOn: ["started", "completed", "failed", "blocked", "awaiting_input", "paused", "quit", "resumed"] as const,
 	},
 	worktree: {
 		symlinkDirectories: ["node_modules"] as readonly string[],
@@ -259,7 +253,7 @@ export interface ScopedDiscoveryConfigOpts {
 	readonly projectRoot: string;
 	/**
 	 * User home directory. When set, relative paths in globalConfig.workflows
-	 * resolve relative to <homeDir>/.pi/agent.
+	 * resolve relative to <homeDir>/.atomic/agent.
 	 */
 	readonly homeDir?: string;
 	/**
@@ -300,9 +294,9 @@ function workflowAgentDirs(opts: Pick<LoadWorkflowConfigOpts, "agentDirs" | "hom
 	if (opts.agentDirs !== undefined) return opts.agentDirs;
 	if (opts.homeDir !== undefined) {
 		const homeDir = opts.homeDir;
-		return HOST_CONFIG_DIR_NAMES.map((name) => join(homeDir, name, "agent"));
+		return CONFIG_DIR_NAMES.map((name) => join(homeDir, name, "agent"));
 	}
-	return getHostAgentDirs();
+	return getAgentDirs();
 }
 
 /**
@@ -325,7 +319,7 @@ export function toScopedDiscoveryConfig(
 	opts: ScopedDiscoveryConfigOpts,
 ): ScopedDiscoveryConfig {
 	const globalBase =
-		opts.agentDir ?? (opts.homeDir === undefined ? getHostAgentDir() : join(opts.homeDir, HOST_CONFIG_DIR_NAME, "agent"));
+		opts.agentDir ?? (opts.homeDir === undefined ? getAgentDir() : join(opts.homeDir, CONFIG_DIR_NAME, "agent"));
 	const projectBase = opts.projectRoot;
 
 	const result: ScopedDiscoveryConfig = {};
@@ -358,7 +352,7 @@ export function toScopedDiscoveryConfig(
  *   Global (lowest priority):
  *     <agentDir>/extensions/workflow/config.json
  *   Project-local (highest priority, first existing wins):
- *     <projectRoot>/.pi/extensions/workflow/config.json
+ *     <projectRoot>/.atomic/extensions/workflow/config.json
  * Merge: project-local overrides global. Key-level merge for `workflows` map.
  * Missing files: silently ignored. Invalid files: CONFIG_INVALID diagnostic.
  */
@@ -373,7 +367,7 @@ export async function loadWorkflowConfig(opts: LoadWorkflowConfigOpts = {}): Pro
 	);
 
 	// Project-local config paths (primary Atomic first, then legacy pi)
-	const projectCandidates: string[] = getHostProjectConfigPaths(projectRoot, "extensions", "workflow", "config.json");
+	const projectCandidates: string[] = getProjectConfigPaths(projectRoot, "extensions", "workflow", "config.json");
 
 	// Load global config (primary overrides legacy)
 	let globalConfig: WorkflowExtensionConfig | null = null;

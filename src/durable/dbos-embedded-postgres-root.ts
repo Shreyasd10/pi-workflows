@@ -21,7 +21,6 @@
 
 import { cpSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
-import { HOST_CONFIG_DIR_NAME } from "../shared/host-paths.js";
 import { dirname, join } from "node:path";
 import { type LocalCommandResult, runLocalCommand } from "./local-command.js";
 
@@ -58,7 +57,7 @@ export const ROOT_EMBEDDED_BASE_DIR = "/var/lib/atomic-postgres";
 const OWNER_CANDIDATES = ["postgres", "nobody", "daemon"] as const;
 
 export function defaultEmbeddedBaseDir(): string {
-	return join(homedir(), HOST_CONFIG_DIR_NAME, "postgres");
+	return join(homedir(), ".atomic", "postgres");
 }
 
 /**

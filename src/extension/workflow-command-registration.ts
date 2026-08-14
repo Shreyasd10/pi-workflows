@@ -1,10 +1,11 @@
 import { inspectRun } from "../runs/background/status.js";
 import { renderInputsSchema } from "../shared/render-inputs-schema.js";
+import { resolveRunIndicatorStatuses } from "../shared/run-indicator-status.js";
 import { schemaIsRequired } from "../shared/schema-introspection.js";
 import { store } from "../shared/store.js";
 import type { WorkflowExecutionPolicy } from "../shared/types.js";
 import { emitChatSurface } from "../tui/chat-surface-message.js";
-import { deriveGraphThemeFromPiTheme } from "../tui/graph-theme.js";
+import { deriveGraphTheme } from "../tui/graph-theme.js";
 import { openHostInputsForm } from "../tui/host-input-form.js";
 import { openInlineInputsForm } from "../tui/inline-form-overlay.js";
 import { openInputsPicker } from "../tui/inputs-overlay.js";
@@ -117,7 +118,7 @@ async function workflowSlashHandler(
 			fail(`${inputResult.error}\nAvailable: ${formatAvailableWorkflowNames(deps.runtimeProxy.registry.names())}`);
 			return;
 		}
-		const schemaText = renderInputsSchema(workflowName, inputResult.inputs, { theme: deriveGraphThemeFromPiTheme(ctx.ui?.theme) });
+		const schemaText = renderInputsSchema(workflowName, inputResult.inputs, { theme: deriveGraphTheme({}) });
 		if (policy.mode === "non_interactive") emitWorkflowCommandOutput(pi, schemaText, { command, workflowName });
 		else print(schemaText);
 	};
@@ -152,14 +153,25 @@ async function workflowSlashHandler(
 		if (target && !target.startsWith("--")) {
 			const resolved = resolveRunId(target);
 			if (resolved.kind === "malformed") return fail(resolved.message);
-			if (resolved.kind === "not_found") return fail(`Run not found: ${target}`);
+			if (resolved.kind === "not_found") {
+				const durable = await deps.runtimeForContext(ctx).inspectDurableWorkflow(target);
+				if (durable.kind !== "found") return fail(durable.message);
+				emitChatSurface(pi, { kind: "detail", detail: durable.detail });
+				return;
+			}
 			const inspected = inspectRun(resolved.runId);
 			if (!inspected.ok) return fail(`Run not found: ${target}`);
 			emitChatSurface(pi, { kind: "detail", detail: inspected.detail });
 			return;
 		}
-		const rows = selectRunsForPicker(store.runs(), "", true, Date.now());
-		emitChatSurface(pi, { kind: "status", runs: rows.map((r) => r.run) });
+		const capturedRuns = store.graphSnapshot().runs;
+		const rows = selectRunsForPicker(capturedRuns, "", true, Date.now());
+		const visibleRuns = rows.map((r) => r.run);
+		emitChatSurface(pi, {
+			kind: "status",
+			runs: visibleRuns,
+			indicatorStatuses: resolveRunIndicatorStatuses(visibleRuns, capturedRuns),
+		});
 		return;
 	}
 	if (subcommand === "reload") {
@@ -222,7 +234,7 @@ async function workflowSlashHandler(
 		);
 		if (fields.length > 0 && (inputTokens.length === 0 || missingRequired)) {
 			pickerWasShown = true;
-			const pickerTheme = deriveGraphThemeFromPiTheme(ctx.ui?.theme);
+			const pickerTheme = deriveGraphTheme({});
 			let pickerResult =
 				typeof ctx.ui?.hostInputForm === "function"
 					? await openHostInputsForm(ctx.ui, { workflowName, fields, prefilled: inputs })
@@ -250,7 +262,9 @@ async function workflowSlashHandler(
 
 	await ensureWorkflowResourcesVisible();
 	const result = await deps.runWithLifecycleSuppressedForPolicy(policy, () =>
-		deps.runtimeForContext(ctx).dispatch({ workflow: workflowName, inputs: mergedInputs, action: "run" }, { policy }),
+		deps
+			.runtimeForContext(ctx)
+			.dispatch({ workflow: workflowName, inputs: mergedInputs, action: "run" }, { policy, origin: "user" }),
 	);
 	if (result.action !== "run" || !("runId" in result)) return;
 	const runResult = result as Extract<WorkflowToolResult, { action: "run"; runId: string }>;

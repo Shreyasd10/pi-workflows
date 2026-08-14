@@ -6,14 +6,12 @@ export type OpenClaudeDesignWorkflowInputs = {
   readonly prompt: string;
   readonly discover_references: boolean;
   readonly max_refinements: number;
-  readonly iteration_context?: "fresh" | "fork";
 };
 
 export type OpenClaudeDesignWorkflowRunInputs = {
   readonly prompt: string;
   readonly discover_references?: boolean;
   readonly max_refinements?: number;
-  readonly iteration_context?: "fresh" | "fork";
 };
 
 export type OpenClaudeDesignWorkflowOutputs = WorkflowOutputValues & {

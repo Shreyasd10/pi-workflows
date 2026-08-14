@@ -138,7 +138,6 @@ export type GoalWorkflowInputs = {
   readonly base_branch: string;
   readonly git_worktree_dir: string;
   readonly create_pr: boolean;
-  readonly iteration_context?: "fresh" | "fork";
 };
 
 export type GoalWorkflowOutputs = {

@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs";
 import { tmpdir, userInfo } from "node:os";
 import { join } from "node:path";
 import { Type } from "typebox";
+import { createChildProcessEnvironment } from "@bastani/atomic";
 import type { WorkflowTaskResult } from "../src/shared/types.js";
 
 
@@ -129,7 +130,7 @@ function tmpArtifactBase(): string {
 
 /**
  * Compute (and best-effort create) a per-run artifact directory.
- * Prefers `<cwd>/specs/design/<runId>` (or a tmpdir fallback) so the artifacts
+ * Prefers `<cwd>/.atomic/workflows/open-claude-design/<runId>` so the artifacts
  * stay next to the project and are discoverable by pi. Falls back to a
  * per-user OS tmpdir when the project tree is not writable (CI sandboxes,
  * mocks, etc.).
@@ -229,6 +230,7 @@ export function ensurePlaywrightCli(): PlaywrightCliStatus {
         stdio: "ignore",
         timeout: 15_000,
         shell: isWindows,
+        env: createChildProcessEnvironment(),
       });
       return probe.status === 0;
     } catch {
@@ -265,6 +267,7 @@ export function ensurePlaywrightCli(): PlaywrightCliStatus {
       stdio: "ignore",
       timeout: 180_000,
       shell: isWindows,
+      env: createChildProcessEnvironment(),
     });
     if (install.status === 0) {
       return {

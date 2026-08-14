@@ -1,6 +1,5 @@
 import { join } from "node:path";
 import type { WorkflowParallelOptions, WorkflowTaskOptions, WorkflowTaskResult, WorkflowTaskStep } from "../src/shared/types.js";
-import { workflowArtifactRunPath } from "../src/shared/workflow-artifacts.js";
 import { orchestratorModelConfig, reviewerModelConfig } from "./goal-models.js";
 import {
   DEFAULT_BLOCKER_THRESHOLD,
@@ -28,22 +27,6 @@ import {
   renderGoalOrchestratorPrompt,
 } from "./goal-orchestrator-prompts.js";
 import { renderReviewerPrompt, taggedPrompt } from "./goal-prompts.js";
-import {
-  ITERATION_CONTEXT_FORK,
-  iterationContinuationOptions,
-  parseIterationContext,
-  resolveHandoffPolicy,
-  hasLegacyLoopArtifacts,
-  type IterationContextMode,
-} from "./iteration-context.js";
-import {
-  buildHandoffManifest,
-  handoffLatestManifestPath,
-  snapshotEvidenceRef,
-  validateHandoffManifest,
-  writeHandoffManifest,
-  type HandoffUnresolvedFinding,
-} from "./iteration-handoff.js";
 
 function positiveInteger(value: number | undefined, fallback: number): number {
   if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
@@ -51,6 +34,19 @@ function positiveInteger(value: number | undefined, fallback: number): number {
   }
   const floored = Math.floor(value);
   return floored >= 1 ? floored : fallback;
+}
+
+type ForkContinuationOptions = {
+  readonly context?: "fork";
+  readonly forkFromSessionFile?: string;
+};
+
+function forkContinuationOptions(
+  sessionFile: string | undefined,
+): ForkContinuationOptions {
+  return sessionFile === undefined || sessionFile.length === 0
+    ? {}
+    : { context: "fork", forkFromSessionFile: sessionFile };
 }
 
 function normalizeBranchInput(
@@ -66,19 +62,6 @@ function normalizeBranchInput(
     );
   return looksLikeSafeGitRef ? trimmed : fallback;
 }
-
-function goalUnresolvedFindings(reviews: readonly ReviewRecord[]): HandoffUnresolvedFinding[] {
-  return reviews.flatMap((review) =>
-    review.findings.map((finding) => ({
-      title: finding.title,
-      priority: finding.priority,
-      objective_alignment: finding.objective_alignment,
-      code_location: finding.code_location?.absolute_file_path,
-      reviewer: review.reviewer,
-    })),
-  );
-}
-
 type GoalRunnerContext = {
   readonly inputs: GoalWorkflowInputs;
   readonly runId?: string;
@@ -89,7 +72,6 @@ type GoalRunnerContext = {
 type GoalWorkflowOptions = {
   readonly createPr: boolean;
   readonly workflowStartCwd: string;
-  readonly iterationContext?: IterationContextMode;
 };
 
 function reviewerExecutionFailedDecision(input: {
@@ -128,21 +110,11 @@ export async function runGoalWorkflow(ctx: GoalRunnerContext, options: GoalWorkf
     const reviewQuorum = DEFAULT_REVIEW_QUORUM;
     const blockerThreshold = Math.min(DEFAULT_BLOCKER_THRESHOLD, maxTurns);
     const comparisonBaseBranch = normalizeBranchInput(inputs.base_branch, "origin/main");
-    const legacyArtifactDir =
-      ctx.runId === undefined ? undefined : workflowArtifactRunPath(ctx.runId);
-    const legacyLoop = legacyArtifactDir !== undefined && hasLegacyLoopArtifacts(legacyArtifactDir);
     const { ledger, ledgerPath, artifactDir } = await createGoalLedger(objective, acceptanceCriteria, ctx.runId);
-    const handoffPolicy = await resolveHandoffPolicy({
-      artifactDir,
-      requested: parseIterationContext(options.iterationContext ?? ctx.inputs.iteration_context),
-      hasLegacyLoopArtifacts: legacyLoop,
-    });
-    const iterationContext = handoffPolicy.iteration_context;
 
     let latestReviews: ReviewRecord[] = [];
     let latestReviewArtifactPaths: string[] = [];
     let latestReviewReportPath: string | undefined;
-    let latestHandoffManifestPath: string | undefined;
     let terminalRemainingWork: string | undefined;
     let previousOrchestratorSessionFile: string | undefined;
 
@@ -150,26 +122,9 @@ export async function runGoalWorkflow(ctx: GoalRunnerContext, options: GoalWorkf
       appendLifecycleEvent(ledger, "work_turn_started", "Orchestrator started.", turn);
       await writeGoalLedger(ledgerPath, ledger);
 
-      if (turn > 1 && iterationContext !== ITERATION_CONTEXT_FORK) {
-        const manifestPath = latestHandoffManifestPath ?? handoffLatestManifestPath(artifactDir);
-        validateHandoffManifest({ artifactRoot: artifactDir, manifestPath });
-        latestHandoffManifestPath = manifestPath;
-      }
-      const handoffReads =
-        turn > 1 &&
-        iterationContext !== ITERATION_CONTEXT_FORK &&
-        latestHandoffManifestPath !== undefined
-          ? [latestHandoffManifestPath]
-          : [];
-
       const orchestratorReceiptPath = join(artifactDir, "orchestrator-receipt.md");
-      const orchestratorOptions = iterationContinuationOptions(
-        iterationContext,
-        previousOrchestratorSessionFile,
-      );
-      const orchestratorUsesFullPrompt =
-        iterationContext !== ITERATION_CONTEXT_FORK || orchestratorOptions.context === "fresh";
-      const orchestratorPrompt = orchestratorUsesFullPrompt
+      const orchestratorForkOptions = forkContinuationOptions(previousOrchestratorSessionFile);
+      const orchestratorPrompt = orchestratorForkOptions.forkFromSessionFile === undefined
         ? renderGoalOrchestratorPrompt({
             ledger,
             ledgerPath,
@@ -187,11 +142,11 @@ export async function runGoalWorkflow(ctx: GoalRunnerContext, options: GoalWorkf
       try {
         orchestrator = await ctx.task(`orchestrator-${turn}`, {
           prompt: orchestratorPrompt,
-          reads: [ledgerPath, ...latestReviewArtifactPaths, ...handoffReads],
+          reads: [ledgerPath, ...latestReviewArtifactPaths],
           output: orchestratorReceiptPath,
           outputMode: "file-only",
           ...orchestratorModelConfig,
-          ...orchestratorOptions,
+          ...orchestratorForkOptions,
         });
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -358,53 +313,6 @@ export async function runGoalWorkflow(ctx: GoalRunnerContext, options: GoalWorkf
         turn,
       );
       await writeGoalLedger(ledgerPath, ledger);
-
-      const evidence = [
-        snapshotEvidenceRef({
-          artifactRoot: artifactDir,
-          path: ledgerPath,
-          role: "goal_ledger",
-          iteration: turn,
-        }),
-        snapshotEvidenceRef({
-          artifactRoot: artifactDir,
-          path: orchestratorReceiptPath,
-          role: "orchestrator_receipt",
-          iteration: turn,
-        }),
-      ];
-      if (latestReviewReportPath !== undefined) {
-        evidence.push(
-          snapshotEvidenceRef({
-            artifactRoot: artifactDir,
-            path: latestReviewReportPath,
-            role: "review_round",
-            iteration: turn,
-          }),
-        );
-      }
-      latestHandoffManifestPath = writeHandoffManifest({
-        artifactRoot: artifactDir,
-        manifest: buildHandoffManifest({
-          workflow: "goal",
-          iteration: turn,
-          iterationContext,
-          objective,
-          acceptanceCriteria,
-          unresolvedFindings: goalUnresolvedFindings(latestReviews),
-          approved: ledger.status === "complete",
-          status: ledger.status,
-          nextAction: reducerOutcome.decision.nextAction,
-          diagnostics: reducerOutcome.decision.diagnostics,
-          evidence,
-          failedApproachesRef: snapshotEvidenceRef({
-            artifactRoot: artifactDir,
-            path: ledgerPath,
-            role: "failed_approaches_ledger",
-            iteration: turn,
-          }),
-        }),
-      });
     }
 
     const remainingWork = ledger.status === "complete"

@@ -6,7 +6,7 @@
  * (`@embedded-postgres/<platform>-<arch>`, installed as an optional dependency
  * of `embedded-postgres`). No Docker daemon or system Postgres is required.
  *
- * The cluster lives under `~/.pi/postgres/v<major>` on a dedicated port and
+ * The cluster lives under `~/.atomic/postgres/v<major>` on a dedicated port and
  * is started with `pg_ctl`, which daemonizes the server into its own session:
  * it survives Atomic exiting and is shared by every concurrent Atomic session.
  * Atomic never stops it.

@@ -23,7 +23,72 @@ import {
 	wordRight,
 } from "./keybindings-adapter.js";
 import { decodePrintableKey, Key, matchesKey } from "./text-helpers.js";
-import { moveOption } from "./option-navigation.js";
+
+export function isInputsPickerKey(
+	key: string,
+	state: InputsPickerState,
+	fields: readonly WorkflowInputEntry[],
+	keybindings?: KeybindingsLike,
+): boolean {
+	if (fields.length === 0) return isCancelKey(key);
+	if (isCancelKey(key) || matchesKey(key, Key.tab) || matchesKey(key, Key.shift("tab"))) return true;
+	if (state.focusedIdx === fields.length) {
+		return (
+			matchesAction(keybindings, key, TUI_ACTION.selectUp) ||
+			matchesAction(keybindings, key, TUI_ACTION.selectDown) ||
+			matchesAction(keybindings, key, TUI_ACTION.editorCursorUp) ||
+			matchesAction(keybindings, key, TUI_ACTION.editorCursorDown) ||
+			matchesKey(key, Key.enter) ||
+			matchesAction(keybindings, key, TUI_ACTION.selectConfirm) ||
+			matchesAction(keybindings, key, TUI_ACTION.inputSubmit)
+		);
+	}
+	const field = fields[state.focusedIdx];
+	if (!field) return false;
+	if (field.type === "select") {
+		if ((field.choices ?? []).length === 0) return false;
+		return (
+			matchesAction(keybindings, key, TUI_ACTION.selectUp) ||
+			matchesAction(keybindings, key, TUI_ACTION.selectDown) ||
+			matchesAction(keybindings, key, TUI_ACTION.editorCursorLeft) ||
+			matchesAction(keybindings, key, TUI_ACTION.editorCursorRight) ||
+			matchesAction(keybindings, key, TUI_ACTION.selectConfirm) ||
+			matchesAction(keybindings, key, TUI_ACTION.inputSubmit)
+		);
+	}
+	if (field.type === "boolean") {
+		return (
+			matchesKey(key, Key.space) ||
+			matchesAction(keybindings, key, TUI_ACTION.selectUp) ||
+			matchesAction(keybindings, key, TUI_ACTION.selectDown) ||
+			matchesAction(keybindings, key, TUI_ACTION.editorCursorLeft) ||
+			matchesAction(keybindings, key, TUI_ACTION.editorCursorRight) ||
+			matchesAction(keybindings, key, TUI_ACTION.selectConfirm) ||
+			matchesAction(keybindings, key, TUI_ACTION.inputSubmit)
+		);
+	}
+	if (
+		matchesAction(keybindings, key, TUI_ACTION.editorCursorUp) ||
+		matchesAction(keybindings, key, TUI_ACTION.editorCursorDown) ||
+		matchesAction(keybindings, key, "tui.editor.cursorWordLeft") ||
+		matchesAction(keybindings, key, "tui.editor.cursorWordRight") ||
+		matchesAction(keybindings, key, "tui.editor.cursorLineStart") ||
+		matchesAction(keybindings, key, "tui.editor.cursorLineEnd") ||
+		matchesAction(keybindings, key, TUI_ACTION.editorCursorLeft) ||
+		matchesAction(keybindings, key, TUI_ACTION.editorCursorRight) ||
+		matchesAction(keybindings, key, "tui.editor.deleteWordBackward") ||
+		matchesAction(keybindings, key, "tui.editor.deleteWordForward") ||
+		matchesAction(keybindings, key, "tui.editor.deleteToLineStart") ||
+		matchesAction(keybindings, key, "tui.editor.deleteToLineEnd") ||
+		matchesAction(keybindings, key, "tui.editor.deleteCharBackward") ||
+		matchesAction(keybindings, key, "tui.editor.deleteCharForward") ||
+		matchesAction(keybindings, key, TUI_ACTION.inputSubmit) ||
+		matchesAction(keybindings, key, "tui.input.newLine")
+	) {
+		return true;
+	}
+	return isPrintableGrapheme(decodePrintableKey(key) ?? key);
+}
 
 export function handleInputsPickerInput(
 	key: string,
@@ -198,23 +263,11 @@ function handleSelectKey(
 	if (choices.length === 0) return { kind: "noop" };
 	const current = state.rawText[field.name] ?? choices[0]!;
 	const idx = Math.max(0, choices.indexOf(current));
-	if (matchesAction(kb, key, TUI_ACTION.selectUp) || matchesAction(kb, key, TUI_ACTION.editorCursorUp)) {
-		const move = moveOption(choices, current, -1);
-		state.rawText[field.name] = move.value;
-		if (move.focusDelta) moveFocus(state, fields, move.focusDelta);
-		return { kind: "noop" };
-	}
-	if (matchesAction(kb, key, TUI_ACTION.editorCursorLeft)) {
+	if (matchesAction(kb, key, TUI_ACTION.selectUp) || matchesAction(kb, key, TUI_ACTION.editorCursorLeft)) {
 		state.rawText[field.name] = choices[(idx - 1 + choices.length) % choices.length]!;
 		return { kind: "noop" };
 	}
-	if (matchesAction(kb, key, TUI_ACTION.selectDown) || matchesAction(kb, key, TUI_ACTION.editorCursorDown)) {
-		const move = moveOption(choices, current, +1);
-		state.rawText[field.name] = move.value;
-		if (move.focusDelta) moveFocus(state, fields, move.focusDelta);
-		return { kind: "noop" };
-	}
-	if (matchesAction(kb, key, TUI_ACTION.editorCursorRight)) {
+	if (matchesAction(kb, key, TUI_ACTION.selectDown) || matchesAction(kb, key, TUI_ACTION.editorCursorRight)) {
 		state.rawText[field.name] = choices[(idx + 1) % choices.length]!;
 		return { kind: "noop" };
 	}
@@ -232,26 +285,14 @@ function handleBooleanKey(
 	fields: readonly WorkflowInputEntry[],
 	kb: KeybindingsLike | undefined,
 ): InputsPickerAction {
-	// Treat the rendered on/off rows as a bounded list: arrows select the
-	// adjacent value, then leave the field when pressed past either edge.
 	if (
 		matchesKey(key, Key.space) ||
+		matchesAction(kb, key, TUI_ACTION.selectUp) ||
+		matchesAction(kb, key, TUI_ACTION.selectDown) ||
 		matchesAction(kb, key, TUI_ACTION.editorCursorLeft) ||
 		matchesAction(kb, key, TUI_ACTION.editorCursorRight)
 	) {
 		state.rawText[field.name] = state.rawText[field.name] === "true" ? "false" : "true";
-		return { kind: "noop" };
-	}
-	if (matchesAction(kb, key, TUI_ACTION.selectUp) || matchesAction(kb, key, TUI_ACTION.editorCursorUp)) {
-		const move = moveOption(["true", "false"], state.rawText[field.name] ?? "false", -1);
-		state.rawText[field.name] = move.value;
-		if (move.focusDelta) moveFocus(state, fields, move.focusDelta);
-		return { kind: "noop" };
-	}
-	if (matchesAction(kb, key, TUI_ACTION.selectDown) || matchesAction(kb, key, TUI_ACTION.editorCursorDown)) {
-		const move = moveOption(["true", "false"], state.rawText[field.name] ?? "false", +1);
-		state.rawText[field.name] = move.value;
-		if (move.focusDelta) moveFocus(state, fields, move.focusDelta);
 		return { kind: "noop" };
 	}
 	if (matchesAction(kb, key, TUI_ACTION.selectConfirm) || matchesAction(kb, key, TUI_ACTION.inputSubmit)) {
