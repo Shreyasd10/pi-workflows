@@ -6,13 +6,30 @@
  * Fullscreen pi-tui owns mouse reporting and application selection; workflow
  * overlays do not toggle that terminal mode.
  *
- * cross-ref: src/tui/overlay-adapter.ts (sole consumer)
+ * cross-ref: src/tui/overlay-adapter.ts, src/tui/stage-chat-view-state.ts
  */
 
 import type { PiCustomOverlayFactoryTui } from "../extension/wiring.js";
 
 const TERMINAL_AUTOWRAP_ON = "\x1b[?7h";
 const TERMINAL_AUTOWRAP_OFF = "\x1b[?7l";
+
+/** Cursor/VS Code integrated terminals already own mouse selection and copy. */
+export function isEmbeddedIdeTerminal(env: NodeJS.ProcessEnv = process.env): boolean {
+	const program = (env.TERM_PROGRAM ?? "").toLowerCase();
+	return (
+		program === "vscode" ||
+		program === "cursor" ||
+		!!env.VSCODE_INJECTION ||
+		!!env.VSCODE_PID ||
+		!!env.CURSOR_TRACE_ID
+	);
+}
+
+/** Always capture the wheel. Native select in a fullscreen overlay copies chrome and can freeze the IDE selection. */
+export function defaultStageChatMouseScrollCapture(_env?: NodeJS.ProcessEnv): boolean {
+	return true;
+}
 
 export interface OverlayTerminalOutput {
 	platform: NodeJS.Platform;
