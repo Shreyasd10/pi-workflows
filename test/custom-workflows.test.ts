@@ -73,6 +73,19 @@ describe("custom delivery workflows", () => {
 		assert.doesNotMatch(policy, /max_turns=16|task_id/);
 	});
 
+	test("requires plain language in stage prompts without sacrificing quality", () => {
+		const host = {
+			cwd: "/tmp/project",
+			task: "Ship the requested change",
+			workflow: "rpi",
+		} as DeliveryHost;
+		const prompt = buildVerbatimSkillPrompt({ host, stage: rpiGraph(false, false)[0]!, turn: 1 });
+		assert.match(prompt, /PLAIN LANGUAGE — ARTIFACTS MUST READ EASILY WITHOUT LOSING QUALITY/);
+		assert.match(prompt, /keep full depth, detail, nuance, and rigor/);
+		assert.match(prompt, /Do not cut content, omit caveats, or water down tradeoffs/);
+		assert.match(prompt, /explain every acronym, technical term, and piece of jargon/i);
+	});
+
 	test("builds first-class graphs with reviewable optional paths", () => {
 		assert.deepEqual(rpiGraph(false, false).map((stage) => stage.skill), [
 			"create-design-discussion",
