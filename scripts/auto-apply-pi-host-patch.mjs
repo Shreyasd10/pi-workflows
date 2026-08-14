@@ -7,14 +7,19 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync, appendFileSync, copyFileSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const HOME = homedir();
-const BACKUP_DIR = join(HOME, ".pi", "local", "pi-patch-backup");
-const PI_PKG = join(HOME, ".npm-global", "lib", "node_modules", "@earendil-works", "pi-coding-agent");
+const BACKUP_DIR = process.env.PI_PATCH_BACKUP_DIR ?? join(HOME, ".pi", "local", "pi-patch-backup");
+const PI_PKG =
+	process.env.PI_CODING_AGENT_DIR ??
+	join(HOME, ".npm-global", "lib", "node_modules", "@earendil-works", "pi-coding-agent");
 const MODE_JS = join(PI_PKG, "dist", "modes", "interactive", "interactive-mode.js");
 const COMPONENT_DIR = join(PI_PKG, "dist", "modes", "interactive", "components");
 const COMPONENT_JS = join(COMPONENT_DIR, "transcript-follow-indicator.js");
+const COMPONENT_SRC = join(SCRIPT_DIR, "transcript-follow-indicator.js");
 const LOG = join(BACKUP_DIR, "auto-apply.log");
 
 function log(line) {
@@ -170,7 +175,7 @@ for (let attempt = 0; attempt < 3 && !syntaxOk; attempt += 1) {
 	try {
 		writeFileSync(MODE_JS, out);
 		mkdirSync(COMPONENT_DIR, { recursive: true });
-		copyFileSync(join(BACKUP_DIR, "transcript-follow-indicator.js"), COMPONENT_JS);
+		copyFileSync(COMPONENT_SRC, COMPONENT_JS);
 		execFileSync(process.execPath, ["--check", MODE_JS], { stdio: "pipe" });
 		syntaxOk = true;
 	} catch {

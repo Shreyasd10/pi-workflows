@@ -7,8 +7,19 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AGENT_LABEL="com.shreyasdevadiga.pi-host-patch"
 PLIST="$HOME/Library/LaunchAgents/$AGENT_LABEL.plist"
-WATCH_DIR="$HOME/.npm-global/lib/node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive"
 NODE_BIN="$(command -v node)"
+
+# Locate the pi host package (overridable via PI_CODING_AGENT_DIR).
+if [ -n "${PI_CODING_AGENT_DIR:-}" ]; then
+  PI_PKG_DIR="$PI_CODING_AGENT_DIR"
+elif PI_BIN="$(command -v pi || true)" && [ -n "$PI_BIN" ]; then
+  REAL_BIN="$(readlink -f "$PI_BIN" 2>/dev/null || readlink "$PI_BIN" 2>/dev/null || echo "$PI_BIN")"
+  PI_PKG_DIR="$(dirname "$(dirname "$REAL_BIN")")"
+else
+  echo "ERROR: pi binary not found; set PI_CODING_AGENT_DIR" >&2
+  exit 1
+fi
+WATCH_DIR="$PI_PKG_DIR/dist/modes/interactive"
 
 if [ "${1:-}" = "--uninstall" ]; then
   if [ -f "$PLIST" ]; then
@@ -59,6 +70,8 @@ cat > "$PLIST" <<EOF
 EOF
 
 mkdir -p "$HOME/.pi/local/pi-patch-backup"
+cp "$SCRIPT_DIR/transcript-follow-indicator.js" "$HOME/.pi/local/pi-patch-backup/transcript-follow-indicator.js"
+cp "$WATCH_DIR/../interactive-mode.js" "$HOME/.pi/local/pi-patch-backup/interactive-mode.js.original" 2>/dev/null || true
 launchctl bootout "gui/$(id -u)/$AGENT_LABEL" 2>/dev/null || true
 launchctl bootstrap "gui/$(id -u)" "$PLIST"
 echo "Guard installed: $PLIST (watches $WATCH_DIR)"
