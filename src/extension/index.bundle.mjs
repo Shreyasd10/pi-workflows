@@ -51430,12 +51430,7 @@ import { randomUUID as randomUUID3 } from "node:crypto";
 import { existsSync as existsSync3 } from "node:fs";
 import { mkdir as mkdir2, readdir, rm, stat } from "node:fs/promises";
 import { join as join9 } from "node:path";
-
-// src/shared/workflow-artifact-env.ts
 var WORKFLOW_ARTIFACT_RETENTION_MS = 30 * 24 * 60 * 60 * 1e3;
-
-// src/shared/workflow-artifacts.ts
-var WORKFLOW_ARTIFACT_RETENTION_MS2 = 30 * 24 * 60 * 60 * 1e3;
 var ARTIFACT_PRUNE_RECHECK_MS = 60 * 60 * 1e3;
 var lastArtifactPruneAt = /* @__PURE__ */ new Map();
 var pendingArtifactPrunes = /* @__PURE__ */ new Map();
@@ -51549,7 +51544,7 @@ async function pruneWorkflowArtifactRuns(root = workflowArtifactRunsRoot(), now 
         if (error instanceof Error && "code" in error && error.code === "ENOENT") continue;
         throw error;
       }
-      if (now - metadata.mtimeMs <= WORKFLOW_ARTIFACT_RETENTION_MS2) continue;
+      if (now - metadata.mtimeMs <= WORKFLOW_ARTIFACT_RETENTION_MS) continue;
       if (stateResolver === void 0) continue;
       const state2 = stateResolver(entry.name);
       if (state2 !== "terminal" && state2 !== "orphan") continue;

@@ -8,7 +8,6 @@ import { type WorkflowRunResumeCandidate, workflowRunHasPausedState } from "../d
 import { ENV_WORKFLOW_ARTIFACT_DIR, getHostWorkflowArtifactRoot } from "./host-paths.js";
 import { store } from "./store.js";
 import type { RunSnapshot } from "./store-types.js";
-import { ENV_WORKFLOW_ARTIFACT_DIR, WORKFLOW_ARTIFACT_RETENTION_MS } from "./workflow-artifact-env.js";
 
 /** Maximum age of durable workflow run artifacts before the next workflow write prunes them. */
 export const WORKFLOW_ARTIFACT_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
