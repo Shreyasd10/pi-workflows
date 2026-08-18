@@ -123,7 +123,7 @@ describe("custom delivery workflows", () => {
 			"create-technical-design",
 			"implement-outline",
 			"implement-plan",
-			"show-me",
+			"teach-me",
 		];
 		for (const name of rootNames) {
 			const skill = verbatimSkill(name);
