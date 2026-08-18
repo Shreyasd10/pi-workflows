@@ -5,6 +5,8 @@ export type SkillStageSpec = {
 	instructions: string;
 	model?: string;
 	maxTurns?: number;
+	/** When true, the stage must pause for a human question before it can complete. */
+	interview?: boolean;
 };
 
 export const LUNA_MEDIUM = "openai-codex/gpt-5.6-luna:medium";

@@ -17,7 +17,7 @@ import {
 	validateHandoffManifest,
 	writeHandoffManifest,
 } from "../../builtin/iteration-handoff.js";
-import { agentRoot, assertAllWorkflowAssets, templateRoot, verbatimSkill } from "./asset-loader.js";
+import { agentRoot, assertLockedAssetsForSkills, templateRoot, verbatimSkill } from "./asset-loader.js";
 import { assertPiTaskPrerequisites, PI_TASK_STAGE_TOOLS, piTaskExecutionPolicy } from "./pi-task-policy.js";
 import { resolveDeliveryRunPolicy } from "./run-policy.js";
 import type { SkillStageSpec } from "./stage-graph.js";
@@ -82,7 +82,6 @@ export async function createDeliveryHost(
 		artifactDir: artifactRoot,
 		requested: parseIterationContext(ctx.inputs.iteration_context),
 	});
-	assertAllWorkflowAssets();
 	await resolveDeliveryRunPolicy({
 		artifactRoot,
 		workflow,
@@ -101,6 +100,61 @@ export async function createDeliveryHost(
 		completedStages: [],
 		approvedArtifacts: [],
 	};
+}
+
+function interviewTurnContract(stage: SkillStageSpec, answer?: string): string[] {
+	if (stage.interview !== true) return [];
+	const lines = [
+		"INTERVIEW STAGE RULES:",
+		"- This stage is a guided conversation with the human. Do not complete the document in one turn.",
+		"- Do not invent the human's answers from research, tickets, or upstream artifacts.",
+		answer === undefined
+			? "- There is no human answer yet. Do only the current interview step, then return kind=question with the exact question in `message`. Returning kind=stage_complete is a contract violation."
+			: "- Continue the interview from the latest human answer. Ask the next single question, or return kind=approval_required for a skill-defined review gate.",
+		"- Return kind=stage_complete only after the human has settled the interview and the skill's review gate is ready for the host's final review.",
+	];
+	if (stage.skill === "create-prd") {
+		lines.push(
+			"- Keep the PRD in the template shape: a cohesive spec with takeaway headers, not a Decided-D1 log.",
+			"- Write like a product teammate: people, screens, and next steps. Human meaning first, then the machine name.",
+			"- For user-facing work, walk default, loading, validation, handoff, recovery, and rate-limit as separate questions with a dedicated mockup each.",
+			"- Do not return stage_complete until Alternative Solutions, Out of Scope, Deferred to TDD, and embedded mockups for each visual state are present.",
+		);
+	}
+	if (stage.skill === "create-technical-design") {
+		lines.push(
+			"- cwd is not the design boundary. Working-tree writes stay in this repo; the TDD may still design sibling repositories named by the PRD from documented architecture.",
+			"- If the PRD or ticket names a sibling client or unpublished contract, the first question must be this-repo vs end-to-end. Do not default to cwd.",
+			"- Walk scope, published contracts, real DDL, store lifecycles, fails-closed pipeline, idempotency, and client-facing contract as separate questions.",
+			"- Prefer 409 Conflict when an idempotency key is reused with a different request fingerprint. Prefer HMAC with a server secret for email lookup hashes.",
+			"- Do not return stage_complete until System Design is approved, Program Design is filled with code-shape sketches, and both review gates have run.",
+		);
+	}
+	return lines;
+}
+
+function artifactLanguageContract(stage: SkillStageSpec): string[] {
+	const lines = [
+		"HUMAN WRITING — WRITE LIKE A TEAMMATE:",
+		"- Write like a person explaining the work across a desk. One idea per sentence. Everyday words where they exist.",
+		"- Human meaning first, then the machine name: sign-in (`login`), not `login` route.",
+		"- Keep every fact a specialist needs. Plain words, not less content. If a sentence needs a second read, rewrite it.",
+	];
+	if (stage.skill === "create-prd") {
+		lines.push(
+			"PRD VOICE — WRITE LIKE A PERSON EXPLAINING THE PRODUCT:",
+			"- People, screens, and next steps — not tickets, ADRs, or identity-state tables.",
+			"- Do not cite FR/NFR/ADR/ARC numbers in the body. Do not paste AGENTS.md.",
+		);
+	}
+	if (stage.skill === "create-technical-design") {
+		lines.push(
+			"TDD VOICE — WRITE LIKE AN ENGINEER EXPLAINING THE CHANGE:",
+			"- Takeaway headers. Real CREATE TABLE (or the project's migration form), not table sketches or decision logs.",
+			"- Name repo boundaries. Do not hide a sibling client because cwd is this backend.",
+		);
+	}
+	return lines;
 }
 
 export function buildVerbatimSkillPrompt(args: {
@@ -125,16 +179,12 @@ export function buildVerbatimSkillPrompt(args: {
 			: `- Approved upstream artifacts from earlier stages (read these exact files before searching for alternatives):\n${approvedArtifacts.map((path) => `  - ${path}`).join("\n")}`,
 		args.handoff === undefined ? "- This is the first turn for this logical stage." : `- Validate and use the handoff at ${args.handoff}.`,
 		args.answer === undefined ? "- There is no new human answer on this turn." : `- Latest human answer (verbatim):\n---\n${args.answer}\n---`,
+		...interviewTurnContract(args.stage, args.answer),
 		"- Execute the immutable skill faithfully. When it requires waiting for the human, stop after exactly one question, return kind=question, and include a stable question_id.",
 		"- For a skill-defined intermediate review (including each implementation phase), return kind=approval_required before advancing.",
 		"- Return kind=stage_complete only when the entire skill stage is ready for the host's final human review.",
 		"- artifact_paths must name every authoritative artifact created or updated this turn. Use paths relative to cwd or absolute paths.",
-		"PLAIN LANGUAGE — ARTIFACTS MUST READ EASILY WITHOUT LOSING QUALITY:",
-		"- Write every artifact in simple, direct language. Short sentences. Everyday words where they exist.",
-		"- Explain every acronym, technical term, and piece of jargon in plain words on first use, then keep the term.",
-		"- This rule changes expression only, never substance: keep full depth, detail, nuance, and rigor. Do not cut content, omit caveats, or water down tradeoffs to simplify.",
-		"- One idea per sentence. Use short headed sections and concrete examples so a reader can skim and still get the full meaning.",
-		"- If a sentence needs a second read to understand, rewrite it. If a sentence can be read by a non-specialist and still say everything it said before, keep it.",
+		...artifactLanguageContract(args.stage),
 		"IMMUTABLE VERBATIM SKILL PAYLOAD — BEGIN",
 		skill,
 		"IMMUTABLE VERBATIM SKILL PAYLOAD — END",
@@ -201,6 +251,9 @@ async function recordTurn(
 
 async function humanInput(host: DeliveryHost, message: string): Promise<string> {
 	const answer = await host.ctx.ui.input(message);
+	if (typeof answer !== "string") {
+		throw new DeliveryWorkflowBlocked("Human interview requires a text answer");
+	}
 	if (Buffer.byteLength(answer, "utf8") > MAX_ACTIVE_ANSWER_BYTES) {
 		throw new DeliveryWorkflowBlocked(`Human answer exceeds ${MAX_ACTIVE_ANSWER_BYTES} byte active-dialogue budget`);
 	}
@@ -256,6 +309,7 @@ export async function runVerbatimSkillStage(host: DeliveryHost, stage: SkillStag
 	let previousSessionFile: string | undefined;
 	let latestHandoff: string | undefined;
 	let answer: string | undefined;
+	let askedHuman = false;
 	const stageArtifacts = new Set<string>();
 	const maxTurns = Math.min(stage.maxTurns ?? DEFAULT_STAGE_TURNS, MAX_STAGE_TURNS);
 
@@ -282,15 +336,22 @@ export async function runVerbatimSkillStage(host: DeliveryHost, stage: SkillStag
 		});
 		previousSessionFile = result.sessionFile;
 		const outcome = structuredOutcome(result, stage, turn);
+		if (stage.interview === true && outcome.kind === "stage_complete" && !askedHuman) {
+			throw new DeliveryWorkflowBlocked(
+				`${stage.label} skipped the required human interview; return kind=question after the skeleton instead of completing the stage`,
+			);
+		}
 		latestHandoff = await recordTurn(host, stage, stageRoot, turn, outcome, answer);
 		for (const path of outcome.artifact_paths) stageArtifacts.add(path);
 
 		if (outcome.kind === "blocked") throw new DeliveryWorkflowBlocked(outcome.message);
 		if (outcome.kind === "question") {
+			askedHuman = true;
 			answer = await humanInput(host, outcome.message);
 			continue;
 		}
 		if (outcome.kind === "approval_required") {
+			askedHuman = true;
 			const approved = await host.ctx.ui.confirm(`${stage.label}: ${outcome.message}`);
 			answer = approved ? "APPROVED" : `CHANGES REQUESTED: ${await humanInput(host, "What should change before approval?")}`;
 			continue;
@@ -312,6 +373,7 @@ export async function runVerbatimSkillStage(host: DeliveryHost, stage: SkillStag
 }
 
 export async function runDeliveryGraph(host: DeliveryHost, stages: readonly SkillStageSpec[]): Promise<DeliveryWorkflowOutputs> {
+	assertLockedAssetsForSkills(stages.map((stage) => stage.skill));
 	try {
 		try {
 			assertPiTaskPrerequisites();

@@ -57,6 +57,22 @@ export function lockedAssetEntries(): readonly AssetLockEntry[] {
 	return assetLock().assets;
 }
 
+export function lockedAssetPathsForSkills(skillNames: readonly string[]): string[] {
+	const prefixes = skillNames.map((name) => `skills/${name}/`);
+	return assetLock()
+		.assets.filter(
+			(entry) =>
+				entry.path.startsWith("agents/") ||
+				entry.path.startsWith("templates/") ||
+				prefixes.some((prefix) => entry.path.startsWith(prefix)),
+		)
+		.map((entry) => entry.path);
+}
+
+export function assertLockedAssetsForSkills(skillNames: readonly string[]): void {
+	for (const path of lockedAssetPathsForSkills(skillNames)) lockedAsset(path);
+}
+
 export function assertAllWorkflowAssets(): void {
 	for (const entry of assetLock().assets) lockedAsset(entry.path);
 }
