@@ -291,6 +291,11 @@
       "sha256": "ce863c27f294b17f516ce55b75e09c62f246568f86d178d181d95b23c2c61ef5"
     },
     {
+      "path": "skills/show-me/SKILL.md",
+      "bytes": 4468,
+      "sha256": "221ab73dd67e03df501d6044b88c12ba976f7f6c8491cefae97490027fb7a113"
+    },
+    {
       "path": "skills/wayfinder/SKILL.md",
       "bytes": 14619,
       "sha256": "92bb278e06775e965c3bc32f3bfbc9c335efb4053aa3380595476916e83234be"
