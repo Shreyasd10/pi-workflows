@@ -1,4 +1,4 @@
-import { createStructuredOutputCapture, runCallback } from "@bastani/atomic";
+import { getAtomic } from "../../shared/atomic-runtime.js";
 import type { StageExecutionMeta } from "../../shared/types.js";
 import { StageSessionController } from "./stage-runner-controller.js";
 import { assistantMessage } from "./stage-runner-messages.js";
@@ -68,7 +68,7 @@ export function createStageContext(opts: StageRunnerOpts): InternalStageContext 
 						"atomic-workflows: stage schema requires an AgentSessionAdapter so the structured_output tool can be registered.",
 					);
 				}
-				const rawText = await runCallback(
+				const rawText = await getAtomic().runCallback(
 					{ kind: "workflow.stage_adapter", name: `prompt:${stageName}`, runId, stageId },
 					() => adapters.prompt!.prompt(promptText, meta),
 				);
@@ -129,7 +129,7 @@ export function createStageContext(opts: StageRunnerOpts): InternalStageContext 
 			if (adapters.complete) {
 				lastFinalizedOutput = undefined;
 				lastFinalizedMessageCount = undefined;
-				lastAssistantText = await runCallback(
+				lastAssistantText = await getAtomic().runCallback(
 					{ kind: "workflow.stage_adapter", name: `complete:${stageName}`, runId, stageId },
 					() => adapters.complete!.complete(text, completeOpts, meta),
 				);

@@ -1,4 +1,4 @@
-import { keyHint, keyText, rawKeyHint } from "@bastani/atomic";
+import { type AtomicModule, getAtomic } from "../shared/atomic-runtime.js";
 import { truncateToWidth, visibleWidth, wrapTextWithAnsi } from "@earendil-works/pi-tui";
 import type { PendingPrompt } from "../shared/store-types.js";
 import { BOLD, hexBg, hexToAnsi, paint, RESET } from "./color-utils.js";
@@ -527,19 +527,19 @@ function padToUsable(content: string, usable: number): string {
 	return content + " ".repeat(usable - w);
 }
 
-type CodingAgentKeybinding = Parameters<typeof keyHint>[0];
+type CodingAgentKeybinding = Parameters<AtomicModule["keyHint"]>[0];
 
 function graphKeyHint(keybinding: CodingAgentKeybinding, description: string, theme: GraphTheme): string {
 	try {
-		return keyHint(keybinding, description);
+		return getAtomic().keyHint(keybinding, description);
 	} catch {
-		return localKeyHint(keyText(keybinding), description, theme);
+		return localKeyHint(getAtomic().keyText(keybinding), description, theme);
 	}
 }
 
 function graphRawKeyHint(key: string, description: string, theme: GraphTheme): string {
 	try {
-		return rawKeyHint(key, description);
+		return getAtomic().rawKeyHint(key, description);
 	} catch {
 		return localKeyHint(key, description, theme);
 	}

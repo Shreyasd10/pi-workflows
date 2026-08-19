@@ -8,11 +8,8 @@
  * `stage-chat-view.ts`, and `stage-control-registry.ts`.
  */
 
-import {
-	type ChatMessageRenderOptions,
-	type ReadonlyFooterDataProvider,
-	TRANSCRIPT_JUMP_TO_END_URL,
-} from "@bastani/atomic";
+import type { ChatMessageRenderOptions, ReadonlyFooterDataProvider } from "@bastani/atomic";
+import { TRANSCRIPT_JUMP_TO_END_URL } from "./transcript-jump.js";
 import type { Component, EditorComponent, EditorTheme, TUI } from "@earendil-works/pi-tui";
 import type { StageControlRegistry } from "../runs/foreground/stage-control-registry.js";
 import { stageQueuedUserMessageCount } from "../runs/foreground/stage-queued-user-messages.js";

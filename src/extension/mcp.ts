@@ -11,7 +11,7 @@
  * without a bundled MCP adapter dependency.
  */
 
-import { isStaleExtensionContextError } from "@bastani/atomic";
+import { isStaleExtensionContextError } from "../shared/stale-extension-context.js";
 // ---------------------------------------------------------------------------
 // Minimal structural types — no hard imports from host MCP internals
 // ---------------------------------------------------------------------------

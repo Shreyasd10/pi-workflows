@@ -288,8 +288,13 @@ export function buildGraphOverlayAdapter(
 	}
 
 	function open(runId: string | null, surface?: OverlayPiSurface, stageId?: string, stageRunId?: string): void {
-		// Atomic UI embeds (usage meter, ∀ spinner, …) require initTheme under stock pi.
-		ensureAtomicThemeInitialized();
+		// Atomic UI embeds load the atomic barrel once, then initTheme under stock pi.
+		void ensureAtomicThemeInitialized().then(() =>
+			openAfterTheme(runId, surface, stageId, stageRunId),
+		);
+	}
+
+	function openAfterTheme(runId: string | null, surface?: OverlayPiSurface, stageId?: string, stageRunId?: string): void {
 		const ui = surface?.ui ?? pi.ui;
 		observeHostCustomUi(ui);
 

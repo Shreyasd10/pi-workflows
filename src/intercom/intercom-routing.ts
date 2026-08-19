@@ -7,7 +7,7 @@
  * cross-ref: spec §5.10, RFC §8.1 Phase G
  */
 
-import { isStaleExtensionContextError } from "@bastani/atomic";
+import { isStaleExtensionContextError } from "../shared/stale-extension-context.js";
 import type { Store } from "../shared/store.js";
 import type { NoticeLevel } from "../shared/store-types.js";
 import type { IntercomControlCallbacks, IntercomControlPayload } from "./result-intercom.js";

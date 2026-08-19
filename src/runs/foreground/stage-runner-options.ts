@@ -1,4 +1,5 @@
-import { type CreateAgentSessionOptions, SessionManager } from "@bastani/atomic";
+import type { CreateAgentSessionOptions } from "@bastani/atomic";
+import { getAtomic } from "../../shared/atomic-runtime.js";
 import { resolveStageGroup, stageHasIntercomAccess } from "../../shared/intercom-group.js";
 import type { StageExecutionMeta, StageOptions } from "../../shared/types.js";
 import type { AgentSessionConsumer } from "./stage-runner-types.js";
@@ -39,7 +40,7 @@ export function stripWorkflowOnlyOptions(
 			? { orchestrationContext }
 			: {
 					orchestrationContext,
-					sessionManager: SessionManager.create(process.cwd(), defaultSessionDir, classification),
+					sessionManager: getAtomic().SessionManager.create(process.cwd(), defaultSessionDir, classification),
 				};
 	}
 	const {
@@ -64,16 +65,16 @@ export function stripWorkflowOnlyOptions(
 		const cwd = sessionOptions.cwd ?? process.cwd();
 		const effectiveSessionDir = sessionDir ?? defaultSessionDir;
 		if (resumeFromSessionFile !== undefined) {
-			sessionOptions.sessionManager = SessionManager.open(resumeFromSessionFile, effectiveSessionDir, cwd);
+			sessionOptions.sessionManager = getAtomic().SessionManager.open(resumeFromSessionFile, effectiveSessionDir, cwd);
 		} else if (context === "fork" && forkFromSessionFile !== undefined) {
-			sessionOptions.sessionManager = SessionManager.forkFrom(
+			sessionOptions.sessionManager = getAtomic().SessionManager.forkFrom(
 				forkFromSessionFile,
 				cwd,
 				effectiveSessionDir,
 				classification,
 			);
 		} else if (effectiveSessionDir !== undefined) {
-			sessionOptions.sessionManager = SessionManager.create(cwd, effectiveSessionDir, classification);
+			sessionOptions.sessionManager = getAtomic().SessionManager.create(cwd, effectiveSessionDir, classification);
 		}
 	}
 	return { ...sessionOptions, orchestrationContext } as CreateAgentSessionOptions;

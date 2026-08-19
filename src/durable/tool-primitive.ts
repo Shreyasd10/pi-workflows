@@ -15,7 +15,7 @@
  * typescript code and cache the result for DBOS."
  */
 
-import { runCallback } from "@bastani/atomic";
+import { getAtomic } from "../shared/atomic-runtime.js";
 import { sleepOrAbort } from "../runs/shared/retry.js";
 import { flattenTruncatedString } from "../shared/flat-string.js";
 import type { ToolNodeSnapshot } from "../shared/store-types.js";
@@ -302,7 +302,7 @@ async function executeLiveToolInvocation<T extends WorkflowSerializableValue>(
 		const result = await executeWithRetries(
 			() => {
 				attempts += 1;
-				return runCallback({ kind: "workflow.ctx_tool", name, runId: input.workflowId }, () =>
+				return getAtomic().runCallback({ kind: "workflow.ctx_tool", name, runId: input.workflowId }, () =>
 					fn({ signal: toolSignal }),
 				).catch((error: unknown) => {
 					callbackError = error;

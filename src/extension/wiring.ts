@@ -21,11 +21,12 @@
  *            pi docs/sdk.md createAgentSession
  */
 
-import {
-	type CreateAgentSessionOptions,
-	type DefaultResourceLoaderInheritanceSnapshot,
-	isStaleExtensionContextError,
+import type {
+	CreateAgentSessionOptions,
+	DefaultResourceLoaderInheritanceSnapshot,
 } from "@bastani/atomic";
+import { loadAtomic } from "../shared/atomic-runtime.js";
+import { isStaleExtensionContextError } from "../shared/stale-extension-context.js";
 import type { StageAdapters, StageSessionCreateResult, StageSessionRuntime } from "../runs/foreground/stage-runner.js";
 import { resolveStageGroup, stageHasIntercomAccess } from "../shared/intercom-group.js";
 import { type StageUiBroker, stageUiBroker } from "../shared/stage-ui-broker.js";
@@ -170,7 +171,7 @@ async function createPiSdkAgentSession(
 	options?: CreateAgentSessionOptions,
 	prepareOptions?: PrepareAtomicStageSessionOptions,
 ): Promise<StageSessionCreateResult> {
-	const sdk = (await import("@bastani/atomic")) as PiCodingAgentSdk;
+	const sdk = (await loadAtomic()) as PiCodingAgentSdk;
 	let settingsManager: ReturnType<PiCodingAgentSdk["SettingsManager"]["create"]> | undefined;
 	try {
 		const sessionOptions = await prepareAtomicStageSessionOptions(options, sdk, {

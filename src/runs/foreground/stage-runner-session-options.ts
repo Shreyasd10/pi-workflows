@@ -1,4 +1,5 @@
-import { type CreateAgentSessionOptions, SessionManager } from "@bastani/atomic";
+import type { CreateAgentSessionOptions } from "@bastani/atomic";
+import { getAtomic } from "../../shared/atomic-runtime.js";
 import type { StageOptions } from "../../shared/types.js";
 import type { WorkflowResolvedModelCandidate } from "../shared/model-fallback.js";
 
@@ -27,7 +28,7 @@ export function buildStageSessionOptions(input: StageSessionOptionsInput): Stage
 
 	if (input.reattachSessionFile !== undefined && options.sessionManager === undefined) {
 		const cwd = options.cwd ?? process.cwd();
-		options.sessionManager = SessionManager.open(input.reattachSessionFile, options.sessionDir, cwd);
+		options.sessionManager = getAtomic().SessionManager.open(input.reattachSessionFile, options.sessionDir, cwd);
 		options.context = undefined;
 		options.forkFromSessionFile = undefined;
 	}

@@ -1,4 +1,4 @@
-import { runCallback, runSynchronousCallback } from "@bastani/atomic";
+import { getAtomic } from "../../shared/atomic-runtime.js";
 import type { GraphFrontierTracker } from "../../engine/graph-inference.js";
 import type { EngineStageRuntimeOptions } from "../../engine/options.js";
 import { appendStageEnd, appendStageStart } from "../../shared/persistence-session-entries.js";
@@ -330,7 +330,7 @@ export function createWorkflowStageFactory(input: {
 				new Error(`atomic-workflows: stage ${stageId} completed with pending custom UI`),
 			);
 			if (input.opts.onStageEnd) {
-				await runCallback(
+				await getAtomic().runCallback(
 					{ kind: "workflow.stage_adapter", name: `onStageEnd:${name}`, runId: input.runId, stageId },
 					() => input.opts.onStageEnd!(input.runId, stageSnapshot),
 				);
@@ -419,7 +419,7 @@ export function createWorkflowStageFactory(input: {
 
 		input.activeStore.recordStageStart(input.runId, stageSnapshot);
 		if (input.opts.onStageStart) {
-			runSynchronousCallback(
+			getAtomic().runSynchronousCallback(
 				{ kind: "workflow.stage_adapter", name: `onStageStart:${name}`, runId: input.runId, stageId },
 				() => input.opts.onStageStart!(input.runId, stageSnapshot),
 			);

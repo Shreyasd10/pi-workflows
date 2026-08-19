@@ -3,7 +3,7 @@ import { mkdirSync } from "node:fs";
 import { tmpdir, userInfo } from "node:os";
 import { join } from "node:path";
 import { Type } from "typebox";
-import { createChildProcessEnvironment } from "@bastani/atomic";
+import { createChildProcessEnvironment } from "../src/shared/atomic-runtime.js";
 import type { WorkflowTaskResult } from "../src/shared/types.js";
 
 

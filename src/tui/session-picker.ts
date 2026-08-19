@@ -18,7 +18,7 @@
  *  - DESIGN.md §5 Components — picker-row-* tokens
  */
 
-import { keyText } from "@bastani/atomic";
+import { getAtomic } from "../shared/atomic-runtime.js";
 import { isWorkflowRunResumable, type WorkflowRunResumeCandidate } from "../durable/resume-eligibility.js";
 import { runIndicatorStatus } from "../shared/run-indicator-status.js";
 import { isTopLevelWorkflowRun } from "../shared/run-visibility.js";
@@ -200,13 +200,13 @@ function renderHintsRow(width: number, theme: GraphTheme, state: SessionPickerSt
 	const hint = (key: string, label: string) => `${text}${key}${RESET} ${muted}${label}${RESET}`;
 
 	const parts: string[] = state.filterFocused
-		? [hint(keyText("tui.select.confirm"), "Submit"), hint(keyText("tui.select.cancel"), "Exit Filter")]
+		? [hint(getAtomic().keyText("tui.select.confirm"), "Submit"), hint(getAtomic().keyText("tui.select.cancel"), "Exit Filter")]
 		: [
-				hint(`${keyText("tui.select.up")}/${keyText("tui.select.down")}`, "Navigate"),
-				hint(keyText("tui.select.confirm"), "Connect"),
+				hint(`${getAtomic().keyText("tui.select.up")}/${getAtomic().keyText("tui.select.down")}`, "Navigate"),
+				hint(getAtomic().keyText("tui.select.confirm"), "Connect"),
 				hint("a", state.includeAll ? "Active Only" : "All"),
 				hint("/", "Filter"),
-				hint(keyText("tui.select.cancel"), "Close"),
+				hint(getAtomic().keyText("tui.select.cancel"), "Close"),
 			];
 
 	// Two-space indent matches `renderEmptyState` and the section-row

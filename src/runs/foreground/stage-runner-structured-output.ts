@@ -1,4 +1,5 @@
-import { createStructuredOutputTool, type StructuredOutputCapture } from "@bastani/atomic";
+import type { StructuredOutputCapture } from "@bastani/atomic";
+import { getAtomic } from "../../shared/atomic-runtime.js";
 import type { Static, TSchema } from "typebox";
 import type { StageOptions } from "../../shared/types.js";
 
@@ -78,7 +79,7 @@ export function stageOptionsWithStructuredOutput(
 		...(excludedTools !== undefined ? { excludedTools } : {}),
 		customTools: [
 			...(options.customTools ?? []),
-			createStructuredOutputTool({
+			getAtomic().createStructuredOutputTool({
 				schema: options.schema as TSchema,
 				capture: capture as StructuredOutputCapture<Static<TSchema>>,
 			}),

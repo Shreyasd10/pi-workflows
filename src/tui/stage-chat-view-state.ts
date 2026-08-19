@@ -1,4 +1,5 @@
-import { type AgentSessionEvent, ChatSessionHost } from "@bastani/atomic";
+import type { AgentSessionEvent, ChatSessionHost } from "@bastani/atomic";
+import { getAtomic } from "../shared/atomic-runtime.js";
 import { Editor, type EditorComponent } from "@earendil-works/pi-tui";
 import { stageUiBroker } from "../shared/stage-ui-broker.js";
 import { readGraphStoreSnapshot, subscribeStoreInvalidation } from "../shared/store-observation.js";
@@ -184,7 +185,8 @@ function installFocusHold(ctx: StageChatViewContext): void {
 }
 
 function createChatHost(ctx: StageChatViewContext, opts: StageChatViewOpts): ChatSessionHost<NoticeEntry> {
-	return new ChatSessionHost<NoticeEntry>({
+	const { ChatSessionHost: Host } = getAtomic();
+	return new Host<NoticeEntry>({
 		style: chatHostStyle(ctx),
 		commands: {
 			ensureAttached: async () => {

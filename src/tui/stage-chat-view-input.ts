@@ -1,4 +1,4 @@
-import { TRANSCRIPT_JUMP_TO_END_URL } from "@bastani/atomic";
+import { TRANSCRIPT_JUMP_TO_END_URL } from "./transcript-jump.js";
 
 import { APP_ACTION, isKeybindingsLike, matchesAction, TUI_ACTION } from "./keybindings-adapter.js";
 import { parseTerminalMouseInput, terminalMouseWheelDirection } from "./mouse-input.js";

@@ -23,7 +23,7 @@
  *  - https://pi.dev/docs/latest/tui (canonical Pi-tui component contract)
  */
 
-import { keyText, TranscriptFollowIndicator } from "@bastani/atomic";
+import { getAtomic } from "../shared/atomic-runtime.js";
 import type { Component, Focusable } from "@earendil-works/pi-tui";
 import { fitStageChatFrame, planStageChatFrame } from "./stage-chat-layout.js";
 import {
@@ -160,6 +160,7 @@ export class StageChatView implements Component, Focusable {
 		let bodyLines: string[];
 		let transcriptBodyActive = false;
 		let reservedIndicatorLines: readonly string[] = [];
+		const { TranscriptFollowIndicator, keyText } = getAtomic();
 		const indicator = new TranscriptFollowIndicator({
 			isFollowing: () => this.chatHost.bodyScrollFromBottom() === 0,
 			keyLabel: () => keyText("tui.altScreen.bottom"),

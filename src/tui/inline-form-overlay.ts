@@ -21,7 +21,7 @@
  *  - src/tui/inline-form-editor.ts (custom EditorComponent)
  */
 
-import { isStaleExtensionContextError } from "@bastani/atomic";
+import { isStaleExtensionContextError } from "../shared/stale-extension-context.js";
 import type { ExtensionAPI, PiCommandContext } from "../extension/index.js";
 import type { WorkflowInputEntry } from "../extension/render-result.js";
 import type { PiEditorComponent, PiEditorFactory } from "../extension/wiring.js";

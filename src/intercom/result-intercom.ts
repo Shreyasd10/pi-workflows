@@ -15,7 +15,7 @@
  * cross-ref: spec §5.10 Integration with pi-intercom, §8.1 Phase G
  */
 
-import { isStaleExtensionContextError } from "@bastani/atomic";
+import { isStaleExtensionContextError } from "../shared/stale-extension-context.js";
 import type { WorkflowDetails } from "../shared/types.js";
 
 // ---------------------------------------------------------------------------

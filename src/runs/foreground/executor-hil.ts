@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { createAskUserQuestionToolDefinition } from "@bastani/atomic";
+import { type AtomicModule, getAtomic } from "../../shared/atomic-runtime.js";
 import { currentPromptCallerStack } from "../../shared/prompt-callsite-context.js";
 import { buildStagePromptAdapter } from "../../shared/stage-prompt.js";
 import { stageUiBroker } from "../../shared/stage-ui-broker.js";
@@ -324,10 +324,10 @@ export function shouldInjectResumeContinuation(state: {
 	return state.reason === "queued-user-message" || state.reason === "paused-queued-user-message" || state.gateEnabled;
 }
 
-let cachedReadinessGateTool: ReturnType<typeof createAskUserQuestionToolDefinition> | undefined;
-function readinessGateTool(): ReturnType<typeof createAskUserQuestionToolDefinition> {
+let cachedReadinessGateTool: ReturnType<AtomicModule["createAskUserQuestionToolDefinition"]> | undefined;
+function readinessGateTool(): ReturnType<AtomicModule["createAskUserQuestionToolDefinition"]> {
 	if (cachedReadinessGateTool === undefined) {
-		cachedReadinessGateTool = createAskUserQuestionToolDefinition();
+		cachedReadinessGateTool = getAtomic().createAskUserQuestionToolDefinition();
 	}
 	return cachedReadinessGateTool;
 }

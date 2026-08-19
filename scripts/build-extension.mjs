@@ -22,8 +22,6 @@ await build({
 		"@bastani/atomic",
 		"@earendil-works/pi-tui",
 		"@earendil-works/pi-ai/compat",
-		"typebox",
-		"typebox/*",
 	],
 	plugins: [
 		{

@@ -8,7 +8,6 @@
  */
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { getEnvValue } from "@bastani/atomic";
 
 /** Project / user config directory name used by this extension under stock pi. */
 export const HOST_CONFIG_DIR_NAME = ".pi";
@@ -36,7 +35,7 @@ function expandTildePath(value: string): string {
 
 function firstEnv(...names: readonly string[]): string | undefined {
 	for (const name of names) {
-		const value = getEnvValue(name) ?? process.env[name];
+		const value = process.env[name];
 		if (value !== undefined && value.length > 0) return value;
 	}
 	return undefined;

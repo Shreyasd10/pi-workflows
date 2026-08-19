@@ -2,7 +2,7 @@
 
 import { spawn } from "node:child_process";
 import { connect } from "node:net";
-import { createChildProcessEnvironment } from "@bastani/atomic";
+import { createChildProcessEnvironment } from "../shared/atomic-runtime.js";
 
 export interface LocalCommandResult {
 	readonly exitCode: number;

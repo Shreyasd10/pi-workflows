@@ -1,11 +1,10 @@
-import {
-	type AgentSession,
-	type CreateAgentSessionOptions,
-	convertToLlm,
-	type PromptOptions,
-	type StructuredOutputCapture,
-	shouldApplyCodexFastModeForScope,
+import type {
+	AgentSession,
+	CreateAgentSessionOptions,
+	PromptOptions,
+	StructuredOutputCapture,
 } from "@bastani/atomic";
+import { getAtomic } from "../../shared/atomic-runtime.js";
 import type {
 	StageContext,
 	StageExecutionMeta,
@@ -186,10 +185,10 @@ function retryableAgentSession(activeSession: StageSessionRuntime): RetryableAge
  * can leave a retained non-error assistant, or a `custom`/`bashExecution`/
  * `branchSummary` message that Atomic's converter drops when it is excluded
  * from context or empty — leaving an assistant as the converted tail. Evaluate
- * the same `convertToLlm()` result Atomic sends.
+ * the same `getAtomic().convertToLlm()` result Atomic sends.
  */
 function canContinueFromTranscript(activeSession: StageSessionRuntime): boolean {
-	const converted = convertToLlm([...activeSession.messages]);
+	const converted = getAtomic().convertToLlm([...activeSession.messages]);
 	const last = converted[converted.length - 1];
 	return last !== undefined && (last.role === "user" || last.role === "toolResult");
 }
@@ -1420,7 +1419,7 @@ export class StageSessionController {
 		const settingsManager = this.sessionSettingsManager ?? this.effectiveStageOptions?.settingsManager;
 		return model === undefined || settingsManager === undefined
 			? undefined
-			: shouldApplyCodexFastModeForScope(model, settingsManager.getCodexFastModeSettings(), "workflow");
+			: getAtomic().shouldApplyCodexFastModeForScope(model, settingsManager.getCodexFastModeSettings(), "workflow");
 	}
 	private throwUnresolvedContextOverflowIfPresent(): void {
 		const message = this.unresolvedContextOverflowMessage;

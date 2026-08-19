@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { createChildProcessEnvironment, createGitEnvironment } from "@bastani/atomic";
+import { createChildProcessEnvironment, createGitEnvironment } from "../../shared/atomic-runtime.js";
 import type { GitResult } from "./worktree-types.js";
 
 const DISABLED_GIT_HOOKS_PATH = process.platform === "win32" ? "NUL" : "/dev/null";

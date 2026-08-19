@@ -8,7 +8,20 @@
  */
 
 export type { RetryDecision, RetryPolicySettings } from "@bastani/atomic";
-export { nextRetryDecision } from "@bastani/atomic";
+import type { RetryDecision, RetryPolicySettings } from "@bastani/atomic";
+
+/** Inlined from `@bastani/atomic` so importing this module does not load the barrel. */
+export function nextRetryDecision(
+	settings: RetryPolicySettings | undefined,
+	retriesSpent: number,
+	eligible: boolean,
+): RetryDecision | undefined {
+	if (settings === undefined || !settings.enabled || !eligible || retriesSpent >= settings.maxRetries) {
+		return undefined;
+	}
+	const attempt = retriesSpent + 1;
+	return { attempt, delayMs: settings.baseDelayMs * 2 ** (attempt - 1) };
+}
 
 type WorkflowAbortReason = Error | DOMException | string;
 

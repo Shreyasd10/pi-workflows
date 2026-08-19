@@ -35,16 +35,15 @@
  *      one-shot recent-ended expiry (`nextWidgetRefreshDelayMs`).
  */
 
-import {
-	decideReactiveWidgetAction,
-	installReactiveWidget,
-	isStaleExtensionContextError,
-	type ReactiveWidgetAction,
-	type ReactiveWidgetFactory,
-	type ReactiveWidgetRenderState,
-	type ReactiveWidgetTimerApi,
-	type ReactiveWidgetTimerHandle,
+import type {
+	ReactiveWidgetAction,
+	ReactiveWidgetFactory,
+	ReactiveWidgetRenderState,
+	ReactiveWidgetTimerApi,
+	ReactiveWidgetTimerHandle,
 } from "@bastani/atomic";
+import { loadAtomic } from "../shared/atomic-runtime.js";
+import { isStaleExtensionContextError } from "../shared/stale-extension-context.js";
 import type { Store } from "../shared/store.js";
 import { readGraphStoreSnapshot, subscribeStoreInvalidation } from "../shared/store-observation.js";
 import type { StoreSnapshot } from "../shared/store-types.js";
@@ -91,7 +90,12 @@ function liveWidgetSnapshot(storeInstance: Store): StoreSnapshot {
 }
 
 export function decideWidgetAction(prev: WidgetRenderState, nextLines: readonly string[]): WidgetAction {
-	return decideReactiveWidgetAction(prev, nextLines);
+	const nextVisible = nextLines.length > 0;
+	if (!prev.mounted) return nextVisible ? "mount" : "none";
+	if (!nextVisible) return "unmount";
+	return prev.lines.length === nextLines.length && prev.lines.every((line, i) => line === nextLines[i])
+		? "none"
+		: "update";
 }
 
 export function installStoreWidget(
@@ -102,28 +106,48 @@ export function installStoreWidget(
 	const ui = pi.ui;
 	if (!ui?.setWidget) return () => {};
 
-	const requestRender = ui.requestRender;
-	const controller = installReactiveWidget<StoreSnapshot, unknown>({
-		ui: {
-			setWidget: (key, factory, opts) => ui.setWidget?.(key, factory, opts),
-			...(requestRender ? { requestRender: () => requestRender.call(ui) } : {}),
-		},
-		key: WIDGET_KEY,
-		placement: "belowEditor",
-		timers,
-		getSnapshot: () => liveWidgetSnapshot(storeInstance),
-		subscribe: (listener) => subscribeStoreInvalidation(storeInstance, listener),
-		getPreviewLines: (snap, now) => buildThemedWidgetLines(snap, undefined, 120, now),
-		render: (snap, { theme, width, now }) => buildThemedWidgetLines(snap, theme as PiTheme | undefined, width, now),
-		getNextRefreshDelayMs: (snap, now) => nextWidgetRefreshDelayMs(snap, now),
-		// #1856: a store mutation that leaves the rendered card byte-identical
-		// must not broadcast a host-wide render (each one becomes terminal
-		// writes that fight native main-chat scrollback).
-		requestRenderOnStateNoop: false,
-		isStaleError: isStaleExtensionContextError,
-	});
+	let disposed = false;
+	let innerDispose: (() => void) | undefined;
+	let starting = false;
 
-	return () => controller.dispose();
+	const startWithAtomic = (): void => {
+		if (disposed || innerDispose || starting) return;
+		const preview = buildThemedWidgetLines(liveWidgetSnapshot(storeInstance), undefined, 120, Date.now());
+		if (preview.length === 0) return;
+		starting = true;
+		void loadAtomic().then((atomic) => {
+			if (disposed || innerDispose) return;
+			const requestRender = ui.requestRender;
+			const controller = atomic.installReactiveWidget<StoreSnapshot, unknown>({
+				ui: {
+					setWidget: (key, factory, opts) => ui.setWidget?.(key, factory, opts),
+					...(requestRender ? { requestRender: () => requestRender.call(ui) } : {}),
+				},
+				key: WIDGET_KEY,
+				placement: "belowEditor",
+				timers,
+				getSnapshot: () => liveWidgetSnapshot(storeInstance),
+				subscribe: (listener) => subscribeStoreInvalidation(storeInstance, listener),
+				getPreviewLines: (snap, now) => buildThemedWidgetLines(snap, undefined, 120, now),
+				render: (snap, { theme, width, now }) => buildThemedWidgetLines(snap, theme as PiTheme | undefined, width, now),
+				getNextRefreshDelayMs: (snap, now) => nextWidgetRefreshDelayMs(snap, now),
+				// #1856: a store mutation that leaves the rendered card byte-identical
+				// must not broadcast a host-wide render (each one becomes terminal
+				// writes that fight native main-chat scrollback).
+				requestRenderOnStateNoop: false,
+				isStaleError: isStaleExtensionContextError,
+			});
+			innerDispose = () => controller.dispose();
+		});
+	};
+
+	startWithAtomic();
+	const unsubscribe = subscribeStoreInvalidation(storeInstance, startWithAtomic);
+	return () => {
+		disposed = true;
+		unsubscribe();
+		innerDispose?.();
+	};
 }
 
 interface ToolExecutionStartPayload {

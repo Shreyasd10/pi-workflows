@@ -1,5 +1,5 @@
 import { isAbsolute, join, resolve } from "node:path";
-import { isCodexFastModeCandidateModelId } from "@bastani/atomic";
+import { getAtomic } from "../../shared/atomic-runtime.js";
 import type { WorkflowActor } from "../../shared/store-types.js";
 import { HOST_CONFIG_DIR_NAME } from "../../shared/host-paths.js";
 import type { StageOptions, WorkflowArtifact, WorkflowTaskOptions, WorkflowTaskStep } from "../../shared/types.js";
@@ -318,5 +318,5 @@ export async function hasExplicitFastModeCandidate(input: {
 }
 
 function isCodexFastModeCandidate(model: StageOptions["model"] | string | undefined): boolean {
-	return isCodexFastModeCandidateModelId(workflowModelId(model));
+	return getAtomic().isCodexFastModeCandidateModelId(workflowModelId(model));
 }

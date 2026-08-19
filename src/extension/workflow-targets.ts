@@ -1,4 +1,3 @@
-import { getEnvValue, WORKFLOW_STAGE_SUBAGENT_GUARD_ENV } from "@bastani/atomic";
 import {
 	type ExpandedWorkflowStage,
 	expandedStageLabel,
@@ -56,7 +55,10 @@ export function reloadFailureMessage(error: unknown): string {
 }
 
 function hasWorkflowStageSubagentGuardEnv(): boolean {
-	return getEnvValue(WORKFLOW_STAGE_SUBAGENT_GUARD_ENV) === "1";
+	return (
+		process.env.PI_WORKFLOW_STAGE_SUBAGENT_GUARD === "1" ||
+		process.env.ATOMIC_WORKFLOW_STAGE_SUBAGENT_GUARD === "1"
+	);
 }
 
 export function isWorkflowStageToolContext(ctx: PiExecuteContext): boolean {
